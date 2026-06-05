@@ -6,7 +6,7 @@
   <title>Maison Ardent</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Montserrat:wght@300;400&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&family=Montserrat:wght@300;400&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -25,10 +25,9 @@
       font-family: 'Montserrat', sans-serif;
       font-weight: 300;
       -webkit-font-smoothing: antialiased;
-      background: #1a0f08;
+      background: #100a05;
     }
 
-    /* ── HERO ── */
     .hero {
       position: relative;
       min-height: 100svh;
@@ -43,10 +42,10 @@
       position: absolute;
       inset: 0;
       background:
-        linear-gradient(to bottom, rgba(26,15,8,0.58) 0%, rgba(26,15,8,0.38) 45%, rgba(26,15,8,0.72) 100%),
-        url('https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=1200&h=900&q=80') center/cover no-repeat;
-      transform: scale(1.03);
-      transition: transform 8s ease-out;
+        linear-gradient(to bottom, rgba(16,10,5,0.52) 0%, rgba(16,10,5,0.28) 40%, rgba(16,10,5,0.78) 100%),
+        url('https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=1400&h=1000&q=85') center/cover no-repeat;
+      transform: scale(1.04);
+      transition: transform 9s ease-out;
     }
 
     .hero-bg.loaded { transform: scale(1); }
@@ -55,117 +54,103 @@
       position: relative;
       z-index: 2;
       text-align: center;
-      padding: 0 32px;
+      padding: 0 36px;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 0;
+    }
+
+    .stars {
+      font-size: 0.55rem;
+      letter-spacing: 0.5em;
+      color: var(--warm-mid);
+      margin-bottom: 24px;
+      opacity: 0.8;
     }
 
     .ornament {
       display: flex;
       align-items: center;
-      gap: 14px;
-      margin-bottom: 22px;
+      gap: 16px;
+      margin-bottom: 24px;
     }
 
     .orn-line {
-      width: 42px; height: 1px;
-      background: linear-gradient(to right, transparent, rgba(196,168,130,0.7));
+      width: 48px;
+      height: 1px;
+      background: linear-gradient(to right, transparent, rgba(196,168,130,0.65));
     }
-
-    .orn-line.r { background: linear-gradient(to left, transparent, rgba(196,168,130,0.7)); }
+    .orn-line.r { background: linear-gradient(to left, transparent, rgba(196,168,130,0.65)); }
 
     .orn-diamond {
-      width: 6px; height: 6px;
+      width: 5px; height: 5px;
       background: var(--warm-mid);
       transform: rotate(45deg);
+      opacity: 0.8;
     }
 
     .hero-label {
-      font-size: 0.62rem;
-      letter-spacing: 0.38em;
+      font-size: 0.6rem;
+      letter-spacing: 0.4em;
       text-transform: uppercase;
-      color: var(--warm-mid);
-      margin-bottom: 16px;
+      color: rgba(196,168,130,0.75);
+      margin-bottom: 18px;
     }
 
     .hero-title {
       font-family: 'Cormorant Garamond', serif;
-      font-size: clamp(3rem, 12vw, 5rem);
+      font-size: clamp(3.2rem, 13vw, 5.5rem);
       font-weight: 300;
-      letter-spacing: 0.18em;
+      letter-spacing: 0.22em;
       color: var(--creme);
-      line-height: 1.05;
-      margin-bottom: 14px;
+      line-height: 1.0;
+      margin-bottom: 6px;
+    }
+
+    .hero-title em {
+      display: block;
+      font-style: italic;
+      font-weight: 300;
+      font-size: 0.72em;
+      letter-spacing: 0.28em;
+      color: rgba(245,240,232,0.75);
+      margin-top: 4px;
     }
 
     .hero-subtitle {
       font-family: 'Cormorant Garamond', serif;
       font-style: italic;
-      font-size: clamp(1rem, 4vw, 1.3rem);
-      color: rgba(212,196,176,0.85);
-      letter-spacing: 0.1em;
-      margin-bottom: 10px;
-    }
-
-    .hero-tagline {
-      font-size: 0.7rem;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-      color: rgba(196,168,130,0.65);
-      margin-bottom: 44px;
+      font-size: clamp(1rem, 4vw, 1.25rem);
+      color: rgba(196,168,130,0.7);
+      letter-spacing: 0.12em;
+      margin-top: 20px;
+      margin-bottom: 48px;
     }
 
     .cta-btn {
       display: inline-block;
       text-decoration: none;
-      padding: 16px 36px;
-      border: 1px solid rgba(212,196,176,0.55);
+      padding: 17px 40px;
+      border: 1px solid rgba(212,196,176,0.5);
       color: var(--creme);
       font-family: 'Montserrat', sans-serif;
-      font-size: 0.72rem;
+      font-size: 0.68rem;
       font-weight: 400;
-      letter-spacing: 0.28em;
+      letter-spacing: 0.32em;
       text-transform: uppercase;
-      background: rgba(139,74,47,0.18);
-      transition: background 0.25s, border-color 0.25s;
+      background: rgba(139,74,47,0.15);
+      transition: background 0.3s, border-color 0.3s;
       -webkit-tap-highlight-color: transparent;
     }
 
     .cta-btn:active {
-      background: rgba(139,74,47,0.45);
+      background: rgba(139,74,47,0.5);
       border-color: rgba(212,196,176,0.9);
     }
 
-    /* ── FOOTER ── */
-    .hero-footer {
-      position: absolute;
-      bottom: 28px;
-      left: 0; right: 0;
-      text-align: center;
-      z-index: 2;
-    }
-
-    .footer-brand {
-      font-size: 0.6rem;
-      letter-spacing: 0.28em;
-      text-transform: uppercase;
-      color: rgba(196,168,130,0.45);
-      margin-bottom: 4px;
-    }
-
-    .footer-mv {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 0.82rem;
-      letter-spacing: 0.15em;
-      color: rgba(196,168,130,0.35);
-    }
-
-    /* ── SCROLL HINT ── */
     .scroll-hint {
       position: absolute;
-      bottom: 72px;
+      bottom: 40px;
       left: 50%;
       transform: translateX(-50%);
       z-index: 2;
@@ -173,7 +158,7 @@
       flex-direction: column;
       align-items: center;
       gap: 6px;
-      animation: fadeIn 2s ease 1.2s both;
+      animation: fadeIn 2.5s ease 1.5s both;
     }
 
     @keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
@@ -181,14 +166,37 @@
     .scroll-hint span {
       display: block;
       width: 1px;
-      height: 40px;
-      background: linear-gradient(to bottom, transparent, rgba(196,168,130,0.5));
-      animation: scrollLine 2s ease-in-out infinite;
+      height: 44px;
+      background: linear-gradient(to bottom, transparent, rgba(196,168,130,0.45));
+      animation: scrollLine 2.2s ease-in-out infinite;
     }
 
     @keyframes scrollLine {
       0%, 100% { opacity: 0; transform: scaleY(0); transform-origin: top; }
       50% { opacity: 1; transform: scaleY(1); transform-origin: top; }
+    }
+
+    .hero-footer {
+      position: absolute;
+      bottom: 22px;
+      left: 0; right: 0;
+      text-align: center;
+      z-index: 2;
+    }
+
+    .footer-brand {
+      font-size: 0.58rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: rgba(196,168,130,0.35);
+      margin-bottom: 3px;
+    }
+
+    .footer-mv {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 0.8rem;
+      letter-spacing: 0.16em;
+      color: rgba(196,168,130,0.28);
     }
   </style>
 </head>
@@ -197,15 +205,18 @@
     <div class="hero-bg" id="heroBg"></div>
 
     <div class="hero-content">
+      <p class="stars">★ ★ ★</p>
       <div class="ornament">
         <span class="orn-line"></span>
         <span class="orn-diamond"></span>
         <span class="orn-line r"></span>
       </div>
-      <p class="hero-label">Paris · Depuis 1987</p>
-      <h1 class="hero-title">Maison<br>Ardent</h1>
-      <p class="hero-subtitle">Cuisine française moderne</p>
-      <p class="hero-tagline">Une expérience gastronomique d'exception</p>
+      <p class="hero-label">Paris &nbsp;·&nbsp; Depuis 1987</p>
+      <h1 class="hero-title">
+        Maison
+        <em>Ardent</em>
+      </h1>
+      <p class="hero-subtitle">Cuisine française d'exception</p>
       <a href="entrees.html" class="cta-btn">Découvrir la Carte</a>
     </div>
 

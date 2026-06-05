@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Maison Ardent — Entrées</title>
+  <title>Maison Ardent — Plats</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&family=Montserrat:wght@300;400&display=swap" rel="stylesheet" />
@@ -32,7 +32,6 @@
       padding-bottom: var(--bnav-h);
     }
 
-    /* ── TOP HEADER ── */
     .page-header {
       position: sticky;
       top: 0;
@@ -69,7 +68,6 @@
       color: var(--terre);
     }
 
-    /* ── SECTION INTRO ── */
     .section-intro {
       padding: 44px 20px 12px;
       text-align: center;
@@ -118,7 +116,6 @@
       flex-shrink: 0;
     }
 
-    /* ── DISH CARD ── */
     .dish-card {
       margin-top: 48px;
       cursor: pointer;
@@ -134,11 +131,11 @@
       position: relative;
     }
 
-    .fb-stjaques { background: linear-gradient(145deg,#c9d6c2,#8aa88f,#5a7a64); }
-    .fb-veloute  { background: linear-gradient(145deg,#d4c5a4,#b8a07a,#8b7355); }
-    .fb-foiegras { background: linear-gradient(145deg,#c8a96e,#a0804a,#7a5c2e); }
-    .fb-huitres  { background: linear-gradient(145deg,#b8cdd4,#7aa0b0,#4a7890); }
-    .fb-asperges { background: linear-gradient(145deg,#d4e0c8,#a8c090,#7a9860); }
+    .fb-homard  { background: linear-gradient(145deg,#d4aa88,#b07848,#8a5028); }
+    .fb-wagyu   { background: linear-gradient(145deg,#c4a080,#8a6040,#5c3820); }
+    .fb-pigeon  { background: linear-gradient(145deg,#b8a890,#886848,#5a3c20); }
+    .fb-turbot  { background: linear-gradient(145deg,#c0d0c8,#88a8a0,#508070); }
+    .fb-risveau { background: linear-gradient(145deg,#c8b898,#a08060,#784840); }
 
     .dish-img-wrap::after {
       content: '';
@@ -210,17 +207,6 @@
       margin-top: 8px;
     }
 
-    /* ── CARD SEPARATOR ── */
-    .card-sep {
-      display: flex;
-      align-items: center;
-      gap: 0;
-      margin: 0 24px;
-    }
-    .card-sep .orn-line { background: transparent; }
-    .card-sep .orn-diamond { background: var(--sep); opacity: 0.7; }
-
-    /* ── BOTTOM NAV ── */
     .bottom-nav {
       position: fixed;
       bottom: 0; left: 0; right: 0;
@@ -269,7 +255,6 @@
 
     .bnav-item.active .bnav-dot { opacity: 1; }
 
-    /* ── MODAL ── */
     .modal-overlay {
       position: fixed;
       inset: 0;
@@ -282,10 +267,7 @@
       transition: opacity 0.3s ease;
     }
 
-    .modal-overlay.open {
-      opacity: 1;
-      pointer-events: all;
-    }
+    .modal-overlay.open { opacity: 1; pointer-events: all; }
 
     .modal-sheet {
       width: 100%;
@@ -427,7 +409,6 @@
 
     .btn-add:active { background: var(--terre-dk); }
 
-    /* ── TOAST ── */
     .toast {
       position: fixed;
       bottom: calc(var(--bnav-h) + 18px);
@@ -448,7 +429,6 @@
 
     .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-    /* ── FOOTER ── */
     .page-footer {
       text-align: center;
       padding: 40px 20px 24px;
@@ -483,8 +463,8 @@
 
   <div class="section-intro">
     <p class="intro-eyebrow">La Carte</p>
-    <h1>Entrées</h1>
-    <p>Compositions d'ouverture selon le marché</p>
+    <h1>Plats</h1>
+    <p>Créations de notre chef, au gré des saisons</p>
   </div>
   <div class="section-ornament">
     <span class="orn-line"></span>
@@ -493,82 +473,82 @@
   </div>
 
   <!-- 01 -->
-  <article class="dish-card" data-id="stjaques">
-    <div class="dish-img-wrap fb-stjaques">
-      <img src="https://images.unsplash.com/photo-1612871689893-7a1e9a0bab34?auto=format&fit=crop&w=900&h=675&q=85"
-           alt="Tartare de Saint-Jacques" class="dish-img" loading="eager" onerror="this.style.display='none'" />
+  <article class="dish-card" data-id="homard">
+    <div class="dish-img-wrap fb-homard">
+      <img src="https://images.unsplash.com/photo-1567620905-a9e71c7f1c0f?auto=format&fit=crop&w=900&h=675&q=85"
+           alt="Homard Bleu Rôti" class="dish-img" loading="eager" onerror="this.style.display='none'" />
       <span class="dish-num">01</span>
     </div>
     <div class="dish-body">
       <div class="dish-row">
-        <h2 class="dish-name">Tartare de Saint-Jacques</h2>
-        <span class="dish-price">28 €</span>
+        <h2 class="dish-name">Homard Bleu Rôti</h2>
+        <span class="dish-price">58 €</span>
       </div>
-      <p class="dish-desc">Noix de Saint-Jacques marinées au citron vert, caviar d'Aquitaine, émulsion iodée et huile de ciboulette</p>
+      <p class="dish-desc">Homard breton rôti vivant au beurre demi-sel, bisque réduite au cognac, légumes de saison glacés, tarragon</p>
     </div>
   </article>
 
   <!-- 02 -->
-  <article class="dish-card" data-id="veloute">
-    <div class="dish-img-wrap fb-veloute">
-      <img src="https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=900&h=675&q=85"
-           alt="Velouté de Topinambour" class="dish-img" loading="lazy" onerror="this.style.display='none'" />
+  <article class="dish-card" data-id="wagyu">
+    <div class="dish-img-wrap fb-wagyu">
+      <img src="https://images.unsplash.com/photo-1558030006-450675393462?auto=format&fit=crop&w=900&h=675&q=85"
+           alt="Filet de Bœuf Wagyu" class="dish-img" loading="lazy" onerror="this.style.display='none'" />
       <span class="dish-num">02</span>
     </div>
     <div class="dish-body">
       <div class="dish-row">
-        <h2 class="dish-name">Velouté de Topinambour</h2>
-        <span class="dish-price">22 €</span>
+        <h2 class="dish-name">Filet de Bœuf Wagyu</h2>
+        <span class="dish-price">65 €</span>
       </div>
-      <p class="dish-desc">Topinambour fumé au foin, huile de truffe noire du Périgord, croûtons dorés au beurre noisette</p>
+      <p class="dish-desc">Filet de bœuf Wagyu BMS 9 snacké à la plancha, jus de truffe noire du Périgord, purée de pomme de terre Robuchon, chips de pomme de terre soufflée</p>
     </div>
   </article>
 
   <!-- 03 -->
-  <article class="dish-card" data-id="foiegras">
-    <div class="dish-img-wrap fb-foiegras">
-      <img src="https://images.unsplash.com/photo-1574484284002-952d92456975?auto=format&fit=crop&w=900&h=675&q=85"
-           alt="Foie Gras de Canard" class="dish-img" loading="lazy" onerror="this.style.display='none'" />
+  <article class="dish-card" data-id="pigeon">
+    <div class="dish-img-wrap fb-pigeon">
+      <img src="https://images.unsplash.com/photo-1555396273-79e4f3a0a249?auto=format&fit=crop&w=900&h=675&q=85"
+           alt="Pigeon de Bresse Laqué" class="dish-img" loading="lazy" onerror="this.style.display='none'" />
       <span class="dish-num">03</span>
     </div>
     <div class="dish-body">
       <div class="dish-row">
-        <h2 class="dish-name">Foie Gras de Canard</h2>
-        <span class="dish-price">32 €</span>
+        <h2 class="dish-name">Pigeon de Bresse Laqué</h2>
+        <span class="dish-price">45 €</span>
       </div>
-      <p class="dish-desc">Mi-cuit à la maison, chutney de figues Ronde de Bordeaux, brioche tiède au beurre de Guérande</p>
+      <p class="dish-desc">Pigeon de Bresse rôti entier et laqué au miel d'acacia, jus corsé aux épices douces, lentilles du Puy au lard fumé, cerfeuil tubéreux</p>
     </div>
   </article>
 
   <!-- 04 -->
-  <article class="dish-card" data-id="huitres">
-    <div class="dish-img-wrap fb-huitres">
-      <img src="https://images.unsplash.com/photo-1520201163981-da0c4e7ea82c?auto=format&fit=crop&w=900&h=675&q=85"
-           alt="Huîtres Gillardeau" class="dish-img" loading="lazy" onerror="this.style.display='none'" />
+  <article class="dish-card" data-id="turbot">
+    <div class="dish-img-wrap fb-turbot">
+      <img src="https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?auto=format&fit=crop&w=900&h=675&q=85"
+           alt="Turbot Sauvage" class="dish-img" loading="lazy" onerror="this.style.display='none'" />
       <span class="dish-num">04</span>
     </div>
     <div class="dish-body">
       <div class="dish-row">
-        <h2 class="dish-name">Huîtres Gillardeau n°3</h2>
-        <span class="dish-price">24 €</span>
+        <h2 class="dish-name">Turbot Sauvage de Ligne</h2>
+        <span class="dish-price">52 €</span>
       </div>
-      <p class="dish-desc">Six huîtres creuses de Marennes-Oléron, granité de champagne Blanc de Blancs, vinaigrette d'échalotes confites</p>
+      <p class="dish-desc">Turbot sauvage de Bretagne cuit sur l'arête, beurre blanc aux câpres de Pantelleria, pommes de terre grenaille dorées, aneth frais</p>
     </div>
   </article>
 
   <!-- 05 -->
-  <article class="dish-card" data-id="asperges">
-    <div class="dish-img-wrap fb-asperges">
-      <img src="https://images.unsplash.com/photo-1547592166-59d65a4567a3?auto=format&fit=crop&w=900&h=675&q=85"
-           alt="Asperges Blanches d'Alsace" class="dish-img" loading="lazy" onerror="this.style.display='none'" />
+  <article class="dish-card" data-id="risveau">
+    <div class="dish-img-wrap fb-risveau">
+      <img src="https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=900&h=675&q=85"
+           alt="Ris de Veau Braisés" class="dish-img" loading="lazy" onerror="this.style.display='none'" />
       <span class="dish-num">05</span>
     </div>
     <div class="dish-body">
       <div class="dish-row">
-        <h2 class="dish-name">Asperges Blanches d'Alsace</h2>
-        <span class="dish-price">26 €</span>
+        <h2 class="dish-name">Ris de Veau Braisés</h2>
+        <span class="dish-price">48 €</span>
       </div>
-      <p class="dish-desc">Asperges blanches rôties et glacées, mousseline aux agrumes, œuf de caille poché, chips de jambon Bellota</p>
+      <p class="dish-desc">Ris de veau de lait braisés et dorés au beurre, morilles fraîches de saison, crème et vin jaune du Jura, condiment de persil plat</p>
     </div>
   </article>
 
@@ -604,11 +584,11 @@
 
   <!-- ── BOTTOM NAV ── -->
   <nav class="bottom-nav">
-    <a href="entrees.html" class="bnav-item active">
+    <a href="entrees.html" class="bnav-item">
       <span class="bnav-dot"></span>
       <span>Entrées</span>
     </a>
-    <a href="plats.html" class="bnav-item">
+    <a href="plats.html" class="bnav-item active">
       <span class="bnav-dot"></span>
       <span>Plats</span>
     </a>
@@ -620,45 +600,45 @@
 
   <script>
     const dishes = {
-      stjaques: {
-        name: 'Tartare de Saint-Jacques',
-        price: '28 €',
-        img: 'https://images.unsplash.com/photo-1612871689893-7a1e9a0bab34?auto=format&fit=crop&w=900&h=675&q=85',
-        fb: 'fb-stjaques',
-        desc: 'Noix de Saint-Jacques de pleine mer, marinées quelques heures au citron vert et gingembre frais. Servies avec un caviar d\'Aquitaine Sturia, une émulsion iodée à l\'eau de mer et une huile verte de ciboulette sauvage. Finition au sel de fleur de l\'île de Ré.',
-        allergens: ['Mollusques', 'Poisson']
+      homard: {
+        name: 'Homard Bleu Rôti',
+        price: '58 €',
+        img: 'https://images.unsplash.com/photo-1567620905-a9e71c7f1c0f?auto=format&fit=crop&w=900&h=675&q=85',
+        fb: 'fb-homard',
+        desc: 'Homard bleu de Bretagne rôti vivant au beurre demi-sel de Guérande, flambé au cognac. Servi avec une bisque réduite et émulsionnée, un bouquet de légumes de saison glacés au beurre et quelques feuilles de tarragon frais. Un classique revisité.',
+        allergens: ['Crustacés', 'Lait', 'Sulfites']
       },
-      veloute: {
-        name: 'Velouté de Topinambour',
-        price: '22 €',
-        img: 'https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=900&h=675&q=85',
-        fb: 'fb-veloute',
-        desc: 'Topinambours fumés lentement au foin de prairie, mixés en velouté soyeux avec crème fraîche d\'Isigny. Servi avec quelques gouttes d\'huile de truffe noire du Périgord et des croûtons de pain de campagne dorés au beurre noisette.',
-        allergens: ['Gluten', 'Lait']
+      wagyu: {
+        name: 'Filet de Bœuf Wagyu',
+        price: '65 €',
+        img: 'https://images.unsplash.com/photo-1558030006-450675393462?auto=format&fit=crop&w=900&h=675&q=85',
+        fb: 'fb-wagyu',
+        desc: 'Filet de bœuf Wagyu japonais BMS 9 saisi à la plancha, rosé à coeur. Accompagné d\'un jus corsé à la truffe noire du Périgord, d\'une purée de pomme de terre Robuchon montée au beurre et de chips de pomme de terre soufflée au sel de Guérande.',
+        allergens: ['Lait']
       },
-      foiegras: {
-        name: 'Foie Gras de Canard',
-        price: '32 €',
-        img: 'https://images.unsplash.com/photo-1574484284002-952d92456975?auto=format&fit=crop&w=900&h=675&q=85',
-        fb: 'fb-foiegras',
-        desc: 'Foie gras de canard des Landes mi-cuit maison, assaisonné au sel, poivre blanc et Armagnac. Accompagné d\'un chutney de figues Ronde de Bordeaux au vinaigre balsamique vieux et d\'une brioche tiède beurrée au beurre de Guérande.',
-        allergens: ['Gluten', 'Œufs', 'Lait', 'Sulfites']
+      pigeon: {
+        name: 'Pigeon de Bresse Laqué',
+        price: '45 €',
+        img: 'https://images.unsplash.com/photo-1555396273-79e4f3a0a249?auto=format&fit=crop&w=900&h=675&q=85',
+        fb: 'fb-pigeon',
+        desc: 'Pigeon de Bresse label rouge rôti entier et laqué au miel d\'acacia de Provence. Jus corsé réduit aux épices douces — cannelle, cardamome, clou de girofle. Accompagné de lentilles vertes du Puy mijotées au lard fumé et de cerfeuil tubéreux caramélisé.',
+        allergens: ['Volaille']
       },
-      huitres: {
-        name: 'Huîtres Gillardeau n°3',
-        price: '24 €',
-        img: 'https://images.unsplash.com/photo-1520201163981-da0c4e7ea82c?auto=format&fit=crop&w=900&h=675&q=85',
-        fb: 'fb-huitres',
-        desc: 'Six huîtres creuses Gillardeau n°3 de Marennes-Oléron, servies fraîches avec un granité de champagne Blanc de Blancs maison, une légère vinaigrette d\'échalotes confites et quelques brins de ciboulette ciselée.',
-        allergens: ['Mollusques']
+      turbot: {
+        name: 'Turbot Sauvage de Ligne',
+        price: '52 €',
+        img: 'https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?auto=format&fit=crop&w=900&h=675&q=85',
+        fb: 'fb-turbot',
+        desc: 'Turbot sauvage pêché à la ligne en Bretagne, cuit sur l\'arête pour préserver la chair nacrée. Beurre blanc classique monté aux câpres de Pantelleria, pommes de terre grenaille rôties à l\'huile d\'olive et aneth frais ciselé.',
+        allergens: ['Poisson', 'Lait']
       },
-      asperges: {
-        name: 'Asperges Blanches d\'Alsace',
-        price: '26 €',
-        img: 'https://images.unsplash.com/photo-1547592166-59d65a4567a3?auto=format&fit=crop&w=900&h=675&q=85',
-        fb: 'fb-asperges',
-        desc: 'Asperges blanches d\'Alsace rôties et glacées au miel d\'acacia, mousseline légère aux agrumes. Accompagnées d\'un œuf de caille poché à basse température et de chips croustillantes de jambon Bellota ibérique.',
-        allergens: ['Œufs', 'Lait', 'Porc']
+      risveau: {
+        name: 'Ris de Veau Braisés',
+        price: '48 €',
+        img: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=900&h=675&q=85',
+        fb: 'fb-risveau',
+        desc: 'Ris de veau de lait sous la mère, blanchis puis braisés longuement et dorés au beurre noisette pour une croûte dorée et un cœur fondant. Servis avec des morilles fraîches de saison, une crème légère au vin jaune du Jura et un condiment de persil plat.',
+        allergens: ['Lait', 'Sulfites']
       }
     };
 

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Maison Ardent — Entrées</title>
+  <title>Maison Ardent — Desserts</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&family=Montserrat:wght@300;400&display=swap" rel="stylesheet" />
@@ -32,7 +32,6 @@
       padding-bottom: var(--bnav-h);
     }
 
-    /* ── TOP HEADER ── */
     .page-header {
       position: sticky;
       top: 0;
@@ -69,7 +68,6 @@
       color: var(--terre);
     }
 
-    /* ── SECTION INTRO ── */
     .section-intro {
       padding: 44px 20px 12px;
       text-align: center;
@@ -118,7 +116,6 @@
       flex-shrink: 0;
     }
 
-    /* ── DISH CARD ── */
     .dish-card {
       margin-top: 48px;
       cursor: pointer;
@@ -134,11 +131,11 @@
       position: relative;
     }
 
-    .fb-stjaques { background: linear-gradient(145deg,#c9d6c2,#8aa88f,#5a7a64); }
-    .fb-veloute  { background: linear-gradient(145deg,#d4c5a4,#b8a07a,#8b7355); }
-    .fb-foiegras { background: linear-gradient(145deg,#c8a96e,#a0804a,#7a5c2e); }
-    .fb-huitres  { background: linear-gradient(145deg,#b8cdd4,#7aa0b0,#4a7890); }
-    .fb-asperges { background: linear-gradient(145deg,#d4e0c8,#a8c090,#7a9860); }
+    .fb-souffle   { background: linear-gradient(145deg,#e8d8c0,#c8a878,#a07848); }
+    .fb-millefeuille { background: linear-gradient(145deg,#f0e0c0,#d4b880,#b08040); }
+    .fb-chocolat  { background: linear-gradient(145deg,#604030,#402018,#200800); }
+    .fb-ileflottante { background: linear-gradient(145deg,#e8e0d0,#d0b890,#b09060); }
+    .fb-fraises   { background: linear-gradient(145deg,#e8b0a0,#c07060,#a04040); }
 
     .dish-img-wrap::after {
       content: '';
@@ -210,17 +207,6 @@
       margin-top: 8px;
     }
 
-    /* ── CARD SEPARATOR ── */
-    .card-sep {
-      display: flex;
-      align-items: center;
-      gap: 0;
-      margin: 0 24px;
-    }
-    .card-sep .orn-line { background: transparent; }
-    .card-sep .orn-diamond { background: var(--sep); opacity: 0.7; }
-
-    /* ── BOTTOM NAV ── */
     .bottom-nav {
       position: fixed;
       bottom: 0; left: 0; right: 0;
@@ -269,7 +255,6 @@
 
     .bnav-item.active .bnav-dot { opacity: 1; }
 
-    /* ── MODAL ── */
     .modal-overlay {
       position: fixed;
       inset: 0;
@@ -282,10 +267,7 @@
       transition: opacity 0.3s ease;
     }
 
-    .modal-overlay.open {
-      opacity: 1;
-      pointer-events: all;
-    }
+    .modal-overlay.open { opacity: 1; pointer-events: all; }
 
     .modal-sheet {
       width: 100%;
@@ -427,7 +409,6 @@
 
     .btn-add:active { background: var(--terre-dk); }
 
-    /* ── TOAST ── */
     .toast {
       position: fixed;
       bottom: calc(var(--bnav-h) + 18px);
@@ -448,7 +429,6 @@
 
     .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-    /* ── FOOTER ── */
     .page-footer {
       text-align: center;
       padding: 40px 20px 24px;
@@ -483,8 +463,8 @@
 
   <div class="section-intro">
     <p class="intro-eyebrow">La Carte</p>
-    <h1>Entrées</h1>
-    <p>Compositions d'ouverture selon le marché</p>
+    <h1>Desserts</h1>
+    <p>Douceurs de notre pâtissier, Pierre Vanel</p>
   </div>
   <div class="section-ornament">
     <span class="orn-line"></span>
@@ -493,82 +473,82 @@
   </div>
 
   <!-- 01 -->
-  <article class="dish-card" data-id="stjaques">
-    <div class="dish-img-wrap fb-stjaques">
-      <img src="https://images.unsplash.com/photo-1612871689893-7a1e9a0bab34?auto=format&fit=crop&w=900&h=675&q=85"
-           alt="Tartare de Saint-Jacques" class="dish-img" loading="eager" onerror="this.style.display='none'" />
+  <article class="dish-card" data-id="souffle">
+    <div class="dish-img-wrap fb-souffle">
+      <img src="https://images.unsplash.com/photo-1488477181946-6428a0291777?auto=format&fit=crop&w=900&h=675&q=85"
+           alt="Soufflé au Grand Marnier" class="dish-img" loading="eager" onerror="this.style.display='none'" />
       <span class="dish-num">01</span>
     </div>
     <div class="dish-body">
       <div class="dish-row">
-        <h2 class="dish-name">Tartare de Saint-Jacques</h2>
-        <span class="dish-price">28 €</span>
+        <h2 class="dish-name">Soufflé au Grand Marnier</h2>
+        <span class="dish-price">22 €</span>
       </div>
-      <p class="dish-desc">Noix de Saint-Jacques marinées au citron vert, caviar d'Aquitaine, émulsion iodée et huile de ciboulette</p>
+      <p class="dish-desc">Soufflé chaud à l'orange et Grand Marnier, glace à la vanille Bourbon de Madagascar, zeste d'orange confit</p>
     </div>
   </article>
 
   <!-- 02 -->
-  <article class="dish-card" data-id="veloute">
-    <div class="dish-img-wrap fb-veloute">
-      <img src="https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=900&h=675&q=85"
-           alt="Velouté de Topinambour" class="dish-img" loading="lazy" onerror="this.style.display='none'" />
+  <article class="dish-card" data-id="millefeuille">
+    <div class="dish-img-wrap fb-millefeuille">
+      <img src="https://images.unsplash.com/photo-1571115177098-24ec42ed204d?auto=format&fit=crop&w=900&h=675&q=85"
+           alt="Mille-feuille Vanille" class="dish-img" loading="lazy" onerror="this.style.display='none'" />
       <span class="dish-num">02</span>
     </div>
     <div class="dish-body">
       <div class="dish-row">
-        <h2 class="dish-name">Velouté de Topinambour</h2>
-        <span class="dish-price">22 €</span>
+        <h2 class="dish-name">Mille-feuille Vanille</h2>
+        <span class="dish-price">18 €</span>
       </div>
-      <p class="dish-desc">Topinambour fumé au foin, huile de truffe noire du Périgord, croûtons dorés au beurre noisette</p>
+      <p class="dish-desc">Feuilletage caramélisé, crème diplomate à la vanille de Madagascar, glaçage royal fondant, caramel coulant au beurre salé</p>
     </div>
   </article>
 
   <!-- 03 -->
-  <article class="dish-card" data-id="foiegras">
-    <div class="dish-img-wrap fb-foiegras">
-      <img src="https://images.unsplash.com/photo-1574484284002-952d92456975?auto=format&fit=crop&w=900&h=675&q=85"
-           alt="Foie Gras de Canard" class="dish-img" loading="lazy" onerror="this.style.display='none'" />
+  <article class="dish-card" data-id="chocolat">
+    <div class="dish-img-wrap fb-chocolat">
+      <img src="https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&w=900&h=675&q=85"
+           alt="Fondant Valrhona" class="dish-img" loading="lazy" onerror="this.style.display='none'" />
       <span class="dish-num">03</span>
     </div>
     <div class="dish-body">
       <div class="dish-row">
-        <h2 class="dish-name">Foie Gras de Canard</h2>
-        <span class="dish-price">32 €</span>
+        <h2 class="dish-name">Fondant Valrhona</h2>
+        <span class="dish-price">20 €</span>
       </div>
-      <p class="dish-desc">Mi-cuit à la maison, chutney de figues Ronde de Bordeaux, brioche tiède au beurre de Guérande</p>
+      <p class="dish-desc">Fondant de chocolat Guanaja 70% cœur coulant, fleur de sel de Guérande, crème glacée au lait entier, tuile cacao</p>
     </div>
   </article>
 
   <!-- 04 -->
-  <article class="dish-card" data-id="huitres">
-    <div class="dish-img-wrap fb-huitres">
-      <img src="https://images.unsplash.com/photo-1520201163981-da0c4e7ea82c?auto=format&fit=crop&w=900&h=675&q=85"
-           alt="Huîtres Gillardeau" class="dish-img" loading="lazy" onerror="this.style.display='none'" />
+  <article class="dish-card" data-id="ileflottante">
+    <div class="dish-img-wrap fb-ileflottante">
+      <img src="https://images.unsplash.com/photo-1551024506-0bccd828d307?auto=format&fit=crop&w=900&h=675&q=85"
+           alt="Île Flottante" class="dish-img" loading="lazy" onerror="this.style.display='none'" />
       <span class="dish-num">04</span>
     </div>
     <div class="dish-body">
       <div class="dish-row">
-        <h2 class="dish-name">Huîtres Gillardeau n°3</h2>
-        <span class="dish-price">24 €</span>
+        <h2 class="dish-name">Île Flottante</h2>
+        <span class="dish-price">18 €</span>
       </div>
-      <p class="dish-desc">Six huîtres creuses de Marennes-Oléron, granité de champagne Blanc de Blancs, vinaigrette d'échalotes confites</p>
+      <p class="dish-desc">Blancs en neige pochés, crème anglaise à la vanille, caramel beurre salé, pralin feuilletine et amandes effilées torréfiées</p>
     </div>
   </article>
 
   <!-- 05 -->
-  <article class="dish-card" data-id="asperges">
-    <div class="dish-img-wrap fb-asperges">
-      <img src="https://images.unsplash.com/photo-1547592166-59d65a4567a3?auto=format&fit=crop&w=900&h=675&q=85"
-           alt="Asperges Blanches d'Alsace" class="dish-img" loading="lazy" onerror="this.style.display='none'" />
+  <article class="dish-card" data-id="fraises">
+    <div class="dish-img-wrap fb-fraises">
+      <img src="https://images.unsplash.com/photo-1565958011703-44f9829ba187?auto=format&fit=crop&w=900&h=675&q=85"
+           alt="Tarte aux Fraises Gariguette" class="dish-img" loading="lazy" onerror="this.style.display='none'" />
       <span class="dish-num">05</span>
     </div>
     <div class="dish-body">
       <div class="dish-row">
-        <h2 class="dish-name">Asperges Blanches d'Alsace</h2>
-        <span class="dish-price">26 €</span>
+        <h2 class="dish-name">Tarte Fraises Gariguette</h2>
+        <span class="dish-price">22 €</span>
       </div>
-      <p class="dish-desc">Asperges blanches rôties et glacées, mousseline aux agrumes, œuf de caille poché, chips de jambon Bellota</p>
+      <p class="dish-desc">Sablé breton beurré, crème légère à la pistache de Sicile, fraises Gariguette du Lot-et-Garonne, sorbet framboise acidulé</p>
     </div>
   </article>
 
@@ -604,7 +584,7 @@
 
   <!-- ── BOTTOM NAV ── -->
   <nav class="bottom-nav">
-    <a href="entrees.html" class="bnav-item active">
+    <a href="entrees.html" class="bnav-item">
       <span class="bnav-dot"></span>
       <span>Entrées</span>
     </a>
@@ -612,7 +592,7 @@
       <span class="bnav-dot"></span>
       <span>Plats</span>
     </a>
-    <a href="desserts.html" class="bnav-item">
+    <a href="desserts.html" class="bnav-item active">
       <span class="bnav-dot"></span>
       <span>Desserts</span>
     </a>
@@ -620,45 +600,45 @@
 
   <script>
     const dishes = {
-      stjaques: {
-        name: 'Tartare de Saint-Jacques',
-        price: '28 €',
-        img: 'https://images.unsplash.com/photo-1612871689893-7a1e9a0bab34?auto=format&fit=crop&w=900&h=675&q=85',
-        fb: 'fb-stjaques',
-        desc: 'Noix de Saint-Jacques de pleine mer, marinées quelques heures au citron vert et gingembre frais. Servies avec un caviar d\'Aquitaine Sturia, une émulsion iodée à l\'eau de mer et une huile verte de ciboulette sauvage. Finition au sel de fleur de l\'île de Ré.',
-        allergens: ['Mollusques', 'Poisson']
-      },
-      veloute: {
-        name: 'Velouté de Topinambour',
+      souffle: {
+        name: 'Soufflé au Grand Marnier',
         price: '22 €',
-        img: 'https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=900&h=675&q=85',
-        fb: 'fb-veloute',
-        desc: 'Topinambours fumés lentement au foin de prairie, mixés en velouté soyeux avec crème fraîche d\'Isigny. Servi avec quelques gouttes d\'huile de truffe noire du Périgord et des croûtons de pain de campagne dorés au beurre noisette.',
-        allergens: ['Gluten', 'Lait']
-      },
-      foiegras: {
-        name: 'Foie Gras de Canard',
-        price: '32 €',
-        img: 'https://images.unsplash.com/photo-1574484284002-952d92456975?auto=format&fit=crop&w=900&h=675&q=85',
-        fb: 'fb-foiegras',
-        desc: 'Foie gras de canard des Landes mi-cuit maison, assaisonné au sel, poivre blanc et Armagnac. Accompagné d\'un chutney de figues Ronde de Bordeaux au vinaigre balsamique vieux et d\'une brioche tiède beurrée au beurre de Guérande.',
+        img: 'https://images.unsplash.com/photo-1488477181946-6428a0291777?auto=format&fit=crop&w=900&h=675&q=85',
+        fb: 'fb-souffle',
+        desc: 'Soufflé chaud à l\'orange et Grand Marnier, monté sur une base de crème pâtissière légère. Servi à la sortie du four avec une boule de glace à la vanille Bourbon de Madagascar et quelques zestes d\'orange confits maison. À déguster sans attendre.',
         allergens: ['Gluten', 'Œufs', 'Lait', 'Sulfites']
       },
-      huitres: {
-        name: 'Huîtres Gillardeau n°3',
-        price: '24 €',
-        img: 'https://images.unsplash.com/photo-1520201163981-da0c4e7ea82c?auto=format&fit=crop&w=900&h=675&q=85',
-        fb: 'fb-huitres',
-        desc: 'Six huîtres creuses Gillardeau n°3 de Marennes-Oléron, servies fraîches avec un granité de champagne Blanc de Blancs maison, une légère vinaigrette d\'échalotes confites et quelques brins de ciboulette ciselée.',
-        allergens: ['Mollusques']
+      millefeuille: {
+        name: 'Mille-feuille Vanille',
+        price: '18 €',
+        img: 'https://images.unsplash.com/photo-1571115177098-24ec42ed204d?auto=format&fit=crop&w=900&h=675&q=85',
+        fb: 'fb-millefeuille',
+        desc: 'Trois feuilles de pâte feuilletée inversée caramélisées à la perfection, garnies d\'une crème diplomate onctueuse à la vanille de Madagascar. Glaçage royal et fondant, filet de caramel coulant au beurre demi-sel de Guérande.',
+        allergens: ['Gluten', 'Œufs', 'Lait']
       },
-      asperges: {
-        name: 'Asperges Blanches d\'Alsace',
-        price: '26 €',
-        img: 'https://images.unsplash.com/photo-1547592166-59d65a4567a3?auto=format&fit=crop&w=900&h=675&q=85',
-        fb: 'fb-asperges',
-        desc: 'Asperges blanches d\'Alsace rôties et glacées au miel d\'acacia, mousseline légère aux agrumes. Accompagnées d\'un œuf de caille poché à basse température et de chips croustillantes de jambon Bellota ibérique.',
-        allergens: ['Œufs', 'Lait', 'Porc']
+      chocolat: {
+        name: 'Fondant Valrhona',
+        price: '20 €',
+        img: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&w=900&h=675&q=85',
+        fb: 'fb-chocolat',
+        desc: 'Fondant de chocolat Guanaja 70% Valrhona, cœur coulant au chocolat noir intense. Saupoudré de fleur de sel de Guérande et servi avec une crème glacée au lait entier de Normandie et une tuile cacao craquante.',
+        allergens: ['Gluten', 'Œufs', 'Lait']
+      },
+      ileflottante: {
+        name: 'Île Flottante',
+        price: '18 €',
+        img: 'https://images.unsplash.com/photo-1551024506-0bccd828d307?auto=format&fit=crop&w=900&h=675&q=85',
+        fb: 'fb-ileflottante',
+        desc: 'Blancs en neige montés et pochés à la minute, posés sur une crème anglaise à la vanille Bourbon. Généreux filet de caramel au beurre salé, pralin feuilletine maison et amandes effilées dorées au four. Un classique de notre maison.',
+        allergens: ['Œufs', 'Lait', 'Fruits à coque']
+      },
+      fraises: {
+        name: 'Tarte Fraises Gariguette',
+        price: '22 €',
+        img: 'https://images.unsplash.com/photo-1565958011703-44f9829ba187?auto=format&fit=crop&w=900&h=675&q=85',
+        fb: 'fb-fraises',
+        desc: 'Sablé breton au beurre de Guérande, garni d\'une crème légère à la pistache verte de Sicile. Fraises Gariguette du Lot-et-Garonne, cueillies à maturité. Accompagné d\'une quenelle de sorbet framboise légèrement acidulé et de feuilles de verveine fraîche.',
+        allergens: ['Gluten', 'Œufs', 'Lait', 'Fruits à coque']
       }
     };
 
