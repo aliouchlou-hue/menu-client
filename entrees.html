@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Maison Ardent — Entrées</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Montserrat:wght@300;400&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --creme:    #F5F0E8;
+      --terre:    #8B4A2F;
+      --terre-dk: #6e3822;
+      --warm-mid: #C4A882;
+      --text:     #2C1F14;
+      --text-soft:#6B5244;
+      --sep:      #D4C4B0;
+      --bnav-h:   62px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--creme);
+      color: var(--text);
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 300;
+      -webkit-font-smoothing: antialiased;
+      padding-bottom: var(--bnav-h);
+    }
+
+    /* ── TOP HEADER ── */
+    .page-header {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: var(--creme);
+      border-bottom: 1px solid var(--sep);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 52px;
+      padding: 0 16px;
+    }
+
+    .header-back {
+      position: absolute;
+      left: 16px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      text-decoration: none;
+      color: var(--text-soft);
+      font-size: 0.7rem;
+      letter-spacing: 0.1em;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .header-back svg { width: 14px; height: 14px; stroke: var(--text-soft); stroke-width: 1.8; fill: none; }
+
+    .header-brand {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.1rem;
+      font-weight: 400;
+      letter-spacing: 0.22em;
+      color: var(--terre);
+    }
+
+    /* ── SECTION INTRO ── */
+    .section-intro {
+      padding: 32px 20px 8px;
+      text-align: center;
+    }
+
+    .section-intro h1 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(1.8rem, 7vw, 2.4rem);
+      font-weight: 300;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+
+    .section-intro p {
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-size: 0.95rem;
+      color: var(--text-soft);
+    }
+
+    .section-rule {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      margin: 20px 20px 0;
+    }
+
+    .rule-line { flex: 1; height: 1px; background: var(--sep); }
+
+    .rule-diamond {
+      width: 5px; height: 5px;
+      background: var(--warm-mid);
+      transform: rotate(45deg);
+      margin: 0 10px;
+    }
+
+    /* ── DISH CARD ── */
+    .dish-card {
+      margin: 20px 0 0;
+      background: var(--creme);
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      transition: opacity 0.15s;
+    }
+
+    .dish-card:active { opacity: 0.87; }
+
+    .dish-img-wrap {
+      width: 100%;
+      aspect-ratio: 4 / 3;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* gradient fallbacks */
+    .fb-stjaques { background: linear-gradient(145deg,#c9d6c2,#8aa88f,#6b8c72); }
+    .fb-veloute  { background: linear-gradient(145deg,#d4c5a4,#b8a07a,#8b7355); }
+    .fb-foiegras { background: linear-gradient(145deg,#c8a96e,#a0804a,#7a5c2e); }
+
+    .dish-img-wrap::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to bottom, transparent 50%, rgba(44,31,20,0.25) 100%);
+      pointer-events: none;
+    }
+
+    .dish-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.4s ease;
+    }
+
+    .dish-card:active .dish-img { transform: scale(1.02); }
+
+    .expand-tag {
+      position: absolute;
+      bottom: 14px;
+      right: 14px;
+      z-index: 2;
+      background: rgba(245,240,232,0.22);
+      border: 1px solid rgba(245,240,232,0.45);
+      border-radius: 20px;
+      padding: 4px 12px;
+      font-size: 0.62rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: rgba(245,240,232,0.9);
+    }
+
+    .dish-body {
+      padding: 18px 20px 22px;
+      border-bottom: 1px solid var(--sep);
+    }
+
+    .dish-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+
+    .dish-name {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(1.35rem, 5vw, 1.65rem);
+      font-weight: 400;
+      line-height: 1.2;
+      color: var(--text);
+      flex: 1;
+    }
+
+    .dish-price {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(1.1rem, 4vw, 1.3rem);
+      font-weight: 300;
+      color: var(--terre);
+      white-space: nowrap;
+      padding-top: 3px;
+    }
+
+    .dish-desc {
+      font-size: 0.8rem;
+      line-height: 1.75;
+      color: var(--text-soft);
+    }
+
+    /* ── BOTTOM NAV ── */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      z-index: 100;
+      height: var(--bnav-h);
+      background: var(--creme);
+      border-top: 1px solid var(--sep);
+      display: flex;
+    }
+
+    .bnav-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      text-decoration: none;
+      color: var(--text-soft);
+      font-size: 0.68rem;
+      font-weight: 400;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      -webkit-tap-highlight-color: transparent;
+      transition: color 0.2s;
+      position: relative;
+    }
+
+    .bnav-item.active { color: var(--terre); }
+
+    .bnav-item.active::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 25%; right: 25%;
+      height: 2px;
+      background: var(--terre);
+      border-radius: 0 0 2px 2px;
+    }
+
+    .bnav-dot {
+      width: 4px; height: 4px;
+      border-radius: 50%;
+      background: currentColor;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .bnav-item.active .bnav-dot { opacity: 1; }
+
+    /* ── MODAL ── */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 500;
+      background: rgba(44,31,20,0.6);
+      display: flex;
+      align-items: flex-end;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.28s ease;
+    }
+
+    .modal-overlay.open {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .modal-sheet {
+      width: 100%;
+      max-height: 92svh;
+      background: var(--creme);
+      border-radius: 20px 20px 0 0;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      transform: translateY(48px);
+      transition: transform 0.32s cubic-bezier(0.32,0.72,0,1);
+    }
+
+    .modal-overlay.open .modal-sheet { transform: translateY(0); }
+
+    .modal-img-wrap {
+      width: 100%;
+      height: 44vw;
+      min-height: 190px;
+      max-height: 270px;
+      flex-shrink: 0;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .modal-img-wrap::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to bottom, transparent 45%, rgba(44,31,20,0.3) 100%);
+    }
+
+    .modal-img-wrap img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 14px; right: 14px;
+      z-index: 10;
+      width: 34px; height: 34px;
+      background: rgba(245,240,232,0.25);
+      border: 1px solid rgba(245,240,232,0.5);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .modal-close svg { width: 14px; height: 14px; stroke: #F5F0E8; stroke-width: 2; fill: none; }
+
+    .modal-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px 22px 36px;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .modal-handle {
+      width: 36px; height: 4px;
+      background: var(--sep);
+      border-radius: 2px;
+      margin: 0 auto 18px;
+    }
+
+    .modal-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .modal-name {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(1.5rem, 6vw, 1.9rem);
+      font-weight: 400;
+      line-height: 1.2;
+      color: var(--text);
+      flex: 1;
+    }
+
+    .modal-price {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(1.25rem, 5vw, 1.5rem);
+      font-weight: 300;
+      color: var(--terre);
+      white-space: nowrap;
+      padding-top: 4px;
+    }
+
+    .modal-fulldesc {
+      font-size: 0.83rem;
+      line-height: 1.82;
+      color: var(--text-soft);
+      margin-bottom: 22px;
+    }
+
+    .allergens-label {
+      font-size: 0.6rem;
+      letter-spacing: 0.24em;
+      text-transform: uppercase;
+      color: var(--warm-mid);
+      margin-bottom: 10px;
+    }
+
+    .allergens-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin-bottom: 26px;
+    }
+
+    .allergen-pill {
+      font-size: 0.72rem;
+      color: var(--text-soft);
+      background: rgba(196,168,130,0.15);
+      border: 1px solid var(--sep);
+      border-radius: 20px;
+      padding: 4px 12px;
+    }
+
+    .btn-add {
+      width: 100%;
+      padding: 16px;
+      background: var(--terre);
+      color: var(--creme);
+      font-family: 'Montserrat', sans-serif;
+      font-size: 0.72rem;
+      font-weight: 400;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      transition: background 0.2s;
+    }
+
+    .btn-add:active { background: var(--terre-dk); }
+
+    /* ── CHAT ── */
+    .chat-btn {
+      position: fixed;
+      bottom: calc(var(--bnav-h) + 16px);
+      right: 18px;
+      z-index: 200;
+      width: 50px; height: 50px;
+      background: var(--terre);
+      border-radius: 50%;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 16px rgba(139,74,47,0.35);
+      -webkit-tap-highlight-color: transparent;
+      transition: transform 0.18s, background 0.18s;
+    }
+
+    .chat-btn:active { transform: scale(0.92); }
+    .chat-btn svg { width: 22px; height: 22px; fill: var(--creme); }
+
+    .chat-panel {
+      position: fixed;
+      bottom: calc(var(--bnav-h) + 76px);
+      right: 14px;
+      z-index: 199;
+      width: calc(100vw - 28px);
+      max-width: 310px;
+      background: var(--creme);
+      border: 1px solid var(--sep);
+      border-radius: 14px;
+      box-shadow: 0 6px 28px rgba(44,31,20,0.16);
+      padding: 18px;
+      transform: scale(0.88) translateY(10px);
+      transform-origin: bottom right;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.22s, transform 0.22s;
+    }
+
+    .chat-panel.open { opacity: 1; pointer-events: all; transform: scale(1) translateY(0); }
+
+    .chat-panel-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.1rem;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+
+    .chat-panel-sub {
+      font-size: 0.74rem;
+      color: var(--text-soft);
+      line-height: 1.6;
+      margin-bottom: 14px;
+    }
+
+    .chat-row { display: flex; gap: 8px; }
+
+    .chat-input {
+      flex: 1;
+      padding: 10px 12px;
+      border: 1px solid var(--sep);
+      border-radius: 6px;
+      background: #fff;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 0.78rem;
+      font-weight: 300;
+      color: var(--text);
+      outline: none;
+    }
+
+    .chat-input:focus { border-color: var(--warm-mid); }
+
+    .chat-send {
+      width: 40px; height: 40px;
+      background: var(--terre);
+      border: none;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .chat-send svg { width: 15px; height: 15px; fill: var(--creme); }
+
+    /* ── TOAST ── */
+    .toast {
+      position: fixed;
+      bottom: calc(var(--bnav-h) + 18px);
+      left: 50%;
+      transform: translateX(-50%) translateY(10px);
+      z-index: 600;
+      background: var(--text);
+      color: var(--creme);
+      font-size: 0.76rem;
+      letter-spacing: 0.06em;
+      padding: 11px 22px;
+      border-radius: 30px;
+      opacity: 0;
+      pointer-events: none;
+      white-space: nowrap;
+      transition: opacity 0.22s, transform 0.22s;
+    }
+
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* ── FOOTER ── */
+    .page-footer {
+      text-align: center;
+      padding: 36px 20px 20px;
+      border-top: 1px solid var(--sep);
+      margin-top: 32px;
+    }
+
+    .page-footer p:first-child {
+      font-size: 0.6rem;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      color: var(--warm-mid);
+      margin-bottom: 4px;
+    }
+
+    .page-footer p:last-child {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 0.82rem;
+      letter-spacing: 0.14em;
+      color: var(--sep);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── TOP HEADER ── -->
+  <header class="page-header">
+    <a href="index.html" class="header-back">
+      <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+    </a>
+    <span class="header-brand">Maison Ardent</span>
+  </header>
+
+  <!-- ── SECTION INTRO ── -->
+  <div class="section-intro">
+    <h1>Entrées</h1>
+    <p>Compositions d'ouverture selon le marché</p>
+  </div>
+  <div class="section-rule">
+    <span class="rule-line"></span>
+    <span class="rule-diamond"></span>
+    <span class="rule-line"></span>
+  </div>
+
+  <!-- ── DISH CARDS ── -->
+  <article class="dish-card" data-id="stjaques">
+    <div class="dish-img-wrap fb-stjaques">
+      <img src="https://images.unsplash.com/photo-1565299585323-38d6b0865b47?auto=format&fit=crop&w=800&h=600&q=80"
+           alt="Tartare de Saint-Jacques" class="dish-img" loading="eager" onerror="this.style.display='none'" />
+      <span class="expand-tag">Voir le plat</span>
+    </div>
+    <div class="dish-body">
+      <div class="dish-row">
+        <h2 class="dish-name">Tartare de Saint-Jacques</h2>
+        <span class="dish-price">28 €</span>
+      </div>
+      <p class="dish-desc">Noix de Saint-Jacques marinées au citron vert, caviar d'Aquitaine, émulsion iodée et huile de ciboulette</p>
+    </div>
+  </article>
+
+  <article class="dish-card" data-id="veloute">
+    <div class="dish-img-wrap fb-veloute">
+      <img src="https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=800&h=600&q=80"
+           alt="Velouté de Topinambour" class="dish-img" loading="lazy" onerror="this.style.display='none'" />
+      <span class="expand-tag">Voir le plat</span>
+    </div>
+    <div class="dish-body">
+      <div class="dish-row">
+        <h2 class="dish-name">Velouté de Topinambour</h2>
+        <span class="dish-price">22 €</span>
+      </div>
+      <p class="dish-desc">Topinambour fumé au foin, huile de truffe noire du Périgord, croûtons dorés au beurre noisette</p>
+    </div>
+  </article>
+
+  <article class="dish-card" data-id="foiegras">
+    <div class="dish-img-wrap fb-foiegras">
+      <img src="https://images.unsplash.com/photo-1609167830220-7164aa360951?auto=format&fit=crop&w=800&h=600&q=80"
+           alt="Foie Gras de Canard" class="dish-img" loading="lazy" onerror="this.style.display='none'" />
+      <span class="expand-tag">Voir le plat</span>
+    </div>
+    <div class="dish-body">
+      <div class="dish-row">
+        <h2 class="dish-name">Foie Gras de Canard</h2>
+        <span class="dish-price">32 €</span>
+      </div>
+      <p class="dish-desc">Mi-cuit à la maison, chutney de figues Ronde de Bordeaux, brioche tiède au beurre de Guérande</p>
+    </div>
+  </article>
+
+  <!-- ── FOOTER ── -->
+  <footer class="page-footer">
+    <p>Menu numérique proposé par</p>
+    <p>MenuVision</p>
+  </footer>
+
+  <!-- ── MODAL ── -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal-sheet">
+      <div class="modal-img-wrap" id="modalImgWrap">
+        <img id="modalImg" src="" alt="" />
+        <button class="modal-close" id="modalClose">
+          <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="modal-handle"></div>
+        <div class="modal-top">
+          <h2 class="modal-name" id="modalName"></h2>
+          <span class="modal-price" id="modalPrice"></span>
+        </div>
+        <p class="modal-fulldesc" id="modalDesc"></p>
+        <p class="allergens-label">Allergènes</p>
+        <div class="allergens-list" id="modalAllergens"></div>
+        <button class="btn-add" id="btnAdd">Ajouter à ma commande</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── CHAT ── -->
+  <button class="chat-btn" id="chatBtn" aria-label="Contacter le service">
+    <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
+  </button>
+
+  <div class="chat-panel" id="chatPanel">
+    <p class="chat-panel-title">Besoin d'aide ?</p>
+    <p class="chat-panel-sub">Notre équipe répond en quelques instants pour toute question sur la carte.</p>
+    <div class="chat-row">
+      <input class="chat-input" type="text" placeholder="Votre message…" />
+      <button class="chat-send">
+        <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast">Ajouté à votre commande ✓</div>
+
+  <!-- ── BOTTOM NAV ── -->
+  <nav class="bottom-nav">
+    <a href="entrees.html" class="bnav-item active">
+      <span class="bnav-dot"></span>
+      <span>Entrées</span>
+    </a>
+    <a href="plats.html" class="bnav-item">
+      <span class="bnav-dot"></span>
+      <span>Plats</span>
+    </a>
+    <a href="desserts.html" class="bnav-item">
+      <span class="bnav-dot"></span>
+      <span>Desserts</span>
+    </a>
+  </nav>
+
+  <script>
+    const dishes = {
+      stjaques: {
+        name: 'Tartare de Saint-Jacques',
+        price: '28 €',
+        img: 'https://images.unsplash.com/photo-1565299585323-38d6b0865b47?auto=format&fit=crop&w=800&h=600&q=80',
+        imgFb: 'fb-stjaques',
+        desc: 'Noix de Saint-Jacques de pleine mer, marinées quelques heures au citron vert et gingembre frais. Servies avec un caviar d\'Aquitaine Sturia, une émulsion iodée à l\'eau de mer et une huile verte de ciboulette sauvage. Finition au sel de fleur de l\'île de Ré.',
+        allergens: ['Mollusques', 'Poisson']
+      },
+      veloute: {
+        name: 'Velouté de Topinambour',
+        price: '22 €',
+        img: 'https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=800&h=600&q=80',
+        imgFb: 'fb-veloute',
+        desc: 'Topinambours fumés lentement au foin de prairie, mixés en velouté soyeux avec crème fraîche d\'Isigny. Servi avec quelques gouttes d\'huile de truffe noire du Périgord et des croûtons de pain de campagne dorés au beurre noisette.',
+        allergens: ['Gluten', 'Lait']
+      },
+      foiegras: {
+        name: 'Foie Gras de Canard',
+        price: '32 €',
+        img: 'https://images.unsplash.com/photo-1609167830220-7164aa360951?auto=format&fit=crop&w=800&h=600&q=80',
+        imgFb: 'fb-foiegras',
+        desc: 'Foie gras de canard des Landes mi-cuit maison, assaisonné au sel, poivre blanc et Armagnac. Accompagné d\'un chutney de figues Ronde de Bordeaux au vinaigre balsamique vieux et d\'une brioche tiède beurrée au beurre de Guérande. Servi avec fleur de sel et poivre de Timut.',
+        allergens: ['Gluten', 'Œufs', 'Lait', 'Sulfites']
+      }
+    };
+
+    const overlay   = document.getElementById('modalOverlay');
+    const modalImg  = document.getElementById('modalImg');
+    const modalImgW = document.getElementById('modalImgWrap');
+    const modalName = document.getElementById('modalName');
+    const modalPrice= document.getElementById('modalPrice');
+    const modalDesc = document.getElementById('modalDesc');
+    const modalAll  = document.getElementById('modalAllergens');
+    const toast     = document.getElementById('toast');
+    let toastTimer;
+
+    function openModal(id) {
+      const d = dishes[id]; if (!d) return;
+      modalImgW.className = 'modal-img-wrap ' + d.imgFb;
+      modalImg.src = d.img;
+      modalImg.alt = d.name;
+      modalImg.style.display = '';
+      modalImg.onerror = () => modalImg.style.display = 'none';
+      modalName.textContent = d.name;
+      modalPrice.textContent = d.price;
+      modalDesc.textContent = d.desc;
+      modalAll.innerHTML = d.allergens.map(a => `<span class="allergen-pill">${a}</span>`).join('');
+      overlay.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal() {
+      overlay.classList.remove('open');
+      document.body.style.overflow = '';
+    }
+
+    document.querySelectorAll('.dish-card').forEach(c =>
+      c.addEventListener('click', () => openModal(c.dataset.id))
+    );
+
+    document.getElementById('modalClose').addEventListener('click', closeModal);
+    overlay.addEventListener('click', e => { if (e.target === overlay) closeModal(); });
+
+    document.getElementById('btnAdd').addEventListener('click', () => {
+      closeModal();
+      toast.textContent = 'Ajouté à votre commande ✓';
+      toast.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toast.classList.remove('show'), 2200);
+    });
+
+    const chatBtn   = document.getElementById('chatBtn');
+    const chatPanel = document.getElementById('chatPanel');
+
+    chatBtn.addEventListener('click', e => {
+      e.stopPropagation();
+      chatPanel.classList.toggle('open');
+    });
+
+    document.addEventListener('click', e => {
+      if (!chatPanel.contains(e.target) && e.target !== chatBtn)
+        chatPanel.classList.remove('open');
+    });
+
+    document.querySelector('.chat-send').addEventListener('click', () => {
+      const inp = document.querySelector('.chat-input');
+      if (!inp.value.trim()) return;
+      inp.value = '';
+      chatPanel.classList.remove('open');
+      toast.textContent = 'Message envoyé ✓';
+      toast.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toast.classList.remove('show'), 2200);
+    });
+  </script>
+</body>
+</html>
