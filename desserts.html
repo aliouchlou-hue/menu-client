@@ -18,7 +18,8 @@
       --text:     #2C1F14;
       --text-soft:#6B5244;
       --sep:      #D4C4B0;
-      --bnav-h:   64px;
+      --header-h: 54px;
+      --tnav-h:   48px;
     }
 
     html { scroll-behavior: smooth; }
@@ -29,7 +30,6 @@
       font-family: 'Montserrat', sans-serif;
       font-weight: 300;
       -webkit-font-smoothing: antialiased;
-      padding-bottom: var(--bnav-h);
     }
 
     .page-header {
@@ -207,23 +207,22 @@
       margin-top: 8px;
     }
 
-    .bottom-nav {
-      position: fixed;
-      bottom: 0; left: 0; right: 0;
-      z-index: 100;
-      height: var(--bnav-h);
+    /* ── TOP NAV ── */
+    .top-nav {
+      position: sticky;
+      top: var(--header-h);
+      z-index: 49;
+      height: var(--tnav-h);
       background: var(--creme);
-      border-top: 1px solid var(--sep);
+      border-bottom: 1px solid var(--sep);
       display: flex;
     }
 
-    .bnav-item {
+    .tnav-item {
       flex: 1;
       display: flex;
-      flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 5px;
       text-decoration: none;
       color: var(--text-soft);
       font-size: 0.65rem;
@@ -235,25 +234,15 @@
       position: relative;
     }
 
-    .bnav-item.active { color: var(--terre); }
+    .tnav-item.active { color: var(--terre); }
 
-    .bnav-item.active::before {
+    .tnav-item.active::after {
       content: '';
       position: absolute;
-      top: 0; left: 28%; right: 28%;
+      bottom: 0; left: 20%; right: 20%;
       height: 1.5px;
       background: var(--terre);
     }
-
-    .bnav-dot {
-      width: 3px; height: 3px;
-      border-radius: 50%;
-      background: currentColor;
-      opacity: 0;
-      transition: opacity 0.2s;
-    }
-
-    .bnav-item.active .bnav-dot { opacity: 1; }
 
     .modal-overlay {
       position: fixed;
@@ -411,7 +400,7 @@
 
     .toast {
       position: fixed;
-      bottom: calc(var(--bnav-h) + 18px);
+      bottom: 32px;
       left: 50%;
       transform: translateX(-50%) translateY(10px);
       z-index: 600;
@@ -460,6 +449,12 @@
     </a>
     <span class="header-brand">Maison Ardent</span>
   </header>
+
+  <nav class="top-nav">
+    <a href="entrees.html" class="tnav-item">Entrées</a>
+    <a href="plats.html" class="tnav-item">Plats</a>
+    <a href="desserts.html" class="tnav-item active">Desserts</a>
+  </nav>
 
   <div class="section-intro">
     <p class="intro-eyebrow">La Carte</p>
@@ -582,21 +577,6 @@
 
   <div class="toast" id="toast">Ajouté à votre commande ✓</div>
 
-  <!-- ── BOTTOM NAV ── -->
-  <nav class="bottom-nav">
-    <a href="entrees.html" class="bnav-item">
-      <span class="bnav-dot"></span>
-      <span>Entrées</span>
-    </a>
-    <a href="plats.html" class="bnav-item">
-      <span class="bnav-dot"></span>
-      <span>Plats</span>
-    </a>
-    <a href="desserts.html" class="bnav-item active">
-      <span class="bnav-dot"></span>
-      <span>Desserts</span>
-    </a>
-  </nav>
 
   <script>
     const dishes = {

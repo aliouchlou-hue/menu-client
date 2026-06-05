@@ -18,7 +18,8 @@
       --text:     #2C1F14;
       --text-soft:#6B5244;
       --sep:      #D4C4B0;
-      --bnav-h:   64px;
+      --header-h: 54px;
+      --tnav-h:   48px;
     }
 
     html { scroll-behavior: smooth; }
@@ -29,7 +30,6 @@
       font-family: 'Montserrat', sans-serif;
       font-weight: 300;
       -webkit-font-smoothing: antialiased;
-      padding-bottom: var(--bnav-h);
     }
 
     /* ── TOP HEADER ── */
@@ -220,24 +220,22 @@
     .card-sep .orn-line { background: transparent; }
     .card-sep .orn-diamond { background: var(--sep); opacity: 0.7; }
 
-    /* ── BOTTOM NAV ── */
-    .bottom-nav {
-      position: fixed;
-      bottom: 0; left: 0; right: 0;
-      z-index: 100;
-      height: var(--bnav-h);
+    /* ── TOP NAV ── */
+    .top-nav {
+      position: sticky;
+      top: var(--header-h);
+      z-index: 49;
+      height: var(--tnav-h);
       background: var(--creme);
-      border-top: 1px solid var(--sep);
+      border-bottom: 1px solid var(--sep);
       display: flex;
     }
 
-    .bnav-item {
+    .tnav-item {
       flex: 1;
       display: flex;
-      flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 5px;
       text-decoration: none;
       color: var(--text-soft);
       font-size: 0.65rem;
@@ -249,25 +247,15 @@
       position: relative;
     }
 
-    .bnav-item.active { color: var(--terre); }
+    .tnav-item.active { color: var(--terre); }
 
-    .bnav-item.active::before {
+    .tnav-item.active::after {
       content: '';
       position: absolute;
-      top: 0; left: 28%; right: 28%;
+      bottom: 0; left: 20%; right: 20%;
       height: 1.5px;
       background: var(--terre);
     }
-
-    .bnav-dot {
-      width: 3px; height: 3px;
-      border-radius: 50%;
-      background: currentColor;
-      opacity: 0;
-      transition: opacity 0.2s;
-    }
-
-    .bnav-item.active .bnav-dot { opacity: 1; }
 
     /* ── MODAL ── */
     .modal-overlay {
@@ -430,7 +418,7 @@
     /* ── TOAST ── */
     .toast {
       position: fixed;
-      bottom: calc(var(--bnav-h) + 18px);
+      bottom: 32px;
       left: 50%;
       transform: translateX(-50%) translateY(10px);
       z-index: 600;
@@ -481,6 +469,12 @@
     <span class="header-brand">Maison Ardent</span>
   </header>
 
+  <nav class="top-nav">
+    <a href="entrees.html" class="tnav-item active">Entrées</a>
+    <a href="plats.html" class="tnav-item">Plats</a>
+    <a href="desserts.html" class="tnav-item">Desserts</a>
+  </nav>
+
   <div class="section-intro">
     <p class="intro-eyebrow">La Carte</p>
     <h1>Entrées</h1>
@@ -495,7 +489,7 @@
   <!-- 01 -->
   <article class="dish-card" data-id="stjaques">
     <div class="dish-img-wrap fb-stjaques">
-      <img src="https://images.unsplash.com/photo-1612871689893-7a1e9a0bab34?auto=format&fit=crop&w=900&h=675&q=85"
+      <img src="https://images.unsplash.com/photo-1565299585323-38d6b0865b47?auto=format&fit=crop&w=900&h=675&q=85"
            alt="Tartare de Saint-Jacques" class="dish-img" loading="eager" onerror="this.style.display='none'" />
       <span class="dish-num">01</span>
     </div>
@@ -527,7 +521,7 @@
   <!-- 03 -->
   <article class="dish-card" data-id="foiegras">
     <div class="dish-img-wrap fb-foiegras">
-      <img src="https://images.unsplash.com/photo-1574484284002-952d92456975?auto=format&fit=crop&w=900&h=675&q=85"
+      <img src="https://images.unsplash.com/photo-1609167830220-7164aa360951?auto=format&fit=crop&w=900&h=675&q=85"
            alt="Foie Gras de Canard" class="dish-img" loading="lazy" onerror="this.style.display='none'" />
       <span class="dish-num">03</span>
     </div>
@@ -543,7 +537,7 @@
   <!-- 04 -->
   <article class="dish-card" data-id="huitres">
     <div class="dish-img-wrap fb-huitres">
-      <img src="https://images.unsplash.com/photo-1520201163981-da0c4e7ea82c?auto=format&fit=crop&w=900&h=675&q=85"
+      <img src="https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=900&h=675&q=85"
            alt="Huîtres Gillardeau" class="dish-img" loading="lazy" onerror="this.style.display='none'" />
       <span class="dish-num">04</span>
     </div>
@@ -602,28 +596,13 @@
 
   <div class="toast" id="toast">Ajouté à votre commande ✓</div>
 
-  <!-- ── BOTTOM NAV ── -->
-  <nav class="bottom-nav">
-    <a href="entrees.html" class="bnav-item active">
-      <span class="bnav-dot"></span>
-      <span>Entrées</span>
-    </a>
-    <a href="plats.html" class="bnav-item">
-      <span class="bnav-dot"></span>
-      <span>Plats</span>
-    </a>
-    <a href="desserts.html" class="bnav-item">
-      <span class="bnav-dot"></span>
-      <span>Desserts</span>
-    </a>
-  </nav>
 
   <script>
     const dishes = {
       stjaques: {
         name: 'Tartare de Saint-Jacques',
         price: '28 €',
-        img: 'https://images.unsplash.com/photo-1612871689893-7a1e9a0bab34?auto=format&fit=crop&w=900&h=675&q=85',
+        img: 'https://images.unsplash.com/photo-1565299585323-38d6b0865b47?auto=format&fit=crop&w=900&h=675&q=85',
         fb: 'fb-stjaques',
         desc: 'Noix de Saint-Jacques de pleine mer, marinées quelques heures au citron vert et gingembre frais. Servies avec un caviar d\'Aquitaine Sturia, une émulsion iodée à l\'eau de mer et une huile verte de ciboulette sauvage. Finition au sel de fleur de l\'île de Ré.',
         allergens: ['Mollusques', 'Poisson']
@@ -639,7 +618,7 @@
       foiegras: {
         name: 'Foie Gras de Canard',
         price: '32 €',
-        img: 'https://images.unsplash.com/photo-1574484284002-952d92456975?auto=format&fit=crop&w=900&h=675&q=85',
+        img: 'https://images.unsplash.com/photo-1609167830220-7164aa360951?auto=format&fit=crop&w=900&h=675&q=85',
         fb: 'fb-foiegras',
         desc: 'Foie gras de canard des Landes mi-cuit maison, assaisonné au sel, poivre blanc et Armagnac. Accompagné d\'un chutney de figues Ronde de Bordeaux au vinaigre balsamique vieux et d\'une brioche tiède beurrée au beurre de Guérande.',
         allergens: ['Gluten', 'Œufs', 'Lait', 'Sulfites']
@@ -647,7 +626,7 @@
       huitres: {
         name: 'Huîtres Gillardeau n°3',
         price: '24 €',
-        img: 'https://images.unsplash.com/photo-1520201163981-da0c4e7ea82c?auto=format&fit=crop&w=900&h=675&q=85',
+        img: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=900&h=675&q=85',
         fb: 'fb-huitres',
         desc: 'Six huîtres creuses Gillardeau n°3 de Marennes-Oléron, servies fraîches avec un granité de champagne Blanc de Blancs maison, une légère vinaigrette d\'échalotes confites et quelques brins de ciboulette ciselée.',
         allergens: ['Mollusques']
