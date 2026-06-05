@@ -575,7 +575,7 @@
   <div class="modal-overlay" id="modalOverlay">
     <div class="modal-sheet">
       <div class="modal-img-wrap" id="modalImgWrap">
-        <img id="modalImg" src="" alt="" />
+        <img id="modalImg" src="" alt="" style="display:none" />
         <button class="modal-close" id="modalClose">
           <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
@@ -654,10 +654,11 @@
     function openModal(id) {
       const d = dishes[id]; if (!d) return;
       modalImgW.className = 'modal-img-wrap ' + d.fb;
+      modalImg.style.display = 'none';
+      modalImg.onerror = () => { modalImg.style.display = 'none'; };
+      modalImg.onload  = () => { modalImg.style.display = 'block'; };
       modalImg.src = d.img;
       modalImg.alt = d.name;
-      modalImg.style.display = '';
-      modalImg.onerror = () => modalImg.style.display = 'none';
       modalName.textContent = d.name;
       modalPrice.textContent = d.price;
       modalDesc.textContent = d.desc;
@@ -669,6 +670,7 @@
     function closeModal() {
       overlay.classList.remove('open');
       document.body.style.overflow = '';
+      setTimeout(() => { modalImg.src = ''; modalImg.style.display = 'none'; }, 350);
     }
 
     document.querySelectorAll('.dish-card').forEach(c =>
