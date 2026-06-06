@@ -631,6 +631,15 @@
       font-size: 0.58rem; color: var(--warm-mid);
       letter-spacing: 0.18em; text-transform: uppercase;
     }
+    .ar-hide-btn {
+      width: 100%; margin-top: 6px;
+      background: none; border: none; padding: 6px 0;
+      font-family: 'Montserrat', sans-serif; font-size: 0.6rem;
+      letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--text-soft); cursor: pointer; text-align: center;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .ar-hide-btn:active { color: var(--terre); }
   </style>
 </head>
 <body>
@@ -794,6 +803,7 @@
           </model-viewer>
           <p class="ar-hint">Pointez vers votre table</p>
           <p class="ar-nosupport" id="arNoSupport" style="display:none">AR disponible sur Android</p>
+          <button class="ar-hide-btn" id="arHideBtn">Masquer la vue 3D</button>
         </div>
         <button class="btn-add" id="btnAdd">Ajouter à ma sélection</button>
       </div>
@@ -947,6 +957,11 @@
       mvEl.addEventListener('load', () => {
         if (!mvEl.canActivateAR) arNoSupport.style.display = 'block';
       }, { once: true });
+    });
+    document.getElementById('arHideBtn').addEventListener('click', () => {
+      arWrap.style.display = 'none';
+      btnAr.style.display  = 'flex';
+      arNoSupport.style.display = 'none';
     });
 
     document.querySelectorAll('.dish-card').forEach(c =>
