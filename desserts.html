@@ -439,6 +439,112 @@
       letter-spacing: 0.16em;
       color: var(--sep);
     }
+
+    /* ── IMAGE FALLBACK ── */
+    .dish-img-wrap.fallback-active,
+    .modal-img-wrap.fallback-active {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(160deg, #F5F0E8 0%, #E8DDD0 100%);
+    }
+    .dish-img-wrap.fallback-active::after,
+    .modal-img-wrap.fallback-active::after { display: none; }
+    .img-placeholder {
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-size: clamp(1.2rem, 4.5vw, 1.6rem);
+      font-weight: 300;
+      color: var(--terre);
+      text-align: center;
+      padding: 24px 20px;
+      line-height: 1.4;
+      letter-spacing: 0.02em;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ── CHAT ── */
+    .chat-fab {
+      position: fixed; bottom: 24px; right: 18px; z-index: 200;
+      width: 52px; height: 52px;
+      background: var(--terre); color: var(--creme);
+      border: none; border-radius: 50%; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 20px rgba(139,74,47,0.35);
+      -webkit-tap-highlight-color: transparent;
+      transition: transform 0.18s, background 0.18s;
+    }
+    .chat-fab:active { transform: scale(0.92); background: var(--terre-dk); }
+    .chat-fab svg { width: 22px; height: 22px; }
+
+    .chat-panel {
+      position: fixed; bottom: 88px; right: 14px; z-index: 199;
+      width: calc(100vw - 28px); max-width: 340px; max-height: 68vh;
+      background: var(--creme); border: 1px solid var(--sep);
+      border-radius: 16px; box-shadow: 0 8px 40px rgba(44,31,20,0.18);
+      display: flex; flex-direction: column; overflow: hidden;
+      transform: scale(0.92) translateY(12px); transform-origin: bottom right;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.22s, transform 0.22s;
+    }
+    .chat-panel.open { opacity: 1; pointer-events: all; transform: scale(1) translateY(0); }
+
+    .chat-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 16px 12px; border-bottom: 1px solid var(--sep); flex-shrink: 0;
+    }
+    .chat-title {
+      font-family: 'Cormorant Garamond', serif; font-size: 1rem;
+      font-weight: 400; letter-spacing: 0.12em; color: var(--terre);
+    }
+    .chat-subtitle { font-size: 0.6rem; letter-spacing: 0.1em; color: var(--text-soft); margin-top: 2px; }
+    .chat-close {
+      width: 28px; height: 28px; background: none; border: none; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--text-soft); -webkit-tap-highlight-color: transparent; flex-shrink: 0;
+    }
+    .chat-close svg { width: 16px; height: 16px; }
+
+    .chat-messages {
+      flex: 1; overflow-y: auto; padding: 14px 14px 10px;
+      display: flex; flex-direction: column; gap: 10px;
+      -webkit-overflow-scrolling: touch;
+    }
+    .chat-msg { max-width: 86%; padding: 10px 14px; font-size: 0.8rem; line-height: 1.6; }
+    .chat-msg.ai {
+      background: #fff; border: 1px solid var(--sep); color: var(--text);
+      align-self: flex-start; border-radius: 4px 14px 14px 14px;
+    }
+    .chat-msg.user {
+      background: var(--terre); color: var(--creme);
+      align-self: flex-end; border-radius: 14px 4px 14px 14px;
+    }
+    .chat-msg.typing {
+      background: #fff; border: 1px solid var(--sep); color: var(--text-soft);
+      align-self: flex-start; border-radius: 4px 14px 14px 14px;
+      font-style: italic; font-size: 0.73rem;
+    }
+    .chat-input-row {
+      display: flex; gap: 8px; padding: 12px 14px;
+      border-top: 1px solid var(--sep); flex-shrink: 0;
+    }
+    .chat-input {
+      flex: 1; padding: 9px 12px; border: 1px solid var(--sep);
+      border-radius: 8px; background: #fff;
+      font-family: 'Montserrat', sans-serif; font-size: 0.8rem;
+      font-weight: 300; color: var(--text); outline: none; min-width: 0;
+    }
+    .chat-input:focus { border-color: var(--warm-mid); }
+    .chat-send {
+      width: 38px; height: 38px; background: var(--terre); color: var(--creme);
+      border: none; border-radius: 8px; display: flex; align-items: center;
+      justify-content: center; cursor: pointer; flex-shrink: 0;
+      -webkit-tap-highlight-color: transparent; transition: background 0.18s;
+    }
+    .chat-send:active { background: var(--terre-dk); }
+    .chat-send:disabled { opacity: 0.5; cursor: default; }
+    .chat-send svg { width: 15px; height: 15px; }
   </style>
 </head>
 <body>
@@ -471,7 +577,7 @@
   <article class="dish-card" data-id="souffle">
     <div class="dish-img-wrap fb-souffle">
       <img src="https://images.unsplash.com/photo-1488477181946-6428a0291777?auto=format&fit=crop&w=900&h=675&q=85"
-           alt="Soufflé au Grand Marnier" class="dish-img" loading="eager" onerror="this.style.display='none'" />
+           alt="Soufflé au Grand Marnier" class="dish-img" loading="eager" />
       <span class="dish-num">01</span>
     </div>
     <div class="dish-body">
@@ -487,7 +593,7 @@
   <article class="dish-card" data-id="millefeuille">
     <div class="dish-img-wrap fb-millefeuille">
       <img src="https://images.unsplash.com/photo-1571115177098-24ec42ed204d?auto=format&fit=crop&w=900&h=675&q=85"
-           alt="Mille-feuille Vanille" class="dish-img" loading="lazy" onerror="this.style.display='none'" />
+           alt="Mille-feuille Vanille" class="dish-img" loading="lazy" />
       <span class="dish-num">02</span>
     </div>
     <div class="dish-body">
@@ -503,7 +609,7 @@
   <article class="dish-card" data-id="chocolat">
     <div class="dish-img-wrap fb-chocolat">
       <img src="https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&w=900&h=675&q=85"
-           alt="Fondant Valrhona" class="dish-img" loading="lazy" onerror="this.style.display='none'" />
+           alt="Fondant Valrhona" class="dish-img" loading="lazy" />
       <span class="dish-num">03</span>
     </div>
     <div class="dish-body">
@@ -519,7 +625,7 @@
   <article class="dish-card" data-id="ileflottante">
     <div class="dish-img-wrap fb-ileflottante">
       <img src="https://images.unsplash.com/photo-1551024506-0bccd828d307?auto=format&fit=crop&w=900&h=675&q=85"
-           alt="Île Flottante" class="dish-img" loading="lazy" onerror="this.style.display='none'" />
+           alt="Île Flottante" class="dish-img" loading="lazy" />
       <span class="dish-num">04</span>
     </div>
     <div class="dish-body">
@@ -535,7 +641,7 @@
   <article class="dish-card" data-id="fraises">
     <div class="dish-img-wrap fb-fraises">
       <img src="https://images.unsplash.com/photo-1565958011703-44f9829ba187?auto=format&fit=crop&w=900&h=675&q=85"
-           alt="Tarte aux Fraises Gariguette" class="dish-img" loading="lazy" onerror="this.style.display='none'" />
+           alt="Tarte aux Fraises Gariguette" class="dish-img" loading="lazy" />
       <span class="dish-num">05</span>
     </div>
     <div class="dish-body">
@@ -577,6 +683,31 @@
 
   <div class="toast" id="toast">Ajouté à votre commande ✓</div>
 
+  <!-- ── CHAT ── -->
+  <button class="chat-fab" id="chatFab" aria-label="Conseiller gastronomique">
+    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 2H4C2.9 2 2 2.9 2 4v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg>
+  </button>
+
+  <div class="chat-panel" id="chatPanel" aria-hidden="true">
+    <div class="chat-header">
+      <div>
+        <p class="chat-title">Maison Ardent</p>
+        <p class="chat-subtitle">Votre conseiller gastronomique</p>
+      </div>
+      <button class="chat-close" id="chatClose" aria-label="Fermer">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="chat-messages" id="chatMessages">
+      <div class="chat-msg ai"><p>Bonsoir, bienvenue chez Maison Ardent. Puis-je vous guider sur notre carte du soir ?</p></div>
+    </div>
+    <div class="chat-input-row">
+      <input class="chat-input" id="chatInput" type="text" placeholder="Une question sur la carte…" autocomplete="off" />
+      <button class="chat-send" id="chatSend">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+      </button>
+    </div>
+  </div>
 
   <script>
     const dishes = {
@@ -635,10 +766,22 @@
     function openModal(id) {
       const d = dishes[id]; if (!d) return;
       modalImgW.className = 'modal-img-wrap ' + d.fb;
+      const oldP = modalImgW.querySelector('.img-placeholder');
+      if (oldP) oldP.remove();
       modalImg.style.display = 'none';
-      modalImg.onerror = () => { modalImg.style.display = 'none'; };
+      function showModalFallback() {
+        modalImg.style.display = 'none';
+        modalImgW.classList.add('fallback-active');
+        if (!modalImgW.querySelector('.img-placeholder')) {
+          const p = document.createElement('p');
+          p.className = 'img-placeholder';
+          p.textContent = d.name;
+          modalImgW.appendChild(p);
+        }
+      }
+      modalImg.onerror = showModalFallback;
       modalImg.onload  = () => { modalImg.style.display = 'block'; };
-      modalImg.src = d.img;
+      if (d.img) { modalImg.src = d.img; } else { showModalFallback(); }
       modalImg.alt = d.name;
       modalName.textContent = d.name;
       modalPrice.textContent = d.price;
@@ -651,7 +794,12 @@
     function closeModal() {
       overlay.classList.remove('open');
       document.body.style.overflow = '';
-      setTimeout(() => { modalImg.src = ''; modalImg.style.display = 'none'; }, 350);
+      setTimeout(() => {
+        modalImg.src = ''; modalImg.style.display = 'none';
+        modalImgW.classList.remove('fallback-active');
+        const p = modalImgW.querySelector('.img-placeholder');
+        if (p) p.remove();
+      }, 350);
     }
 
     document.querySelectorAll('.dish-card').forEach(c =>
@@ -667,6 +815,94 @@
       toast.classList.add('show');
       clearTimeout(toastTimer);
       toastTimer = setTimeout(() => toast.classList.remove('show'), 2400);
+    });
+
+    // ── IMAGE FALLBACK ──
+    document.querySelectorAll('.dish-card').forEach(card => {
+      const img  = card.querySelector('.dish-img');
+      const name = card.querySelector('.dish-name').textContent;
+      const wrap = card.querySelector('.dish-img-wrap');
+      function showFallback() {
+        img.style.display = 'none';
+        wrap.classList.add('fallback-active');
+        if (!wrap.querySelector('.img-placeholder')) {
+          const p = document.createElement('p');
+          p.className = 'img-placeholder';
+          p.textContent = name;
+          wrap.appendChild(p);
+        }
+      }
+      img.onerror = showFallback;
+      if (!img.getAttribute('src')) showFallback();
+    });
+
+    // ── CHAT ──
+    const chatFab   = document.getElementById('chatFab');
+    const chatPanel = document.getElementById('chatPanel');
+    const chatClose = document.getElementById('chatClose');
+    const chatInput = document.getElementById('chatInput');
+    const chatSend  = document.getElementById('chatSend');
+    const chatMsgs  = document.getElementById('chatMessages');
+    let chatHistory = [];
+    let chatIsOpen  = false;
+
+    function toggleChat() {
+      chatIsOpen = !chatIsOpen;
+      chatPanel.classList.toggle('open', chatIsOpen);
+      chatPanel.setAttribute('aria-hidden', String(!chatIsOpen));
+      if (chatIsOpen) setTimeout(() => chatInput.focus(), 250);
+    }
+
+    chatFab.addEventListener('click', toggleChat);
+    chatClose.addEventListener('click', toggleChat);
+
+    function appendMsg(text, role) {
+      const div = document.createElement('div');
+      div.className = 'chat-msg ' + role;
+      const p = document.createElement('p');
+      p.textContent = text;
+      div.appendChild(p);
+      chatMsgs.appendChild(div);
+      chatMsgs.scrollTop = chatMsgs.scrollHeight;
+      return div;
+    }
+
+    async function sendMessage() {
+      const text = chatInput.value.trim();
+      if (!text) return;
+      chatInput.value = '';
+      chatSend.disabled = true;
+      appendMsg(text, 'user');
+      const typing = document.createElement('div');
+      typing.className = 'chat-msg typing';
+      typing.innerHTML = '<p>En train d\'écrire…</p>';
+      chatMsgs.appendChild(typing);
+      chatMsgs.scrollTop = chatMsgs.scrollHeight;
+      try {
+        const res = await fetch('/.netlify/functions/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: text, history: chatHistory })
+        });
+        const data = await res.json();
+        const reply = data.reply || data.error || 'Service momentanément indisponible.';
+        typing.remove();
+        appendMsg(reply, 'ai');
+        chatHistory.push({ role: 'user', content: text });
+        chatHistory.push({ role: 'assistant', content: reply });
+        if (chatHistory.length > 12) chatHistory = chatHistory.slice(-12);
+      } catch (_) {
+        typing.remove();
+        appendMsg('Service momentanément indisponible.', 'ai');
+      } finally {
+        chatSend.disabled = false;
+        chatInput.focus();
+      }
+    }
+
+    chatSend.addEventListener('click', sendMessage);
+    chatInput.addEventListener('keydown', e => {
+      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
     });
   </script>
 </body>
