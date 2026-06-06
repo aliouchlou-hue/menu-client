@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Maison Ardent — Plats</title>
+  <title>Maison Ardent — Vins</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&family=Montserrat:wght@300;400&display=swap" rel="stylesheet" />
@@ -32,6 +32,7 @@
       -webkit-font-smoothing: antialiased;
     }
 
+    /* ── TOP HEADER ── */
     .page-header {
       position: sticky;
       top: 0;
@@ -68,6 +69,7 @@
       color: var(--terre);
     }
 
+    /* ── SECTION INTRO ── */
     .section-intro {
       padding: 44px 20px 12px;
       text-align: center;
@@ -116,6 +118,7 @@
       flex-shrink: 0;
     }
 
+    /* ── DISH CARD ── */
     .dish-card {
       margin-top: 48px;
       cursor: pointer;
@@ -131,11 +134,11 @@
       position: relative;
     }
 
-    .fb-homard  { background: linear-gradient(145deg,#d4aa88,#b07848,#8a5028); }
-    .fb-wagyu   { background: linear-gradient(145deg,#c4a080,#8a6040,#5c3820); }
-    .fb-pigeon  { background: linear-gradient(145deg,#b8a890,#886848,#5a3c20); }
-    .fb-turbot  { background: linear-gradient(145deg,#c0d0c8,#88a8a0,#508070); }
-    .fb-risveau { background: linear-gradient(145deg,#c8b898,#a08060,#784840); }
+    .fb-champagne { background: linear-gradient(145deg,#f0e4b8,#d4b86a,#a88430); }
+    .fb-chablis   { background: linear-gradient(145deg,#ccd8e0,#90afc0,#587890); }
+    .fb-meursault { background: linear-gradient(145deg,#e4d4a0,#c8a860,#9a7830); }
+    .fb-gevrey    { background: linear-gradient(145deg,#c0a0b8,#885070,#582040); }
+    .fb-sauternes { background: linear-gradient(145deg,#e8cc78,#c8a040,#987020); }
 
     .dish-img-wrap::after {
       content: '';
@@ -188,6 +191,14 @@
       letter-spacing: 0.01em;
     }
 
+    .wine-type {
+      font-size: 0.58rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--warm-mid);
+      margin-top: 5px;
+    }
+
     .dish-price {
       font-family: 'Montserrat', sans-serif;
       font-size: 0.8rem;
@@ -227,7 +238,7 @@
       color: var(--text-soft);
       font-size: 0.65rem;
       font-weight: 400;
-      letter-spacing: 0.18em;
+      letter-spacing: 0.14em;
       text-transform: uppercase;
       -webkit-tap-highlight-color: transparent;
       transition: color 0.2s;
@@ -244,6 +255,7 @@
       background: var(--terre);
     }
 
+    /* ── MODAL ── */
     .modal-overlay {
       position: fixed;
       inset: 0;
@@ -256,7 +268,10 @@
       transition: opacity 0.3s ease;
     }
 
-    .modal-overlay.open { opacity: 1; pointer-events: all; }
+    .modal-overlay.open {
+      opacity: 1;
+      pointer-events: all;
+    }
 
     .modal-sheet {
       width: 100%;
@@ -327,7 +342,7 @@
       justify-content: space-between;
       align-items: flex-start;
       gap: 12px;
-      margin-bottom: 16px;
+      margin-bottom: 4px;
     }
 
     .modal-name {
@@ -347,6 +362,14 @@
       color: var(--terre);
       white-space: nowrap;
       padding-top: 5px;
+    }
+
+    .modal-wine-type {
+      font-size: 0.58rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--warm-mid);
+      margin-bottom: 16px;
     }
 
     .modal-fulldesc {
@@ -398,6 +421,7 @@
 
     .btn-add:active { background: var(--terre-dk); }
 
+    /* ── TOAST ── */
     .toast {
       position: fixed;
       bottom: 32px;
@@ -418,6 +442,7 @@
 
     .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
+    /* ── FOOTER ── */
     .page-footer {
       text-align: center;
       padding: 40px 20px 24px;
@@ -568,15 +593,15 @@
 
   <nav class="top-nav">
     <a href="entrees.html" class="tnav-item">Entrées</a>
-    <a href="plats.html" class="tnav-item active">Plats</a>
+    <a href="plats.html" class="tnav-item">Plats</a>
     <a href="desserts.html" class="tnav-item">Desserts</a>
-    <a href="vins.html" class="tnav-item">Vins</a>
+    <a href="vins.html" class="tnav-item active">Vins</a>
   </nav>
 
   <div class="section-intro">
-    <p class="intro-eyebrow">La Carte</p>
-    <h1>Plats</h1>
-    <p>Créations de notre chef, au gré des saisons</p>
+    <p class="intro-eyebrow">La Cave</p>
+    <h1>Vins</h1>
+    <p>Une sélection de notre sommelier</p>
   </div>
   <div class="section-ornament">
     <span class="orn-line"></span>
@@ -585,82 +610,97 @@
   </div>
 
   <!-- 01 -->
-  <article class="dish-card" data-id="homard">
-    <div class="dish-img-wrap fb-homard">
-      <img src="https://images.unsplash.com/photo-1615141982883-c7ad0e69fd62?auto=format&fit=crop&w=900&h=675&q=85"
-           alt="Homard Bleu Rôti" class="dish-img" loading="eager" />
+  <article class="dish-card" data-id="champagne">
+    <div class="dish-img-wrap fb-champagne">
+      <img src="https://images.unsplash.com/photo-1560416313-414b33c856a9?auto=format&fit=crop&w=900&h=675&q=85"
+           alt="Blanc de Blancs Grand Cru" class="dish-img" loading="eager" />
       <span class="dish-num">01</span>
     </div>
     <div class="dish-body">
       <div class="dish-row">
-        <h2 class="dish-name">Homard Bleu Rôti</h2>
-        <span class="dish-price">58 €</span>
+        <div>
+          <h2 class="dish-name">Blanc de Blancs Grand Cru</h2>
+          <p class="wine-type">Champagne Brut</p>
+        </div>
+        <span class="dish-price">22 €/v</span>
       </div>
-      <p class="dish-desc">Homard breton rôti vivant au beurre demi-sel, bisque réduite au cognac, légumes de saison glacés, tarragon</p>
+      <p class="dish-desc">Chardonnay 100% grands crus de la Côte des Blancs, bulles fines et persistantes, nez de craie et d'agrumes confits</p>
     </div>
   </article>
 
   <!-- 02 -->
-  <article class="dish-card" data-id="wagyu">
-    <div class="dish-img-wrap fb-wagyu">
-      <img src="https://images.unsplash.com/photo-1558030006-450675393462?auto=format&fit=crop&w=900&h=675&q=85"
-           alt="Filet de Bœuf Wagyu" class="dish-img" loading="lazy" />
+  <article class="dish-card" data-id="chablis">
+    <div class="dish-img-wrap fb-chablis">
+      <img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?auto=format&fit=crop&w=900&h=675&q=85"
+           alt="Chablis Premier Cru" class="dish-img" loading="lazy" />
       <span class="dish-num">02</span>
     </div>
     <div class="dish-body">
       <div class="dish-row">
-        <h2 class="dish-name">Filet de Bœuf Wagyu</h2>
-        <span class="dish-price">65 €</span>
+        <div>
+          <h2 class="dish-name">Chablis Premier Cru</h2>
+          <p class="wine-type">Bourgogne Blanc</p>
+        </div>
+        <span class="dish-price">18 €/v</span>
       </div>
-      <p class="dish-desc">Filet de bœuf Wagyu BMS 9 snacké à la plancha, jus de truffe noire du Périgord, purée de pomme de terre Robuchon, chips de pomme de terre soufflée</p>
+      <p class="dish-desc">Chardonnay sur terroir kimméridgien, vieilles vignes de 35 ans, vinifié en cuve inox pour préserver la minéralité</p>
     </div>
   </article>
 
   <!-- 03 -->
-  <article class="dish-card" data-id="pigeon">
-    <div class="dish-img-wrap fb-pigeon">
-      <img src="https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&w=900&h=675&q=85"
-           alt="Pigeon de Bresse Laqué" class="dish-img" loading="lazy" />
+  <article class="dish-card" data-id="meursault">
+    <div class="dish-img-wrap fb-meursault">
+      <img src="https://images.unsplash.com/photo-1474722883778-792e7990302f?auto=format&fit=crop&w=900&h=675&q=85"
+           alt="Meursault Premier Cru" class="dish-img" loading="lazy" />
       <span class="dish-num">03</span>
     </div>
     <div class="dish-body">
       <div class="dish-row">
-        <h2 class="dish-name">Pigeon de Bresse Laqué</h2>
-        <span class="dish-price">45 €</span>
+        <div>
+          <h2 class="dish-name">Meursault Premier Cru</h2>
+          <p class="wine-type">Bourgogne Blanc</p>
+        </div>
+        <span class="dish-price">24 €/v</span>
       </div>
-      <p class="dish-desc">Pigeon de Bresse rôti entier et laqué au miel d'acacia, jus corsé aux épices douces, lentilles du Puy au lard fumé, cerfeuil tubéreux</p>
+      <p class="dish-desc">Chardonnay de la Côte de Beaune, élevage 14 mois en fût de chêne bourguignon, parcelle exposée plein sud</p>
     </div>
   </article>
 
   <!-- 04 -->
-  <article class="dish-card" data-id="turbot">
-    <div class="dish-img-wrap fb-turbot">
-      <img src="https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?auto=format&fit=crop&w=900&h=675&q=85"
-           alt="Turbot Sauvage" class="dish-img" loading="lazy" />
+  <article class="dish-card" data-id="gevrey">
+    <div class="dish-img-wrap fb-gevrey">
+      <img src="https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?auto=format&fit=crop&w=900&h=675&q=85"
+           alt="Gevrey-Chambertin" class="dish-img" loading="lazy" />
       <span class="dish-num">04</span>
     </div>
     <div class="dish-body">
       <div class="dish-row">
-        <h2 class="dish-name">Turbot Sauvage de Ligne</h2>
-        <span class="dish-price">52 €</span>
+        <div>
+          <h2 class="dish-name">Gevrey-Chambertin</h2>
+          <p class="wine-type">Bourgogne Rouge</p>
+        </div>
+        <span class="dish-price">28 €/v</span>
       </div>
-      <p class="dish-desc">Turbot sauvage de Bretagne cuit sur l'arête, beurre blanc aux câpres de Pantelleria, pommes de terre grenaille dorées, aneth frais</p>
+      <p class="dish-desc">Pinot Noir de la Côte de Nuits, vieilles vignes de 45 ans, élevage 18 mois en fût de chêne, carafage conseillé</p>
     </div>
   </article>
 
   <!-- 05 -->
-  <article class="dish-card" data-id="risveau">
-    <div class="dish-img-wrap fb-risveau">
-      <img src="https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=900&h=675&q=85"
-           alt="Ris de Veau Braisés" class="dish-img" loading="lazy" />
+  <article class="dish-card" data-id="sauternes">
+    <div class="dish-img-wrap fb-sauternes">
+      <img src="https://images.unsplash.com/photo-1504279577054-acfeccf8fc52?auto=format&fit=crop&w=900&h=675&q=85"
+           alt="Sauternes" class="dish-img" loading="lazy" />
       <span class="dish-num">05</span>
     </div>
     <div class="dish-body">
       <div class="dish-row">
-        <h2 class="dish-name">Ris de Veau Braisés</h2>
-        <span class="dish-price">48 €</span>
+        <div>
+          <h2 class="dish-name">Sauternes</h2>
+          <p class="wine-type">Bordeaux Liquoreux</p>
+        </div>
+        <span class="dish-price">16 €/v</span>
       </div>
-      <p class="dish-desc">Ris de veau de lait braisés et dorés au beurre, morilles fraîches de saison, crème et vin jaune du Jura, condiment de persil plat</p>
+      <p class="dish-desc">Sémillon botrytisé, millésime exceptionnel, sucres résiduels 120 g/L — accord de prédilection avec le Foie Gras</p>
     </div>
   </article>
 
@@ -684,15 +724,16 @@
           <h2 class="modal-name" id="modalName"></h2>
           <span class="modal-price" id="modalPrice"></span>
         </div>
+        <p class="modal-wine-type" id="modalWineType"></p>
         <p class="modal-fulldesc" id="modalDesc"></p>
-        <p class="allergens-label">Allergènes</p>
+        <p class="allergens-label">Accords</p>
         <div class="allergens-list" id="modalAllergens"></div>
-        <button class="btn-add" id="btnAdd">Ajouter à ma commande</button>
+        <button class="btn-add" id="btnAdd">Ajouter à ma sélection</button>
       </div>
     </div>
   </div>
 
-  <div class="toast" id="toast">Ajouté à votre commande ✓</div>
+  <div class="toast" id="toast">Ajouté à votre sélection ✓</div>
 
   <!-- ── CHAT ── -->
   <button class="chat-fab" id="chatFab" aria-label="Conseiller gastronomique">
@@ -722,45 +763,50 @@
 
   <script>
     const dishes = {
-      homard: {
-        name: 'Homard Bleu Rôti',
-        price: '58 €',
-        img: 'https://images.unsplash.com/photo-1615141982883-c7ad0e69fd62?auto=format&fit=crop&w=900&h=675&q=85',
-        fb: 'fb-homard',
-        desc: 'Homard bleu de Bretagne rôti vivant au beurre demi-sel de Guérande, flambé au cognac. Servi avec une bisque réduite et émulsionnée, un bouquet de légumes de saison glacés au beurre et quelques feuilles de tarragon frais. Un classique revisité.',
-        allergens: ['Crustacés', 'Lait', 'Sulfites']
+      champagne: {
+        name: 'Blanc de Blancs Grand Cru',
+        wineType: 'Champagne Brut',
+        price: '22 €/v · 110 €/btl',
+        img: 'https://images.unsplash.com/photo-1560416313-414b33c856a9?auto=format&fit=crop&w=900&h=675&q=85',
+        fb: 'fb-champagne',
+        desc: 'Extra-brut au caractère minéral et aérien, nez de craie fraîche, fleur blanche et agrumes confits. Bouche d\'une grande précision, finale interminable et saline. Servir à 9°C. Bouteille : 110 €',
+        allergens: ['Huîtres Gillardeau n°3', 'Saint-Jacques', 'Foie Gras']
       },
-      wagyu: {
-        name: 'Filet de Bœuf Wagyu',
-        price: '65 €',
-        img: 'https://images.unsplash.com/photo-1558030006-450675393462?auto=format&fit=crop&w=900&h=675&q=85',
-        fb: 'fb-wagyu',
-        desc: 'Filet de bœuf Wagyu japonais BMS 9 saisi à la plancha, rosé à coeur. Accompagné d\'un jus corsé à la truffe noire du Périgord, d\'une purée de pomme de terre Robuchon montée au beurre et de chips de pomme de terre soufflée au sel de Guérande.',
-        allergens: ['Lait']
+      chablis: {
+        name: 'Chablis Premier Cru',
+        wineType: 'Bourgogne Blanc',
+        price: '18 €/v · 88 €/btl',
+        img: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?auto=format&fit=crop&w=900&h=675&q=85',
+        fb: 'fb-chablis',
+        desc: 'Attaque tendue et minérale, notes de silex, citron vert et huître fraîche. Bouche d\'une précision remarquable, longue finale sur le calcaire et la craie. L\'accord parfait avec les fruits de mer et les poissons. Bouteille : 88 €',
+        allergens: ['Turbot', 'Homard Bleu Rôti', 'Huîtres Gillardeau n°3']
       },
-      pigeon: {
-        name: 'Pigeon de Bresse Laqué',
-        price: '45 €',
-        img: 'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&w=900&h=675&q=85',
-        fb: 'fb-pigeon',
-        desc: 'Pigeon de Bresse label rouge rôti entier et laqué au miel d\'acacia de Provence. Jus corsé réduit aux épices douces — cannelle, cardamome, clou de girofle. Accompagné de lentilles vertes du Puy mijotées au lard fumé et de cerfeuil tubéreux caramélisé.',
-        allergens: ['Volaille']
+      meursault: {
+        name: 'Meursault Premier Cru',
+        wineType: 'Bourgogne Blanc',
+        price: '24 €/v · 115 €/btl',
+        img: 'https://images.unsplash.com/photo-1474722883778-792e7990302f?auto=format&fit=crop&w=900&h=675&q=85',
+        fb: 'fb-meursault',
+        desc: 'Robe dorée lumineuse, nez généreux de beurre noisette, vanille et amande fraîche. Bouche ample et longue, équilibre remarquable entre la richesse et l\'acidité. Carafage non nécessaire. Servir à 12°C. Bouteille : 115 €',
+        allergens: ['Asperges Blanches', 'Ris de Veau Braisés', 'Foie Gras']
       },
-      turbot: {
-        name: 'Turbot Sauvage de Ligne',
-        price: '52 €',
-        img: 'https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?auto=format&fit=crop&w=900&h=675&q=85',
-        fb: 'fb-turbot',
-        desc: 'Turbot sauvage pêché à la ligne en Bretagne, cuit sur l\'arête pour préserver la chair nacrée. Beurre blanc classique monté aux câpres de Pantelleria, pommes de terre grenaille rôties à l\'huile d\'olive et aneth frais ciselé.',
-        allergens: ['Poisson', 'Lait']
+      gevrey: {
+        name: 'Gevrey-Chambertin',
+        wineType: 'Bourgogne Rouge',
+        price: '28 €/v · 135 €/btl',
+        img: 'https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?auto=format&fit=crop&w=900&h=675&q=85',
+        fb: 'fb-gevrey',
+        desc: 'Robe rubis profonde, bouquet de cerise noire, rose fanée et cuir. Bouche soyeuse aux tannins fins et élégants, finale épicée évoquant le sous-bois et la réglisse. Carafage 30 min conseillé. Servir à 16°C. Bouteille : 135 €',
+        allergens: ['Pigeon de Bresse', 'Filet de Bœuf Wagyu', 'Ris de Veau Braisés']
       },
-      risveau: {
-        name: 'Ris de Veau Braisés',
-        price: '48 €',
-        img: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=900&h=675&q=85',
-        fb: 'fb-risveau',
-        desc: 'Ris de veau de lait sous la mère, blanchis puis braisés longuement et dorés au beurre noisette pour une croûte dorée et un cœur fondant. Servis avec des morilles fraîches de saison, une crème légère au vin jaune du Jura et un condiment de persil plat.',
-        allergens: ['Lait', 'Sulfites']
+      sauternes: {
+        name: 'Sauternes',
+        wineType: 'Bordeaux Liquoreux',
+        price: '16 €/v · 95 €/btl',
+        img: 'https://images.unsplash.com/photo-1504279577054-acfeccf8fc52?auto=format&fit=crop&w=900&h=675&q=85',
+        fb: 'fb-sauternes',
+        desc: 'Or ambré intense, nez opulent de miel d\'acacia, abricot confit et safran. Bouche ample et suave, contrebalancée par une acidité vive qui garantit fraîcheur et équilibre. Finale interminable aux notes de mandarine confite. Servir à 8°C. Bouteille : 95 €',
+        allergens: ['Foie Gras de Canard', 'Tarte Fraises Gariguette', 'Soufflé au Grand Marnier']
       }
     };
 
@@ -769,6 +815,7 @@
     const modalImgW  = document.getElementById('modalImgWrap');
     const modalName  = document.getElementById('modalName');
     const modalPrice = document.getElementById('modalPrice');
+    const modalWType = document.getElementById('modalWineType');
     const modalDesc  = document.getElementById('modalDesc');
     const modalAll   = document.getElementById('modalAllergens');
     const toast      = document.getElementById('toast');
@@ -796,6 +843,7 @@
       modalImg.alt = d.name;
       modalName.textContent = d.name;
       modalPrice.textContent = d.price;
+      modalWType.textContent = d.wineType || '';
       modalDesc.textContent = d.desc;
       modalAll.innerHTML = d.allergens.map(a => `<span class="allergen-pill">${a}</span>`).join('');
       overlay.classList.add('open');
@@ -822,7 +870,7 @@
 
     document.getElementById('btnAdd').addEventListener('click', () => {
       closeModal();
-      toast.textContent = 'Ajouté à votre commande ✓';
+      toast.textContent = 'Ajouté à votre sélection ✓';
       toast.classList.add('show');
       clearTimeout(toastTimer);
       toastTimer = setTimeout(() => toast.classList.remove('show'), 2400);
@@ -969,7 +1017,7 @@
       }
     });
 
-    // Auto-open dish modal if URL has ?open=id (cross-page navigation from chat)
+    // Auto-open dish modal if URL has ?open=id
     const _urlOpen = new URLSearchParams(window.location.search).get('open');
     if (_urlOpen) {
       setTimeout(() => {
