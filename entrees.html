@@ -7,6 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&family=Montserrat:wght@300;400&display=swap" rel="stylesheet" />
+  <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.3.0/model-viewer.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -588,6 +589,42 @@
       -webkit-tap-highlight-color: transparent;
     }
     .dish-link:active { opacity: 0.7; }
+    /* ── AR ── */
+    .btn-ar {
+      width: 100%; margin-bottom: 10px;
+      padding: 13px 16px; background: transparent; color: var(--terre);
+      font-family: 'Montserrat', sans-serif; font-size: 0.68rem;
+      font-weight: 400; letter-spacing: 0.2em; text-transform: uppercase;
+      border: 1px solid rgba(139,74,47,0.35); border-radius: 2px;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      gap: 10px; -webkit-tap-highlight-color: transparent; transition: background 0.18s;
+    }
+    .btn-ar:active { background: rgba(139,74,47,0.06); }
+    .btn-ar svg { width: 17px; height: 17px; flex-shrink: 0; }
+    .ar-wrap { margin-bottom: 12px; }
+    model-viewer {
+      width: 100%; height: 250px; border-radius: 10px; display: block;
+      background: linear-gradient(160deg, #F5F0E8 0%, #E8DDD0 100%);
+      --poster-color: transparent;
+    }
+    .ar-launch-btn {
+      background: var(--terre); color: var(--creme);
+      border: none; border-radius: 3px; padding: 10px 20px;
+      font-family: 'Montserrat', sans-serif; font-size: 0.66rem;
+      font-weight: 400; letter-spacing: 0.18em; text-transform: uppercase;
+      cursor: pointer; -webkit-tap-highlight-color: transparent; transition: background 0.18s;
+    }
+    .ar-launch-btn:active { background: var(--terre-dk); }
+    .ar-hint {
+      text-align: center; padding: 9px 0 2px;
+      font-family: 'Cormorant Garamond', serif; font-style: italic;
+      font-size: 0.84rem; color: var(--text-soft); letter-spacing: 0.06em;
+    }
+    .ar-nosupport {
+      text-align: center; padding: 2px 0 6px;
+      font-size: 0.58rem; color: var(--warm-mid);
+      letter-spacing: 0.18em; text-transform: uppercase;
+    }
   </style>
 </head>
 <body>
@@ -719,6 +756,22 @@
         <p class="modal-fulldesc" id="modalDesc"></p>
         <p class="allergens-label">Allergènes</p>
         <div class="allergens-list" id="modalAllergens"></div>
+        <button class="btn-ar" id="btnAr">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 7.5l-9-5.25L3 7.5m18 0l-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9"/></svg>
+          Voir sur ma table en 3D
+        </button>
+        <div class="ar-wrap" id="arWrap" style="display:none">
+          <model-viewer id="mvEl"
+            src="https://modelviewer.dev/shared-assets/models/Astronaut.glb"
+            ios-src="https://modelviewer.dev/shared-assets/models/Astronaut.usdz"
+            ar ar-modes="webxr scene-viewer quick-look"
+            camera-controls auto-rotate shadow-intensity="1"
+            alt="Visualisation 3D du plat">
+            <button slot="ar-button" class="ar-launch-btn">Voir sur ma table</button>
+          </model-viewer>
+          <p class="ar-hint">Pointez vers votre table</p>
+          <p class="ar-nosupport" id="arNoSupport" style="display:none">Disponible sur mobile</p>
+        </div>
         <button class="btn-add" id="btnAdd">Ajouter à ma commande</button>
       </div>
     </div>
@@ -842,6 +895,9 @@
     function closeModal() {
       overlay.classList.remove('open');
       document.body.style.overflow = '';
+      arWrap.style.display = 'none';
+      btnAr.style.display  = 'flex';
+      arNoSupport.style.display = 'none';
       setTimeout(() => {
         modalImg.src = ''; modalImg.style.display = 'none';
         modalImgW.classList.remove('fallback-active');
@@ -849,6 +905,19 @@
         if (p) p.remove();
       }, 350);
     }
+
+    // ── AR ──
+    const btnAr       = document.getElementById('btnAr');
+    const arWrap      = document.getElementById('arWrap');
+    const arNoSupport = document.getElementById('arNoSupport');
+    const mvEl        = document.getElementById('mvEl');
+    btnAr.addEventListener('click', () => {
+      arWrap.style.display = 'block';
+      btnAr.style.display  = 'none';
+      mvEl.addEventListener('load', () => {
+        if (!mvEl.canActivateAR) arNoSupport.style.display = 'block';
+      }, { once: true });
+    });
 
     document.querySelectorAll('.dish-card').forEach(c =>
       c.addEventListener('click', () => openModal(c.dataset.id))
