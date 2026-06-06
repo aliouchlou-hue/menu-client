@@ -545,6 +545,16 @@
     .chat-send:active { background: var(--terre-dk); }
     .chat-send:disabled { opacity: 0.5; cursor: default; }
     .chat-send svg { width: 15px; height: 15px; }
+    .dish-link {
+      color: var(--terre);
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: underline;
+      text-decoration-color: rgba(139,74,47,0.3);
+      text-underline-offset: 2px;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .dish-link:active { opacity: 0.7; }
   </style>
 </head>
 <body>
@@ -856,11 +866,49 @@
     chatFab.addEventListener('click', toggleChat);
     chatClose.addEventListener('click', toggleChat);
 
+    const DISH_MAP = [
+      { names: ['Tartare de Saint-Jacques', 'Saint-Jacques'], id: 'stjaques', page: 'entrees' },
+      { names: ['Velouté de Topinambour'], id: 'veloute', page: 'entrees' },
+      { names: ['Foie Gras de Canard', 'Foie Gras'], id: 'foiegras', page: 'entrees' },
+      { names: ['Huîtres Gillardeau n°3', 'Huîtres Gillardeau'], id: 'huitres', page: 'entrees' },
+      { names: ['Asperges Blanches d\'Alsace', 'Asperges Blanches'], id: 'asperges', page: 'entrees' },
+      { names: ['Homard Bleu Rôti', 'Homard Bleu', 'Homard'], id: 'homard', page: 'plats' },
+      { names: ['Filet de Bœuf Wagyu', 'Bœuf Wagyu', 'Wagyu'], id: 'wagyu', page: 'plats' },
+      { names: ['Pigeon de Bresse Laqué', 'Pigeon de Bresse'], id: 'pigeon', page: 'plats' },
+      { names: ['Turbot Sauvage de Ligne', 'Turbot Sauvage', 'Turbot'], id: 'turbot', page: 'plats' },
+      { names: ['Ris de Veau Braisés', 'Ris de Veau'], id: 'risveau', page: 'plats' },
+      { names: ['Soufflé au Grand Marnier'], id: 'souffle', page: 'desserts' },
+      { names: ['Mille-feuille Vanille', 'Mille-feuille'], id: 'millefeuille', page: 'desserts' },
+      { names: ['Fondant Valrhona'], id: 'chocolat', page: 'desserts' },
+      { names: ['Île Flottante'], id: 'ileflottante', page: 'desserts' },
+      { names: ['Tarte Fraises Gariguette', 'Fraises Gariguette'], id: 'fraises', page: 'desserts' },
+    ];
+
+    function linkifyDishNames(text) {
+      const pairs = [];
+      DISH_MAP.forEach(d => d.names.forEach(n => pairs.push({ name: n, id: d.id, page: d.page })));
+      pairs.sort((a, b) => b.name.length - a.name.length);
+      const escaped = pairs.map(p => p.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+      const re = new RegExp('(' + escaped.join('|') + ')', 'g');
+      return text.replace(re, (m) => {
+        const pair = pairs.find(p => p.name === m);
+        return pair
+          ? `<strong class="dish-link" data-id="${pair.id}" data-page="${pair.page}">${m}</strong>`
+          : m;
+      });
+    }
+
+    function renderAiMsg(text) {
+      const clean = text.replace(/\*\*(.+?)\*\*/g, '$1').replace(/\*(.+?)\*/g, '$1');
+      const esc = clean.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      return linkifyDishNames(esc);
+    }
+
     function appendMsg(text, role) {
       const div = document.createElement('div');
       div.className = 'chat-msg ' + role;
       const p = document.createElement('p');
-      p.textContent = text;
+      if (role === 'ai') { p.innerHTML = renderAiMsg(text); } else { p.textContent = text; }
       div.appendChild(p);
       chatMsgs.appendChild(div);
       chatMsgs.scrollTop = chatMsgs.scrollHeight;
@@ -904,6 +952,33 @@
     chatInput.addEventListener('keydown', e => {
       if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
     });
+
+    // Tap on dish name in chat → scroll to card + open modal (or navigate)
+    chatMsgs.addEventListener('click', e => {
+      const link = e.target.closest('.dish-link');
+      if (!link) return;
+      const id = link.dataset.id;
+      const card = document.querySelector(`[data-id="${id}"]`);
+      if (card) {
+        if (chatIsOpen) toggleChat();
+        card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        setTimeout(() => openModal(id), 450);
+      } else {
+        window.location.href = link.dataset.page + '.html?open=' + id;
+      }
+    });
+
+    // Auto-open dish modal if URL has ?open=id (cross-page navigation from chat)
+    const _urlOpen = new URLSearchParams(window.location.search).get('open');
+    if (_urlOpen) {
+      setTimeout(() => {
+        const card = document.querySelector(`[data-id="${_urlOpen}"]`);
+        if (card) {
+          card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          setTimeout(() => openModal(_urlOpen), 300);
+        }
+      }, 200);
+    }
   </script>
 </body>
 </html>
