@@ -564,6 +564,20 @@
     .chat-send:active { background: var(--terre-dk); }
     .chat-send:disabled { opacity: 0.5; cursor: default; }
     .chat-send svg { width: 15px; height: 15px; }
+    .chat-suggestions {
+      display: flex; flex-wrap: wrap; gap: 6px;
+      padding: 8px 14px 6px; flex-shrink: 0;
+    }
+    .chat-suggestions.hidden { display: none; }
+    .chat-suggestion-btn {
+      font-family: 'Montserrat', sans-serif; font-size: 0.71rem;
+      font-weight: 300; color: var(--terre); background: #fff;
+      border: 1px solid rgba(139,74,47,0.32); border-radius: 20px;
+      padding: 5px 12px; cursor: pointer; letter-spacing: 0.03em;
+      -webkit-tap-highlight-color: transparent;
+      transition: background 0.15s, border-color 0.15s;
+    }
+    .chat-suggestion-btn:active { background: rgba(139,74,47,0.06); border-color: var(--terre); }
     .dish-link {
       color: var(--terre);
       font-weight: 600;
@@ -730,6 +744,11 @@
     <div class="chat-messages" id="chatMessages">
       <div class="chat-msg ai"><p>Bonsoir, bienvenue chez Maison Ardent. Puis-je vous guider sur notre carte du soir ?</p></div>
     </div>
+    <div class="chat-suggestions" id="chatSuggestions">
+      <button class="chat-suggestion-btn">Que me conseillez-vous ce soir ?</button>
+      <button class="chat-suggestion-btn">J'ai une allergie au gluten</button>
+      <button class="chat-suggestion-btn">Accord mets et vins ?</button>
+    </div>
     <div class="chat-input-row">
       <input class="chat-input" id="chatInput" type="text" placeholder="Une question sur la carte…" autocomplete="off" />
       <button class="chat-send" id="chatSend">
@@ -874,16 +893,25 @@
     const chatMsgs  = document.getElementById('chatMessages');
     let chatHistory = [];
     let chatIsOpen  = false;
+    const chatSuggestions = document.getElementById('chatSuggestions');
+    function hideSuggestions() { chatSuggestions.classList.add('hidden'); }
 
     function toggleChat() {
       chatIsOpen = !chatIsOpen;
       chatPanel.classList.toggle('open', chatIsOpen);
       chatPanel.setAttribute('aria-hidden', String(!chatIsOpen));
-      if (chatIsOpen) setTimeout(() => chatInput.focus(), 250);
+      if (chatIsOpen) {
+        if (chatHistory.length === 0) chatSuggestions.classList.remove('hidden');
+        setTimeout(() => chatInput.focus(), 250);
+      }
     }
 
     chatFab.addEventListener('click', toggleChat);
     chatClose.addEventListener('click', toggleChat);
+    chatSuggestions.querySelectorAll('.chat-suggestion-btn').forEach(btn => {
+      btn.addEventListener('click', () => { chatInput.value = btn.textContent; hideSuggestions(); sendMessage(); });
+    });
+    chatInput.addEventListener('input', () => { if (chatInput.value.trim()) hideSuggestions(); });
 
     const DISH_MAP = [
       { names: ['Tartare de Saint-Jacques', 'Saint-Jacques'], id: 'stjaques', page: 'entrees' },
