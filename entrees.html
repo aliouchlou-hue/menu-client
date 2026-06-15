@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Maison Ardent — Entrées</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -484,9 +484,20 @@
       z-index: 1;
     }
 
+    /* ── AVIS ── */
+    .modal-avis {
+      display: flex; align-items: center; gap: 8px;
+      margin: 0 0 20px; padding: 10px 0 0;
+      font-family: 'Montserrat', sans-serif; font-size: 0.62rem;
+      font-weight: 400; letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--terre); text-decoration: none; border-top: 1px solid var(--sep);
+    }
+    .modal-avis:active { opacity: 0.65; }
+    .modal-avis-stars { font-size: 0.8rem; letter-spacing: 0.05em; color: #E8A000; }
+
     /* ── CHAT ── */
     .chat-fab {
-      position: fixed; bottom: 24px; right: 18px; z-index: 200;
+      position: fixed; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); right: 18px; z-index: 200;
       height: 48px; padding: 0 18px 0 14px;
       background: var(--terre); color: var(--creme);
       border: none; border-radius: 28px; cursor: pointer;
@@ -494,7 +505,7 @@
       gap: 8px; white-space: nowrap;
       box-shadow: 0 4px 20px rgba(139,74,47,0.35);
       -webkit-tap-highlight-color: transparent;
-      transition: transform 0.18s, background 0.18s;
+      transition: transform 0.18s, background 0.18s, bottom 0.3s ease;
     }
     .chat-fab:active { transform: scale(0.92); background: var(--terre-dk); }
     .chat-fab svg { width: 20px; height: 20px; flex-shrink: 0; }
@@ -504,7 +515,7 @@
     }
 
     .chat-panel {
-      position: fixed; bottom: 88px; right: 14px; z-index: 199;
+      position: fixed; bottom: calc(88px + env(safe-area-inset-bottom, 0px)); right: 14px; z-index: 199;
       width: calc(100vw - 28px); max-width: 340px; max-height: 68vh;
       background: var(--creme); border: 1px solid var(--sep);
       border-radius: 16px; box-shadow: 0 8px 40px rgba(44,31,20,0.18);
@@ -771,6 +782,10 @@
         <p class="modal-fulldesc" id="modalDesc"></p>
         <p class="allergens-label">Allergènes</p>
         <div class="allergens-list" id="modalAllergens"></div>
+        <a class="modal-avis" href="https://www.google.com/maps/search/Maison+Ardent" target="_blank" rel="noopener noreferrer">
+          <span class="modal-avis-stars">★★★★★</span>
+          <span>Laisser un avis Google</span>
+        </a>
         <button class="btn-ar" id="btnAr">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 7.5l-9-5.25L3 7.5m18 0l-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9"/></svg>
           Voir sur ma table en 3D
