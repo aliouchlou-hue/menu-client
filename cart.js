@@ -330,12 +330,14 @@
         })
       });
       const data = await res.json();
+      console.log('[cart] réponse checkout:', res.status, data);
       if (data.url) {
         window.location.href = data.url;
       } else {
-        throw new Error(data.error || 'Erreur Stripe');
+        throw new Error(data.error || 'Erreur Stripe (pas d\'URL retournée)');
       }
-    } catch (_) {
+    } catch (err) {
+      console.error('[cart] erreur paiement:', err);
       payBtn.textContent = 'Erreur — Réessayer';
       payBtn.disabled = false;
     }
