@@ -116,8 +116,8 @@ exports.handler = async (event) => {
     payment_method_types: ['card'],
     line_items: lineItems,
     mode: 'payment',
-    success_url: `${origin}/entrees.html?payment=success`,
-    cancel_url:  `${origin}/entrees.html?payment=cancelled`,
+    success_url: `${origin}/success.html`,
+    cancel_url:  `${origin}/entrees.html`,
   };
 
   if (reservationId) {

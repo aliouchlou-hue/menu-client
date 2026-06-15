@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Confirmation — Maison Ardent</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&family=Montserrat:wght@300;400&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --creme:    #F5F0E8;
+      --terre:    #8B4A2F;
+      --terre-dk: #6e3822;
+      --warm-mid: #C4A882;
+      --sep:      #D4C4B0;
+      --text:     #2C1F14;
+      --text-soft:#6B5244;
+    }
+
+    html, body {
+      min-height: 100%;
+      background: var(--creme);
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 300;
+      -webkit-font-smoothing: antialiased;
+      color: var(--text);
+    }
+
+    .page {
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 56px 28px calc(48px + env(safe-area-inset-bottom, 0px));
+    }
+
+    /* ── En-tête ── */
+    .success-header {
+      text-align: center;
+      margin-bottom: 42px;
+    }
+
+    .success-ornament {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      margin-bottom: 22px;
+    }
+
+    .orn-line {
+      width: 40px; height: 1px;
+      background: linear-gradient(to right, transparent, var(--sep));
+    }
+    .orn-line.r { background: linear-gradient(to left, transparent, var(--sep)); }
+
+    .orn-diamond {
+      width: 5px; height: 5px;
+      background: var(--warm-mid);
+      transform: rotate(45deg);
+    }
+
+    .success-icon {
+      font-size: 1.4rem;
+      color: var(--warm-mid);
+      letter-spacing: 0.3em;
+      margin-bottom: 18px;
+    }
+
+    .success-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-weight: 300;
+      font-size: clamp(1.9rem, 7vw, 2.5rem);
+      letter-spacing: 0.06em;
+      color: var(--text);
+      line-height: 1.15;
+      margin-bottom: 10px;
+    }
+
+    .success-subtitle {
+      font-size: 0.65rem;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      color: var(--text-soft);
+    }
+
+    /* ── Récapitulatif ── */
+    .recap-card {
+      background: #fff;
+      border: 1px solid var(--sep);
+      border-radius: 4px;
+      margin-bottom: 36px;
+      overflow: hidden;
+    }
+
+    .recap-header {
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--sep);
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+    }
+
+    .recap-label {
+      font-size: 0.58rem;
+      letter-spacing: 0.26em;
+      text-transform: uppercase;
+      color: var(--text-soft);
+    }
+
+    .recap-mode {
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-size: 0.82rem;
+      color: var(--terre);
+      letter-spacing: 0.04em;
+    }
+
+    .recap-items {
+      padding: 4px 20px 8px;
+    }
+
+    .recap-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      padding: 11px 0;
+      border-bottom: 1px solid var(--sep);
+      gap: 12px;
+    }
+
+    .recap-item:last-child { border-bottom: none; }
+
+    .recap-item-name {
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-size: 1rem;
+      font-weight: 300;
+      color: var(--text);
+      flex: 1;
+      min-width: 0;
+    }
+
+    .recap-item-qty {
+      font-size: 0.64rem;
+      letter-spacing: 0.08em;
+      color: var(--text-soft);
+      flex-shrink: 0;
+    }
+
+    .recap-item-price {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1rem;
+      color: var(--text-soft);
+      flex-shrink: 0;
+    }
+
+    .recap-empty {
+      padding: 32px 20px;
+      text-align: center;
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-size: 0.95rem;
+      color: var(--text-soft);
+    }
+
+    .recap-footer {
+      padding: 13px 20px;
+      border-top: 1px solid var(--sep);
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+    }
+
+    .recap-total-label {
+      font-size: 0.58rem;
+      letter-spacing: 0.24em;
+      text-transform: uppercase;
+      color: var(--warm-mid);
+    }
+
+    .recap-total-amount {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.45rem;
+      font-weight: 300;
+      color: var(--terre);
+    }
+
+    /* ── Bloc avis ── */
+    .review-block {
+      text-align: center;
+      padding: 32px 0 0;
+    }
+
+    .review-sep {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 28px;
+    }
+
+    .review-sep-line {
+      flex: 1; height: 1px;
+      background: var(--sep);
+    }
+
+    .review-sep-diamond {
+      width: 4px; height: 4px;
+      background: var(--sep);
+      transform: rotate(45deg);
+      flex-shrink: 0;
+    }
+
+    .review-q {
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-size: 1.1rem;
+      font-weight: 300;
+      color: var(--text);
+      letter-spacing: 0.04em;
+      margin-bottom: 6px;
+    }
+
+    .review-hint {
+      font-size: 0.6rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--text-soft);
+      margin-bottom: 22px;
+    }
+
+    .review-stars {
+      display: flex;
+      justify-content: center;
+      gap: 6px;
+      margin-bottom: 20px;
+    }
+
+    .review-star {
+      background: none; border: none; padding: 4px;
+      font-size: 2rem; line-height: 1; cursor: pointer;
+      color: var(--sep);
+      transition: color 0.12s, transform 0.1s;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .review-star.lit { color: var(--terre); }
+    .review-star:active { transform: scale(0.88); }
+
+    #review-thanks {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      padding: 8px 0 16px;
+      animation: fadeUp 0.28s ease both;
+    }
+
+    #review-thanks.show { display: flex; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .review-merci {
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-size: 1.25rem;
+      color: var(--terre);
+      letter-spacing: 0.06em;
+    }
+
+    .review-glink {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 0.58rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--text-soft);
+      text-decoration: none;
+      border-bottom: 1px solid var(--sep);
+      padding-bottom: 2px;
+    }
+
+    #review-form {
+      display: none;
+      text-align: left;
+      animation: fadeUp 0.28s ease both;
+    }
+
+    #review-form.show { display: block; }
+
+    .review-ta {
+      width: 100%; min-height: 78px;
+      padding: 11px 14px;
+      border: 1px solid var(--sep);
+      border-radius: 4px;
+      background: #fff;
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-size: 0.95rem;
+      color: var(--text);
+      resize: none; outline: none;
+      display: block;
+      margin-bottom: 10px;
+      -webkit-appearance: none;
+    }
+
+    .review-ta:focus { border-color: var(--warm-mid); }
+    .review-ta::placeholder { color: var(--text-soft); opacity: 0.6; }
+
+    .review-send-btn {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 0.6rem;
+      font-weight: 400;
+      letter-spacing: 0.26em;
+      text-transform: uppercase;
+      color: var(--creme);
+      background: var(--terre);
+      border: none;
+      padding: 10px 20px;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      transition: background 0.15s;
+      display: block;
+      width: 100%;
+    }
+
+    .review-send-btn:active { background: var(--terre-dk); }
+    .review-send-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* ── Retour menu ── */
+    .back-link {
+      display: block;
+      text-align: center;
+      margin-top: 40px;
+      font-size: 0.58rem;
+      letter-spacing: 0.24em;
+      text-transform: uppercase;
+      color: var(--text-soft);
+      text-decoration: none;
+      border-bottom: 1px solid var(--sep);
+      padding-bottom: 2px;
+      width: fit-content;
+      margin-left: auto;
+      margin-right: auto;
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+
+    <!-- En-tête confirmation -->
+    <header class="success-header">
+      <div class="success-ornament">
+        <span class="orn-line"></span>
+        <span class="orn-diamond"></span>
+        <span class="orn-line r"></span>
+      </div>
+      <p class="success-icon">✦</p>
+      <h1 class="success-title">Merci pour<br>votre visite</h1>
+      <p class="success-subtitle" id="success-sub">Paiement confirmé</p>
+    </header>
+
+    <!-- Récapitulatif commande -->
+    <div class="recap-card" id="recap-card">
+      <div class="recap-header">
+        <span class="recap-label">Votre commande</span>
+        <span class="recap-mode" id="recap-mode"></span>
+      </div>
+      <div class="recap-items" id="recap-items"></div>
+      <div class="recap-footer" id="recap-footer" style="display:none">
+        <span class="recap-total-label">Total</span>
+        <span class="recap-total-amount" id="recap-total"></span>
+      </div>
+    </div>
+
+    <!-- Bloc avis -->
+    <div class="review-block">
+      <div class="review-sep">
+        <span class="review-sep-line"></span>
+        <span class="review-sep-diamond"></span>
+        <span class="review-sep-line"></span>
+      </div>
+      <p class="review-q">Qu'avez-vous pensé de votre repas ?</p>
+      <p class="review-hint">Votre avis est facultatif</p>
+
+      <div class="review-stars">
+        <button class="review-star" data-v="1" aria-label="1 étoile">★</button>
+        <button class="review-star" data-v="2" aria-label="2 étoiles">★</button>
+        <button class="review-star" data-v="3" aria-label="3 étoiles">★</button>
+        <button class="review-star" data-v="4" aria-label="4 étoiles">★</button>
+        <button class="review-star" data-v="5" aria-label="5 étoiles">★</button>
+      </div>
+
+      <div id="review-thanks">
+        <span class="review-merci">Merci ! ✦</span>
+        <a class="review-glink" href="https://www.google.com/maps/search/Maison+Ardent" target="_blank" rel="noopener noreferrer">Laisser un avis Google</a>
+      </div>
+
+      <div id="review-form">
+        <textarea class="review-ta" placeholder="Un commentaire pour nous aider à progresser ?"></textarea>
+        <button class="review-send-btn" id="review-send">Envoyer</button>
+      </div>
+    </div>
+
+    <a href="entrees.html" class="back-link">Retour à la carte</a>
+
+  </div>
+
+  <script>
+    (function () {
+      /* ── Récupération et vidage du panier ── */
+      let items = [];
+      try { items = JSON.parse(localStorage.getItem('maCart') || '[]'); } catch (_) {}
+      localStorage.removeItem('maCart');
+
+      let resaCtx = null;
+      try { resaCtx = JSON.parse(sessionStorage.getItem('resaCtx') || 'null'); } catch (_) {}
+      const isReservation = !!(resaCtx && resaCtx.id);
+
+      function fmtPrice(n) {
+        const s = n.toFixed(2);
+        return (s.endsWith('.00') ? String(Math.round(n)) : s.replace('.', ',')) + ' €';
+      }
+
+      function escHtml(s) {
+        return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      }
+
+      /* ── Rendu récapitulatif ── */
+      const recapItems  = document.getElementById('recap-items');
+      const recapFooter = document.getElementById('recap-footer');
+      const recapTotal  = document.getElementById('recap-total');
+      const recapMode   = document.getElementById('recap-mode');
+      const successSub  = document.getElementById('success-sub');
+
+      if (isReservation) {
+        recapMode.textContent = 'Acompte 30 %';
+        successSub.textContent = 'Acompte réservation confirmé';
+      }
+
+      if (!items.length) {
+        recapItems.innerHTML = '<p class="recap-empty">Commande enregistrée</p>';
+      } else {
+        const total = items.reduce((s, i) => s + i.price * i.qty, 0);
+        recapItems.innerHTML = items.map(item => `
+          <div class="recap-item">
+            <span class="recap-item-name">${escHtml(item.name)}</span>
+            <span class="recap-item-qty">× ${item.qty}</span>
+            <span class="recap-item-price">${fmtPrice(item.price * item.qty)}</span>
+          </div>`).join('');
+
+        const displayed = isReservation
+          ? fmtPrice(Math.round(total * 0.3 * 100) / 100)
+          : fmtPrice(total);
+
+        recapTotal.textContent = displayed;
+        recapFooter.style.display = 'flex';
+      }
+
+      /* ── Système d'avis ── */
+      let avisRating = 0;
+      let avisSent   = false;
+
+      const stars  = document.querySelectorAll('.review-star');
+      const thanks = document.getElementById('review-thanks');
+      const form   = document.getElementById('review-form');
+      const ta     = document.querySelector('.review-ta');
+      const sendBtn = document.getElementById('review-send');
+
+      function litUpTo(n) {
+        stars.forEach((s, i) => s.classList.toggle('lit', i < n));
+      }
+
+      function postAvis(rating, comment) {
+        fetch('/.netlify/functions/avis', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ rating, comment: comment || '' })
+        }).catch(() => {});
+      }
+
+      stars.forEach((star, idx) => {
+        star.addEventListener('mouseenter', () => { if (!avisSent) litUpTo(idx + 1); });
+        star.addEventListener('mouseleave', () => { if (!avisSent) litUpTo(avisRating); });
+        star.addEventListener('click', () => {
+          if (avisSent) return;
+          avisRating = idx + 1;
+          litUpTo(avisRating);
+          if (avisRating >= 4) {
+            thanks.classList.add('show');
+            form.classList.remove('show');
+            postAvis(avisRating, '');
+            avisSent = true;
+          } else {
+            thanks.classList.remove('show');
+            form.classList.add('show');
+          }
+        });
+      });
+
+      sendBtn.addEventListener('click', () => {
+        const comment = ta.value.trim();
+        if (!comment) { ta.focus(); return; }
+        postAvis(avisRating, comment);
+        sendBtn.disabled = true;
+        sendBtn.textContent = 'Envoyé ✦';
+        ta.disabled = true;
+        avisSent = true;
+      });
+    })();
+  </script>
+</body>
+</html>
