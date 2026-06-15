@@ -2,11 +2,8 @@
  * create-checkout.js — Maison Ardent
  * Crée une session Stripe Checkout.
  *
- * IMPORTANT : STRIPE_SECRET_KEY doit être configurée dans Netlify
- *   Site settings → Environment variables → Add variable
- *
- * Actuellement en MODE TEST : montant fixe 20 € (2000 cts) pour valider
- * la connexion Stripe. Décommentez la section "PRODUCTION" pour le vrai calcul.
+ * Variable d'environnement requise : STRIPE_SECRET_KEY
+ *   Netlify → Site settings → Environment variables
  */
 
 exports.handler = async (event) => {
@@ -88,46 +85,31 @@ exports.handler = async (event) => {
 
   /* ── 5. Ligne(s) de paiement ─────────────────────────────── */
 
-  // ── MODE TEST : montant fixe 2000 centimes (20 €) ──────────
-  // Permet de valider la connexion Stripe indépendamment du panier.
-  // Décommentez le bloc PRODUCTION ci-dessous et supprimez ces lignes
-  // une fois le premier paiement test réussi.
-  const lineItems = [
-    {
-      price_data: {
-        currency: 'eur',
-        product_data: { name: 'Test paiement — Maison Ardent' },
-        unit_amount: 2000,
-      },
-      quantity: 1,
-    },
-  ];
-  console.log('[checkout] line_items (TEST 2000 cts) :', JSON.stringify(lineItems));
+  /* ── 5b. Calcul du montant réel du panier ────────────────── */
+  const isDeposit = mode === 'reservation';
+  const total     = items.reduce((s, i) => s + i.price * i.qty, 0);
+  console.log('[checkout] total calculé :', total.toFixed(2), '€ | isDeposit :', isDeposit);
 
-  // ── MODE PRODUCTION (décommenter quand Stripe est validé) ───
-  // const isDeposit = mode === 'reservation';
-  // const total     = items.reduce((s, i) => s + i.price * i.qty, 0);
-  // console.log('[checkout] total calculé :', total);
-  // const lineItems = isDeposit
-  //   ? [{
-  //       price_data: {
-  //         currency: 'eur',
-  //         product_data: {
-  //           name: 'Acompte réservation — Maison Ardent',
-  //           description: `30 % sur votre pré-commande (total : ${total.toFixed(2).replace('.', ',')} €)`,
-  //         },
-  //         unit_amount: Math.round(total * 0.3 * 100),
-  //       },
-  //       quantity: 1,
-  //     }]
-  //   : items.map(item => ({
-  //       price_data: {
-  //         currency: 'eur',
-  //         product_data: { name: item.name },
-  //         unit_amount: Math.round(item.price * 100),
-  //       },
-  //       quantity: item.qty,
-  //     }));
+  const lineItems = isDeposit
+    ? [{
+        price_data: {
+          currency: 'eur',
+          product_data: {
+            name: 'Acompte réservation — Maison Ardent',
+            description: `30 % sur votre pré-commande (total : ${total.toFixed(2).replace('.', ',')} €)`,
+          },
+          unit_amount: Math.round(total * 0.3 * 100),
+        },
+        quantity: 1,
+      }]
+    : items.map(item => ({
+        price_data: {
+          currency: 'eur',
+          product_data: { name: item.name },
+          unit_amount: Math.round(item.price * 100),
+        },
+        quantity: item.qty,
+      }));
 
   /* ── 6. Création de la session Stripe ────────────────────── */
   const sessionParams = {
@@ -145,6 +127,7 @@ exports.handler = async (event) => {
     };
   }
 
+  console.log('[checkout] line_items :', JSON.stringify(lineItems));
   console.log('[checkout] sessionParams :', JSON.stringify(sessionParams));
 
   try {
