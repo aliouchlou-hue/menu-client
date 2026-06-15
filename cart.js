@@ -173,6 +173,66 @@
     }
     #cart-pay-btn:active { background: var(--terre-dk, #6e3822); }
     #cart-pay-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* ── Avis ── */
+    #cart-review {
+      display: none; padding: 14px 22px 4px;
+      border-top: 1px solid var(--sep, #D4C4B0);
+    }
+    #cart-review.visible { display: block; }
+    .cart-review-q {
+      font-family: 'Cormorant Garamond', serif; font-style: italic;
+      font-size: 0.88rem; font-weight: 300;
+      color: var(--text-soft, #6B5244); letter-spacing: 0.04em;
+      margin-bottom: 10px;
+    }
+    .cart-stars { display: flex; gap: 4px; margin-bottom: 8px; }
+    .cart-star {
+      background: none; border: none; padding: 2px;
+      font-size: 1.6rem; line-height: 1; cursor: pointer;
+      color: var(--sep, #D4C4B0);
+      transition: color 0.12s, transform 0.1s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .cart-star.lit { color: var(--terre, #8B4A2F); }
+    .cart-star:active { transform: scale(0.88); }
+    #cart-review-thanks {
+      display: none; align-items: center; flex-wrap: wrap; gap: 10px;
+      padding: 4px 0 10px;
+    }
+    #cart-review-thanks.show { display: flex; }
+    .cart-review-merci {
+      font-family: 'Cormorant Garamond', serif; font-style: italic;
+      font-size: 0.95rem; color: var(--terre, #8B4A2F); letter-spacing: 0.05em;
+    }
+    .cart-review-glink {
+      font-family: 'Montserrat', sans-serif; font-size: 0.58rem;
+      letter-spacing: 0.16em; text-transform: uppercase;
+      color: var(--text-soft, #6B5244); text-decoration: none;
+      border-bottom: 1px solid var(--sep, #D4C4B0); padding-bottom: 1px;
+      white-space: nowrap;
+    }
+    #cart-review-form { display: none; padding-bottom: 10px; }
+    #cart-review-form.show { display: block; }
+    .cart-review-ta {
+      width: 100%; min-height: 68px; padding: 9px 12px;
+      border: 1px solid var(--sep, #D4C4B0); border-radius: 4px;
+      background: #fff;
+      font-family: 'Cormorant Garamond', serif; font-style: italic;
+      font-size: 0.88rem; color: var(--text, #2C1F14);
+      resize: none; outline: none; display: block;
+      margin-bottom: 8px; -webkit-appearance: none;
+    }
+    .cart-review-ta:focus { border-color: var(--warm-mid, #C4A882); }
+    .cart-review-ta::placeholder { color: var(--text-soft, #6B5244); opacity: 0.7; }
+    .cart-review-send-btn {
+      font-family: 'Montserrat', sans-serif; font-size: 0.58rem;
+      font-weight: 400; letter-spacing: 0.22em; text-transform: uppercase;
+      color: var(--creme, #F5F0E8); background: var(--terre, #8B4A2F);
+      border: none; padding: 8px 16px; cursor: pointer;
+      -webkit-tap-highlight-color: transparent; transition: background 0.15s;
+    }
+    .cart-review-send-btn:active { background: var(--terre-dk, #6e3822); }
   `;
   document.head.appendChild(style);
 
@@ -192,6 +252,24 @@
           </button>
         </div>
         <div id="cart-items"></div>
+        <div id="cart-review">
+          <p class="cart-review-q">Qu'avez-vous pensé de votre repas ?</p>
+          <div class="cart-stars">
+            <button class="cart-star" data-v="1" aria-label="1 étoile">★</button>
+            <button class="cart-star" data-v="2" aria-label="2 étoiles">★</button>
+            <button class="cart-star" data-v="3" aria-label="3 étoiles">★</button>
+            <button class="cart-star" data-v="4" aria-label="4 étoiles">★</button>
+            <button class="cart-star" data-v="5" aria-label="5 étoiles">★</button>
+          </div>
+          <div id="cart-review-thanks">
+            <span class="cart-review-merci">Merci ! ✦</span>
+            <a class="cart-review-glink" href="https://www.google.com/maps/search/Maison+Ardent" target="_blank" rel="noopener noreferrer">Laisser un avis Google</a>
+          </div>
+          <div id="cart-review-form">
+            <textarea class="cart-review-ta" placeholder="Un commentaire pour nous aider ?"></textarea>
+            <button class="cart-review-send-btn">Envoyer</button>
+          </div>
+        </div>
         <div id="cart-footer">
           <div class="cart-total-row">
             <span class="cart-total-label">Total</span>
@@ -224,6 +302,7 @@
     pillTotal.textContent = fmtPrice(total);
     pill.classList.toggle('visible', count > 0);
     document.body.classList.toggle('cart-has-items', count > 0);
+    document.getElementById('cart-review').classList.toggle('visible', count > 0);
 
     totalAmtEl.textContent = fmtPrice(total);
     if (isReservation && count > 0) {
@@ -265,6 +344,70 @@
     render();
   }
 
+  /* ─── Bloc avis ─────────────────────────────────────────── */
+  let avisRating = 0;
+  let avisSent   = false;
+
+  function resetReview() {
+    avisRating = 0; avisSent = false;
+    document.querySelectorAll('.cart-star').forEach(s => s.classList.remove('lit'));
+    document.getElementById('cart-review-thanks').classList.remove('show');
+    document.getElementById('cart-review-form').classList.remove('show');
+    const ta  = document.querySelector('.cart-review-ta');
+    const btn = document.querySelector('.cart-review-send-btn');
+    if (ta)  { ta.value = ''; ta.disabled = false; }
+    if (btn) { btn.textContent = 'Envoyer'; btn.disabled = false; }
+  }
+
+  function postAvis(rating, comment) {
+    fetch('/.netlify/functions/avis', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ rating, comment: comment || '' })
+    }).catch(() => {});
+  }
+
+  function initReview() {
+    const stars  = document.querySelectorAll('.cart-star');
+    const thanks = document.getElementById('cart-review-thanks');
+    const form   = document.getElementById('cart-review-form');
+    const ta     = document.querySelector('.cart-review-ta');
+    const btn    = document.querySelector('.cart-review-send-btn');
+
+    function litUpTo(n) {
+      stars.forEach((s, i) => s.classList.toggle('lit', i < n));
+    }
+
+    stars.forEach((star, idx) => {
+      star.addEventListener('mouseenter', () => { if (!avisSent) litUpTo(idx + 1); });
+      star.addEventListener('mouseleave', () => { if (!avisSent) litUpTo(avisRating); });
+      star.addEventListener('click', () => {
+        if (avisSent) return;
+        avisRating = idx + 1;
+        litUpTo(avisRating);
+        if (avisRating >= 4) {
+          thanks.classList.add('show');
+          form.classList.remove('show');
+          postAvis(avisRating, '');
+          avisSent = true;
+        } else {
+          thanks.classList.remove('show');
+          form.classList.add('show');
+        }
+      });
+    });
+
+    btn.addEventListener('click', () => {
+      const comment = ta.value.trim();
+      if (!comment) { ta.focus(); return; }
+      postAvis(avisRating, comment);
+      btn.disabled = true;
+      btn.textContent = 'Envoyé ✦';
+      ta.disabled = true;
+      avisSent = true;
+    });
+  }
+
   function hookBtnAdd() {
     const btn = document.getElementById('btnAdd');
     if (!btn) return;
@@ -291,6 +434,7 @@
     overlay.classList.remove('open');
     overlay.setAttribute('aria-hidden', 'true');
     document.body.style.overflow = '';
+    resetReview();
   }
 
   pill.addEventListener('click', openCart);
@@ -343,5 +487,6 @@
     }
   });
 
+  initReview();
   render();
 })();
