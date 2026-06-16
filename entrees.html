@@ -672,7 +672,8 @@
   <!-- 01 -->
   <article class="dish-card" data-id="stjaques">
     <div class="dish-img-wrap fb-stjaques">
-      <img alt="Tartare de Saint-Jacques" class="dish-img" loading="eager" />
+      <img src="https://images.unsplash.com/photo-1580476262798-bddd9f4b7369?auto=format&fit=crop&w=900&h=675&q=85"
+           alt="Tartare de Saint-Jacques" class="dish-img" loading="eager" />
       <span class="dish-num">01</span>
     </div>
     <div class="dish-body">
@@ -735,7 +736,7 @@
   <!-- 05 -->
   <article class="dish-card" data-id="asperges">
     <div class="dish-img-wrap fb-asperges">
-      <img src="https://images.unsplash.com/photo-1547592166-59d65a4567a3?auto=format&fit=crop&w=900&h=675&q=85"
+      <img src="https://images.unsplash.com/photo-1615485290382-441e4d049cb5?auto=format&fit=crop&w=900&h=675&q=85"
            alt="Asperges Blanches d'Alsace" class="dish-img" loading="lazy" />
       <span class="dish-num">05</span>
     </div>
@@ -832,7 +833,7 @@
       stjaques: {
         name: 'Tartare de Saint-Jacques',
         price: '28 €',
-        img: '',
+        img: 'https://images.unsplash.com/photo-1580476262798-bddd9f4b7369?auto=format&fit=crop&w=900&h=675&q=85',
         fb: 'fb-stjaques',
         desc: 'Noix de Saint-Jacques de pleine mer, marinées quelques heures au citron vert et gingembre frais. Servies avec un caviar d\'Aquitaine Sturia, une émulsion iodée à l\'eau de mer et une huile verte de ciboulette sauvage. Finition au sel de fleur de l\'île de Ré.',
         allergens: ['Mollusques', 'Poisson']
@@ -864,7 +865,7 @@
       asperges: {
         name: 'Asperges Blanches d\'Alsace',
         price: '26 €',
-        img: 'https://images.unsplash.com/photo-1547592166-59d65a4567a3?auto=format&fit=crop&w=900&h=675&q=85',
+        img: 'https://images.unsplash.com/photo-1615485290382-441e4d049cb5?auto=format&fit=crop&w=900&h=675&q=85',
         fb: 'fb-asperges',
         desc: 'Asperges blanches d\'Alsace rôties et glacées au miel d\'acacia, mousseline légère aux agrumes. Accompagnées d\'un œuf de caille poché à basse température et de chips croustillantes de jambon Bellota ibérique.',
         allergens: ['Œufs', 'Lait', 'Porc']
@@ -982,10 +983,10 @@
         showFallback();
       } else {
         const ctrl = new AbortController();
-        const timer = setTimeout(() => ctrl.abort(), 3000);
+        const timer = setTimeout(() => ctrl.abort(), 2000);
         fetch(src, { method: 'HEAD', signal: ctrl.signal })
           .then(res => { clearTimeout(timer); if (!res.ok) showFallback(); })
-          .catch(err => { clearTimeout(timer); if (err.name === 'AbortError') showFallback(); });
+          .catch(() => { clearTimeout(timer); showFallback(); });
       }
     });
 
