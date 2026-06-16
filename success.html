@@ -414,8 +414,8 @@
     (function () {
       /* ── Récupération et vidage du panier ── */
       let items = [];
-      try { items = JSON.parse(localStorage.getItem('maCart') || '[]'); } catch (_) {}
-      localStorage.removeItem('maCart');
+      try { items = JSON.parse(sessionStorage.getItem('maCart') || '[]'); } catch (_) {}
+      sessionStorage.removeItem('maCart');
 
       let resaCtx = null;
       try { resaCtx = JSON.parse(sessionStorage.getItem('resaCtx') || 'null'); } catch (_) {}

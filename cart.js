@@ -1,6 +1,6 @@
 /**
  * cart.js — Maison Ardent
- * Panier persistant (localStorage), tiroir récapitulatif, paiement Stripe.
+ * Panier persistant (sessionStorage), tiroir récapitulatif, paiement Stripe.
  * Fonctionne en mode direct (100 %) et en mode réservation (acompte 30 %).
  */
 (function () {
@@ -14,10 +14,10 @@
 
   /* ─── Helpers ───────────────────────────────────────────── */
   function loadCart() {
-    try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); } catch (_) { return []; }
+    try { return JSON.parse(sessionStorage.getItem(STORAGE_KEY) || '[]'); } catch (_) { return []; }
   }
   function saveCart(items) {
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(items)); } catch (_) {}
+    try { sessionStorage.setItem(STORAGE_KEY, JSON.stringify(items)); } catch (_) {}
     if (isReservation) {
       const rc = {};
       items.forEach(i => { rc[i.name] = i.qty; });
