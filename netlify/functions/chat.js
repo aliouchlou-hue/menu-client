@@ -1,5 +1,21 @@
 const https = require('https');
 
+function buildSystem(ctx) {
+  let extra = '';
+  if (ctx && ctx.promotions && ctx.promotions.length) {
+    extra += '\n\nPROMOTIONS ACTIVES :\n' + ctx.promotions.map(p =>
+      '• ' + (p.nom || p.label || p.plat_id || '') +
+      (p.prix_promo != null ? ' → ' + p.prix_promo + ' €' : p.type === 'pourcent' ? ' −' + p.valeur + '%' : '')
+    ).join('\n');
+  }
+  if (ctx && ctx.allergenes && Object.keys(ctx.allergenes).length) {
+    extra += '\n\nALLERGÈNES (données temps réel) :\n' + Object.entries(ctx.allergenes).map(([n, a]) =>
+      '• ' + n + ' : ' + a.join(', ')
+    ).join('\n');
+  }
+  return SYSTEM_PROMPT + extra;
+}
+
 const SYSTEM_PROMPT = `Tu es le conseiller gastronomique de Maison Ardent, un restaurant gastronomique étoilé à Paris.
 
 RÈGLE ABSOLUE : Tu réponds UNIQUEMENT aux questions sur la carte du restaurant. Pour toute autre question, réponds poliment : "Je suis là uniquement pour vous guider dans notre carte."
@@ -89,7 +105,7 @@ exports.handler = async (event) => {
   }
 
   try {
-    const { message, history = [] } = JSON.parse(event.body || '{}');
+    const { message, history = [], context = null } = JSON.parse(event.body || '{}');
     if (!message || typeof message !== 'string') {
       return { statusCode: 400, headers, body: JSON.stringify({ error: 'Message requis.' }) };
     }
@@ -99,7 +115,7 @@ exports.handler = async (event) => {
     const data = await httpsPost({
       model: 'claude-haiku-4-5-20251001',
       max_tokens: 300,
-      system: SYSTEM_PROMPT,
+      system: buildSystem(context),
       messages: [...trimmedHistory, { role: 'user', content: message }]
     }, apiKey);
 

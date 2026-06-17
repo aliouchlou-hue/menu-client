@@ -621,6 +621,24 @@
     }
     .ar-hide-btn:active { color: var(--terre); }
 
+    /* ── PROMO BADGE ── */
+    .promo-badge {
+      position: absolute;
+      top: 14px; right: 14px;
+      z-index: 3;
+      background: var(--terre);
+      color: var(--creme);
+      font-family: 'Montserrat', sans-serif;
+      font-size: 0.6rem;
+      font-weight: 400;
+      letter-spacing: 0.12em;
+      padding: 3px 9px;
+      border-radius: 2px;
+      pointer-events: none;
+    }
+    .dish-price s { opacity: 0.5; margin-right: 4px; text-decoration: line-through; }
+    .promo-new { color: var(--terre); }
+
   </style>
 </head>
 <body>
@@ -810,7 +828,7 @@
   </div>
 
   <script>
-    const dishes = {
+    var dishes = {
       homard: {
         name: 'Homard Bleu Rôti',
         price: '58 €',
@@ -1064,7 +1082,7 @@
         const res = await fetch('/.netlify/functions/chat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ message: text, history: chatHistory })
+          body: JSON.stringify({ message: text, history: chatHistory, context: window._menuApiContext || null })
         });
         const data = await res.json();
         const reply = data.reply || data.error || 'Service momentanément indisponible.';
@@ -1114,6 +1132,9 @@
       }, 200);
     }
   </script>
+  <script>window.PAGE_CATS=['plat','plats','plat_principal','main_course'];</script>
+  <script src="menu-api.js"></script>
+  <script src="menu-api-page.js"></script>
   <script src="cart.js"></script>
   <script src="reservation-mode.js"></script>
 </body>
