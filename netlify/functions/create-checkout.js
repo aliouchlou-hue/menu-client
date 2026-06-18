@@ -112,8 +112,9 @@ exports.handler = async (event) => {
       }));
 
   /* ── 6. Création de la session Stripe ────────────────────── */
-  // Résumé des plats pour le Passeport / l'historique (limite Stripe 500 chars)
-  const platsLabel = items.map(i => `${i.qty}× ${i.name}`).join(', ').slice(0, 480);
+  // Résumé des plats pour le Passeport / l'historique + analytics dashboard.
+  // Format aligné sur l'analyseur backend (`Nom ×qty`) et menu.html.
+  const platsLabel = items.map(i => `${i.name} ×${i.qty}`).join(', ').slice(0, 480);
 
   // Métadonnées partagées (session + payment_intent) — lues par le webhook MenuVision
   const sharedMeta = {

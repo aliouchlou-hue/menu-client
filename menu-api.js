@@ -31,7 +31,7 @@
     _get(RAILWAY + '/restaurants/' + rid + '/theme'),
   ]).then(function (r) {
     if (r[0] && r[0].ok) window.menuAPI.plats      = r[0].plats      || [];
-    if (r[1] && r[1].ok) window.menuAPI.promotions = r[1].promotions  || [];
+    if (r[1] && r[1].ok) window.menuAPI.promotions = _flattenPromos(r[1].promotions);
     if (r[2] && r[2].ok) window.menuAPI.theme      = r[2].theme       || {};
     window.menuAPI.ready = true;
     try {
@@ -44,6 +44,20 @@
     _theme(window.menuAPI.theme);
     _fire();
   }).catch(function () { window.menuAPI.ready = true; _fire(); });
+
+  // Le backend renvoie chaque promo avec un tableau plats[{id,nom,prix,prix_promo}].
+  // Le menu attend une liste plate par plat : {plat_id, prix_promo}. On aplatit.
+  function _flattenPromos(promos) {
+    var out = [];
+    (promos || []).forEach(function (promo) {
+      (promo.plats || []).forEach(function (pl) {
+        if (pl && pl.id != null && pl.prix_promo != null) {
+          out.push({ plat_id: pl.id, nom: pl.nom, prix: pl.prix, prix_promo: pl.prix_promo });
+        }
+      });
+    });
+    return out;
+  }
 
   function _get(url) {
     return new Promise(function (resolve) {
