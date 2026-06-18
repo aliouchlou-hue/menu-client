@@ -320,13 +320,20 @@
     payBtn.disabled = true;
     payBtn.textContent = 'Redirection…';
     try {
+      // Restaurant courant + client connecté au Passeport (si dispo)
+      let restaurantId = null;
+      try { restaurantId = (window.menuAPI && window.menuAPI.restaurantId) || localStorage.getItem('mv_rid'); } catch (_) {}
+      const pass = window.MVPassport && window.MVPassport.client;
       const res = await fetch('/.netlify/functions/create-checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           items,
           mode: isReservation ? 'reservation' : 'direct',
-          reservationId: resaCtx ? resaCtx.id : null
+          reservationId: resaCtx ? resaCtx.id : null,
+          restaurantId,
+          clientEmail: pass ? pass.email : null,
+          clientNom:   pass ? pass.nom   : null
         })
       });
       const data = await res.json();

@@ -476,10 +476,12 @@
       }
 
       function postAvis(rating, comment) {
+        let rid = null;
+        try { rid = localStorage.getItem('mv_rid'); } catch (_) {}
         fetch('/.netlify/functions/avis', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ rating, comment: comment || '' })
+          body: JSON.stringify({ rating, comment: comment || '', restaurant_id: rid })
         }).catch(() => {});
       }
 
@@ -513,5 +515,6 @@
       });
     })();
   </script>
+  <script src="passport.js"></script>
 </body>
 </html>

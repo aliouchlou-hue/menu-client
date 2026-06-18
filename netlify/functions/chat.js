@@ -13,6 +13,15 @@ function buildSystem(ctx) {
       '• ' + n + ' : ' + a.join(', ')
     ).join('\n');
   }
+  // Passeport MenuVision : profil du client connecté (personnalisation)
+  if (ctx && ctx.passport) {
+    const pp = ctx.passport;
+    const lignes = [];
+    if (pp.prenom)      lignes.push('Prénom : ' + pp.prenom + ' (tu peux l\'appeler par son prénom, avec délicatesse).');
+    if (pp.allergenes && pp.allergenes.length)   lignes.push('ALLERGIES — ne JAMAIS recommander de plat contenant : ' + pp.allergenes.join(', ') + '.');
+    if (pp.preferences && pp.preferences.length) lignes.push('Goûts : ' + pp.preferences.join(', ') + '. Oriente tes suggestions en ce sens.');
+    if (lignes.length) extra += '\n\nCLIENT (Passeport MenuVision) :\n' + lignes.map(l => '• ' + l).join('\n');
+  }
   return SYSTEM_PROMPT + extra;
 }
 

@@ -12,32 +12,39 @@
  *   - CRM    : webhook custom
  */
 
+const RAILWAY = 'https://menuvision-production.up.railway.app';
+
 exports.handler = async (event) => {
   if (event.httpMethod !== 'POST') {
     return { statusCode: 405, body: 'Method Not Allowed' };
   }
 
-  let rating, comment;
+  let rating, comment, restaurant_id, plat_nom;
   try {
-    ({ rating, comment } = JSON.parse(event.body || '{}'));
+    ({ rating, comment, restaurant_id, plat_nom } = JSON.parse(event.body || '{}'));
   } catch (_) {
     return { statusCode: 400, body: JSON.stringify({ error: 'JSON invalide' }) };
   }
 
   const stars = '★'.repeat(rating || 0) + '☆'.repeat(5 - (rating || 0));
-  console.log(`[avis] ${stars} (${rating}/5) | commentaire : ${comment || '(aucun)'}`);
+  console.log(`[avis] ${stars} (${rating}/5) | resto:${restaurant_id || '—'} | commentaire : ${comment || '(aucun)'}`);
 
-  /* ── Notification restaurant (à implémenter) ────────────────
-  if (rating <= 3 && comment) {
-    await fetch(process.env.SLACK_WEBHOOK_URL, {
+  // Transmettre l'avis au backend MenuVision → remonte dans le dashboard restaurateur
+  try {
+    const r = await fetch(RAILWAY + '/avis', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        text: `⚠️ Avis ${rating}/5 reçu :\n_"${comment}"_`
-      })
+        restaurant_id: restaurant_id || null,
+        plat_nom:      plat_nom || 'Avis général',
+        note:          rating,
+        commentaire:   comment || '',
+      }),
     });
+    if (!r.ok) console.error('[avis] backend a répondu', r.status);
+  } catch (err) {
+    console.error('[avis] échec transmission backend:', err.message);
   }
-  ── */
 
   return {
     statusCode: 200,

@@ -6,6 +6,8 @@
 
   var params = new URLSearchParams(location.search);
   var rid    = params.get('r') || DEFAULT_ID;
+  // Persiste le restaurant courant pour les pages sans ?r= (success.html, paiement)
+  try { localStorage.setItem('mv_rid', rid); } catch (_) {}
 
   window.menuAPI = { restaurantId: rid, plats: [], promotions: [], theme: {}, ready: false };
 

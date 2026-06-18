@@ -48,9 +48,9 @@ exports.handler = async (event) => {
     };
   }
 
-  const { items, mode, reservationId } = parsed;
+  const { items, mode, reservationId, restaurantId, clientEmail, clientNom } = parsed;
   console.log('[checkout] items :', JSON.stringify(items));
-  console.log('[checkout] mode :', mode, '| reservationId :', reservationId);
+  console.log('[checkout] mode :', mode, '| reservationId :', reservationId, '| resto :', restaurantId, '| client :', clientEmail || '—');
 
   if (!Array.isArray(items) || items.length === 0) {
     console.error('[checkout] panier vide');
@@ -112,20 +112,31 @@ exports.handler = async (event) => {
       }));
 
   /* ── 6. Création de la session Stripe ────────────────────── */
+  // Résumé des plats pour le Passeport / l'historique (limite Stripe 500 chars)
+  const platsLabel = items.map(i => `${i.qty}× ${i.name}`).join(', ').slice(0, 480);
+
+  // Métadonnées partagées (session + payment_intent) — lues par le webhook MenuVision
+  const sharedMeta = {
+    payment_mode: mode || 'direct',
+    type:         isDeposit ? 'acompte' : 'addition',
+  };
+  if (reservationId) sharedMeta.reservation_id = String(reservationId);
+  if (restaurantId)  sharedMeta.restaurant_id  = String(restaurantId);
+  if (clientEmail)   sharedMeta.client_email   = String(clientEmail).slice(0, 200);
+  if (clientNom)     sharedMeta.client_nom      = String(clientNom).slice(0, 120);
+  if (!isDeposit)    sharedMeta.plats_label     = platsLabel;
+
   const sessionParams = {
     payment_method_types: ['card'],
     line_items: lineItems,
     mode: 'payment',
     success_url: `${origin}/success.html`,
     cancel_url:  `${origin}/entrees.html`,
+    metadata: sharedMeta,
+    // Propage les métadonnées au PaymentIntent → le webhook payment_intent.succeeded les reçoit
+    payment_intent_data: { metadata: sharedMeta },
   };
-
-  if (reservationId) {
-    sessionParams.metadata = {
-      reservation_id: String(reservationId),
-      payment_mode:   mode || 'direct',
-    };
-  }
+  if (clientEmail) sessionParams.customer_email = String(clientEmail);
 
   console.log('[checkout] line_items :', JSON.stringify(lineItems));
   console.log('[checkout] sessionParams :', JSON.stringify(sessionParams));
