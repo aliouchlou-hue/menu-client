@@ -1,172 +1,58 @@
 /**
- * create-checkout.js — Maison Ardent
- * Crée une session Stripe Checkout.
+ * create-checkout.js — Maison Ardent / MenuVision
  *
- * Variable d'environnement requise : STRIPE_SECRET_KEY
- *   Netlify → Site settings → Environment variables
+ * Proxy vers Railway : le routage par prestataire (Stripe / CMI / PayZone /
+ * espèces) et la création de session se font côté backend, où les clés du
+ * restaurant sont déchiffrées. Aucun secret de paiement ne transite par Netlify.
+ *
+ * Réponses possibles renvoyées au client :
+ *   { provider:'stripe',  url }        → rediriger vers Stripe Checkout
+ *   { provider:'none',    message }    → paiement sur place (espèces)
+ *   { provider:'cmi',     ... }        → paramètres CMI
+ *   { provider:'payzone', ... }        → paramètres PayZone
  */
 
+const RAILWAY = 'https://menuvision-production.up.railway.app';
+
 exports.handler = async (event) => {
-  console.log('[checkout] ─── nouvelle requête ───');
-  console.log('[checkout] méthode:', event.httpMethod);
-  console.log('[checkout] headers origin:', event.headers.origin);
-  console.log('[checkout] headers referer:', event.headers.referer);
+  const headers = {
+    'Content-Type': 'application/json',
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Headers': 'Content-Type',
+  };
 
-  if (event.httpMethod !== 'POST') {
-    return { statusCode: 405, body: 'Method Not Allowed' };
-  }
+  if (event.httpMethod === 'OPTIONS') return { statusCode: 204, headers, body: '' };
+  if (event.httpMethod !== 'POST')    return { statusCode: 405, headers, body: JSON.stringify({ error: 'Method Not Allowed' }) };
 
-  /* ── 1. Vérification de la clé Stripe ────────────────────── */
-  const key = process.env.STRIPE_SECRET_KEY;
-  console.log('[checkout] STRIPE_SECRET_KEY présente :', !!key);
-  if (key) {
-    console.log('[checkout] STRIPE_SECRET_KEY preview  :', key.slice(0, 8) + '…');
-  }
-
-  if (!key) {
-    console.error('[checkout] ERREUR : STRIPE_SECRET_KEY absente');
-    return {
-      statusCode: 503,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        error: 'STRIPE_SECRET_KEY absente — configurez-la dans Site settings → Environment variables sur Netlify, puis redéployez.',
-      }),
-    };
-  }
-
-  /* ── 2. Parse du body ─────────────────────────────────────── */
   let parsed;
   try {
     parsed = JSON.parse(event.body || '{}');
-    console.log('[checkout] body reçu :', JSON.stringify(parsed));
-  } catch (parseErr) {
-    console.error('[checkout] JSON invalide :', parseErr.message);
-    return {
-      statusCode: 400,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ error: 'Corps JSON invalide' }),
-    };
+  } catch (_) {
+    return { statusCode: 400, headers, body: JSON.stringify({ error: 'Corps JSON invalide' }) };
   }
 
   const { items, mode, reservationId, restaurantId, clientEmail, clientNom } = parsed;
-  console.log('[checkout] items :', JSON.stringify(items));
-  console.log('[checkout] mode :', mode, '| reservationId :', reservationId, '| resto :', restaurantId, '| client :', clientEmail || '—');
-
   if (!Array.isArray(items) || items.length === 0) {
-    console.error('[checkout] panier vide');
-    return {
-      statusCode: 400,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ error: 'Panier vide' }),
-    };
+    return { statusCode: 400, headers, body: JSON.stringify({ error: 'Panier vide' }) };
   }
 
-  /* ── 3. Init Stripe (après la vérif de la clé) ────────────── */
-  let stripe;
-  try {
-    stripe = require('stripe')(key);
-    console.log('[checkout] client Stripe initialisé');
-  } catch (initErr) {
-    console.error('[checkout] échec init Stripe :', initErr.message);
-    return {
-      statusCode: 500,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ error: 'Impossible d\'initialiser Stripe : ' + initErr.message }),
-    };
-  }
-
-  /* ── 4. URL de retour ─────────────────────────────────────── */
+  // Origine du site (pour les URLs de retour Stripe)
   const origin =
     event.headers.origin ||
     (event.headers.referer ? (() => { try { return new URL(event.headers.referer).origin; } catch (_) { return null; } })() : null) ||
     process.env.URL ||
     'https://maison-ardent.netlify.app';
-  console.log('[checkout] origin résolu :', origin);
-
-  /* ── 5. Ligne(s) de paiement ─────────────────────────────── */
-
-  /* ── 5b. Calcul du montant réel du panier ────────────────── */
-  const isDeposit = mode === 'reservation';
-  const total     = items.reduce((s, i) => s + i.price * i.qty, 0);
-  console.log('[checkout] total calculé :', total.toFixed(2), '€ | isDeposit :', isDeposit);
-
-  const lineItems = isDeposit
-    ? [{
-        price_data: {
-          currency: 'eur',
-          product_data: {
-            name: 'Acompte réservation — Maison Ardent',
-            description: `30 % sur votre pré-commande (total : ${total.toFixed(2).replace('.', ',')} €)`,
-          },
-          unit_amount: Math.round(total * 0.3 * 100),
-        },
-        quantity: 1,
-      }]
-    : items.map(item => ({
-        price_data: {
-          currency: 'eur',
-          product_data: { name: item.name },
-          unit_amount: Math.round(item.price * 100),
-        },
-        quantity: item.qty,
-      }));
-
-  /* ── 6. Création de la session Stripe ────────────────────── */
-  // Résumé des plats pour le Passeport / l'historique + analytics dashboard.
-  // Format aligné sur l'analyseur backend (`Nom ×qty`) et menu.html.
-  const platsLabel = items.map(i => `${i.name} ×${i.qty}`).join(', ').slice(0, 480);
-
-  // Métadonnées partagées (session + payment_intent) — lues par le webhook MenuVision
-  const sharedMeta = {
-    payment_mode: mode || 'direct',
-    type:         isDeposit ? 'acompte' : 'addition',
-  };
-  if (reservationId) sharedMeta.reservation_id = String(reservationId);
-  if (restaurantId)  sharedMeta.restaurant_id  = String(restaurantId);
-  if (clientEmail)   sharedMeta.client_email   = String(clientEmail).slice(0, 200);
-  if (clientNom)     sharedMeta.client_nom      = String(clientNom).slice(0, 120);
-  if (!isDeposit)    sharedMeta.plats_label     = platsLabel;
-
-  const sessionParams = {
-    payment_method_types: ['card'],
-    line_items: lineItems,
-    mode: 'payment',
-    success_url: `${origin}/success.html`,
-    cancel_url:  `${origin}/entrees.html`,
-    metadata: sharedMeta,
-    // Propage les métadonnées au PaymentIntent → le webhook payment_intent.succeeded les reçoit
-    payment_intent_data: { metadata: sharedMeta },
-  };
-  if (clientEmail) sessionParams.customer_email = String(clientEmail);
-
-  console.log('[checkout] line_items :', JSON.stringify(lineItems));
-  console.log('[checkout] sessionParams :', JSON.stringify(sessionParams));
 
   try {
-    const session = await stripe.checkout.sessions.create(sessionParams);
-    console.log('[checkout] session créée :', session.id);
-    console.log('[checkout] redirect url  :', session.url);
-    return {
-      statusCode: 200,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ url: session.url }),
-    };
+    const r = await fetch(RAILWAY + '/create-checkout-session', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Origin': origin },
+      body: JSON.stringify({ items, mode, reservationId, restaurantId, clientEmail, clientNom }),
+    });
+    const data = await r.json().catch(() => ({ error: 'Réponse invalide du serveur de paiement' }));
+    return { statusCode: r.ok ? 200 : (r.status || 500), headers, body: JSON.stringify(data) };
   } catch (err) {
-    console.error('[checkout] ERREUR Stripe ─────────────');
-    console.error('[checkout] type    :', err.type);
-    console.error('[checkout] code    :', err.code);
-    console.error('[checkout] param   :', err.param);
-    console.error('[checkout] message :', err.message);
-    console.error('[checkout] raw     :', JSON.stringify(err.raw || {}));
-    return {
-      statusCode: 500,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        error:   err.message,
-        type:    err.type,
-        code:    err.code,
-        param:   err.param,
-      }),
-    };
+    console.error('[create-checkout] proxy error:', err.message);
+    return { statusCode: 502, headers, body: JSON.stringify({ error: 'Service de paiement momentanément indisponible.' }) };
   }
 };

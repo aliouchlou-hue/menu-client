@@ -338,17 +338,37 @@
       });
       const data = await res.json();
       console.log('[cart] réponse checkout:', res.status, data);
+
       if (data.url) {
+        // Stripe Checkout → redirection
         window.location.href = data.url;
-      } else {
-        throw new Error(data.error || 'Erreur Stripe (pas d\'URL retournée)');
+        return;
       }
+      if (data.provider === 'none') {
+        // Espèces / sur place — aucun paiement en ligne
+        showPayInfo(data.message || 'Paiement sur place — présentez votre commande au service.');
+        return;
+      }
+      if (data.provider === 'cmi' || data.provider === 'payzone') {
+        // Passerelle marocaine — règlement sur place en attendant l'intégration redirigée
+        showPayInfo('Le règlement s\'effectue sur place. Présentez votre commande au service.');
+        return;
+      }
+      throw new Error(data.error || 'Paiement indisponible.');
     } catch (err) {
       console.error('[cart] erreur paiement:', err);
       payBtn.textContent = 'Erreur — Réessayer';
       payBtn.disabled = false;
     }
   });
+
+  /* Message d'encaissement « sur place » (non Stripe) */
+  function showPayInfo(msg) {
+    resaNotice.textContent = msg;
+    resaNotice.classList.add('show');
+    payBtn.textContent = 'Commande prête';
+    payBtn.disabled = true;
+  }
 
   render();
 })();
