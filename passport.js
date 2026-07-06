@@ -378,10 +378,11 @@
       console.warn('[Passeport] Supabase non chargé');
     });
 
-    // Re-grise les plats quand la carte est (re)construite par menu-api-page.js
+    // Re-grise les plats et ré-injecte le contexte IA quand la carte est
+    // (re)construite par menu-api-page.js (qui réécrit window._menuApiContext).
     window.addEventListener('menuApiReady', function () {
       apiReady = true;
-      setTimeout(applyAllergenGraying, 60);
+      setTimeout(function () { applyAllergenGraying(); feedChatContext(); }, 60);
     });
   }
 

@@ -161,7 +161,9 @@
       });
     }
 
-    // Expose live context for chat
+    // Expose live context for chat. On préserve un éventuel passeport déjà
+    // injecté par passport.js (l'ordre de résolution des deux est indéterminé).
+    var _prevPassport = window._menuApiContext && window._menuApiContext.passport;
     window._menuApiContext = {
       promotions: api.promotions,
       allergenes: api.plats.reduce(function (acc, p) {
@@ -169,6 +171,7 @@
         return acc;
       }, {})
     };
+    if (_prevPassport) window._menuApiContext.passport = _prevPassport;
   }
 
   if (window.menuAPI && window.menuAPI.ready) { run(); }
