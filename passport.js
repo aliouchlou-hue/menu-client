@@ -121,15 +121,54 @@
     });
   }
 
-  /* ─── API backend MenuVision ────────────────────────────────────────────── */
-  function apiGetProfile(email) {
-    return fetch(RAILWAY + '/profil/client?email=' + encodeURIComponent(email))
+  /* ─── API backend MenuVision (token Passeport signé) ────────────────────── */
+  // Le backend n'accepte plus d'email en clair : on échange l'access_token de
+  // la session Supabase contre un JWT Passeport signé par Railway, envoyé en
+  // Authorization sur chaque appel /profil/client*.
+  var passportToken = null;
+
+  function exchangeToken() {
+    if (!supa) return Promise.resolve(null);
+    return supa.auth.getSession().then(function (res) {
+      var session = res && res.data ? res.data.session : null;
+      if (!session || !session.access_token) return null;
+      return fetch(RAILWAY + '/auth/passeport', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ supabase_access_token: session.access_token })
+      }).then(function (r) { return r.json(); })
+        .then(function (j) { passportToken = (j && j.ok) ? j.token : null; return passportToken; })
+        .catch(function () { return null; });
+    });
+  }
+
+  function authedFetch(path, opts, noRetry) {
+    opts = opts || {};
+    var ready = passportToken ? Promise.resolve(passportToken) : exchangeToken();
+    return ready.then(function (tok) {
+      var headers = {};
+      var k;
+      for (k in (opts.headers || {})) headers[k] = opts.headers[k];
+      if (tok) headers['Authorization'] = 'Bearer ' + tok;
+      return fetch(RAILWAY + path, { method: opts.method || 'GET', headers: headers, body: opts.body });
+    }).then(function (r) {
+      if (r.status === 401 && !noRetry) {
+        passportToken = null; // token expiré → nouvel échange puis une seule relance
+        return exchangeToken().then(function (tok) {
+          return tok ? authedFetch(path, opts, true) : r;
+        });
+      }
+      return r;
+    });
+  }
+
+  function apiGetProfile() {
+    return authedFetch('/profil/client')
       .then(function (r) { return r.json(); })
       .then(function (j) { return j.ok ? j.profil : null; })
       .catch(function () { return null; });
   }
   function apiUpsertProfile(body) {
-    return fetch(RAILWAY + '/profil/client', {
+    return authedFetch('/profil/client', {
       method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body)
     }).then(function (r) { return r.json(); }).then(function (j) { return j.ok ? j.profil : null; })
       .catch(function () { return null; });
@@ -169,6 +208,7 @@
 
   function signOut() {
     if (!supa) return;
+    passportToken = null;
     supa.auth.signOut().then(function () { location.reload(); });
   }
 
@@ -244,7 +284,7 @@
     var tries = 0;
     var iv = setInterval(function () {
       tries++;
-      apiGetProfile(user.email).then(function (p) {
+      apiGetProfile().then(function (p) {
         if (p) { profile = p; window.MVPassport.profile = p; renderConnected(currentUser); }
       });
       if (tries >= 4) clearInterval(iv);
@@ -320,7 +360,7 @@
       var preferences = document.getElementById('mvPref').value.split(',').map(function (s) { return s.trim(); }).filter(Boolean);
       var btn = document.getElementById('mvSave');
       btn.disabled = true; btn.textContent = 'Enregistrement…';
-      apiUpsertProfile({ email: currentUser.email, allergenes: allergenes, preferences: preferences })
+      apiUpsertProfile({ allergenes: allergenes, preferences: preferences })
         .then(function (p) {
           if (p) { profile = p; window.MVPassport.profile = p; }
           close();
@@ -347,12 +387,11 @@
 
     // 1. upsert (crée/maj nom + photo), puis 2. récupère le profil complet (points, allergènes)
     apiUpsertProfile({
-      email:     user.email,
       nom:       window.MVPassport.client.nom,
       photo_url: (user.user_metadata && (user.user_metadata.avatar_url || user.user_metadata.picture)) || null
     }).then(function (p) {
       profile = p;
-      if (!profile) { return apiGetProfile(user.email).then(function (pp) { profile = pp; }); }
+      if (!profile) { return apiGetProfile().then(function (pp) { profile = pp; }); }
     }).then(function () {
       window.MVPassport.profile = profile;
       renderConnected(user);
