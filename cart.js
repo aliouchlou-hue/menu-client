@@ -6,6 +6,11 @@
 (function () {
   /* ─── Constantes ────────────────────────────────────────── */
   const STORAGE_KEY = 'maCart';
+  const RAILWAY     = 'https://menuvision-production.up.railway.app';
+
+  // Mode « cuisine » : restaurant sans paiement en ligne (payment_provider='none').
+  // Le client envoie sa commande en salle au lieu de payer par carte.
+  let kitchenMode = false;
 
   /* ─── Détection du mode réservation ────────────────────── */
   let resaCtx = null;
@@ -174,6 +179,59 @@
     #cart-pay-btn:active { background: var(--terre-dk, #6e3822); }
     #cart-pay-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
+    /* ── Mode cuisine (payment_provider = none) ── */
+    #cart-table-field { display: none; margin: 6px 0 14px; }
+    #cart-table-field.show { display: block; }
+    #cart-table-label {
+      display: block; font-size: 0.58rem; letter-spacing: 0.22em;
+      text-transform: uppercase; color: var(--warm-mid, #C4A882); margin-bottom: 7px;
+    }
+    #cart-table-input {
+      width: 100%; padding: 13px 14px;
+      background: #fff; border: 1px solid var(--sep, #D4C4B0); border-radius: 2px;
+      font-family: 'Montserrat', sans-serif; font-size: 0.95rem; font-weight: 300;
+      color: var(--text, #2C1F14); letter-spacing: 0.02em;
+      -webkit-appearance: none; appearance: none;
+    }
+    #cart-table-input:focus { outline: none; border-color: var(--terre, #8B4A2F); }
+    #cart-table-field.error #cart-table-input { border-color: #B54334; background: #FCF4F2; }
+
+    #cart-call-btn {
+      display: none; width: 100%; margin-top: 9px; padding: 13px;
+      background: transparent; color: var(--terre, #8B4A2F);
+      border: 1px solid var(--sep, #D4C4B0);
+      font-family: 'Montserrat', sans-serif; font-size: 0.64rem;
+      font-weight: 400; letter-spacing: 0.24em; text-transform: uppercase;
+      cursor: pointer; transition: border-color 0.2s, background 0.2s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    #cart-call-btn.show { display: block; }
+    #cart-call-btn:active { background: rgba(139,74,47,0.06); border-color: var(--terre, #8B4A2F); }
+
+    #cart-msg {
+      font-size: 0.72rem; letter-spacing: 0.02em; text-align: center;
+      margin-top: 11px; display: none;
+    }
+    #cart-msg.show { display: block; }
+    #cart-msg.error { color: #B54334; }
+    #cart-msg.info  { color: var(--text-soft, #6B5244); font-style: italic; }
+
+    .cart-success { text-align: center; padding: 44px 24px; }
+    .cart-success-icon {
+      width: 54px; height: 54px; margin: 0 auto 18px;
+      border: 1px solid var(--terre, #8B4A2F); border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.5rem; color: var(--terre, #8B4A2F);
+    }
+    .cart-success-title {
+      font-family: 'Cormorant Garamond', serif; font-style: italic;
+      font-size: 1.5rem; font-weight: 300; color: var(--text, #2C1F14);
+      letter-spacing: 0.04em; margin-bottom: 10px;
+    }
+    .cart-success-sub {
+      font-size: 0.82rem; font-weight: 300; color: var(--text-soft, #6B5244);
+      letter-spacing: 0.03em; line-height: 1.6; max-width: 280px; margin: 0 auto;
+    }
   `;
   document.head.appendChild(style);
 
@@ -199,7 +257,13 @@
             <span id="cart-total-amount">0&nbsp;€</span>
           </div>
           <p id="cart-resa-notice"></p>
+          <div id="cart-table-field">
+            <label id="cart-table-label" for="cart-table-input">Numéro de table</label>
+            <input id="cart-table-input" type="number" inputmode="numeric" min="1" step="1" placeholder="Votre table" autocomplete="off" />
+          </div>
           <button id="cart-pay-btn">Payer</button>
+          <button id="cart-call-btn" type="button">Appeler le serveur</button>
+          <p id="cart-msg"></p>
         </div>
       </div>
     </div>
@@ -214,6 +278,11 @@
   const totalAmtEl  = document.getElementById('cart-total-amount');
   const resaNotice  = document.getElementById('cart-resa-notice');
   const payBtn      = document.getElementById('cart-pay-btn');
+  const callBtn     = document.getElementById('cart-call-btn');
+  const tableField  = document.getElementById('cart-table-field');
+  const tableInput  = document.getElementById('cart-table-input');
+  const cartMsg     = document.getElementById('cart-msg');
+  const footerEl    = document.getElementById('cart-footer');
 
   /* ─── Render ────────────────────────────────────────────── */
   function render() {
@@ -226,7 +295,10 @@
     pill.classList.toggle('visible', count > 0);
     document.body.classList.toggle('cart-has-items', count > 0);
     totalAmtEl.textContent = fmtPrice(total);
-    if (isReservation && count > 0) {
+    if (kitchenMode) {
+      resaNotice.classList.remove('show');
+      payBtn.textContent = 'Envoyer ma commande en cuisine';
+    } else if (isReservation && count > 0) {
       const dep = Math.round(total * 0.3 * 100) / 100;
       resaNotice.textContent = 'Acompte 30 % à régler : ' + fmtPrice(dep);
       resaNotice.classList.add('show');
@@ -282,6 +354,11 @@
 
   /* ─── Ouverture / Fermeture ─────────────────────────────── */
   function openCart() {
+    // Restaure l'état du footer (masqué après un envoi réussi précédent).
+    footerEl.style.display = '';
+    payBtn.disabled = false;
+    if (typeof clearKitchenMsg === 'function') clearKitchenMsg();
+    tableField.classList.remove('error');
     render();
     overlay.classList.add('open');
     overlay.setAttribute('aria-hidden', 'false');
@@ -313,8 +390,16 @@
     render();
   });
 
+  /* ─── Clic bouton principal : route selon le mode ───────── */
+  payBtn.addEventListener('click', () => {
+    if (kitchenMode) { sendToKitchen(); }
+    else             { payStripe(); }
+  });
+
+  callBtn.addEventListener('click', callServer);
+
   /* ─── Paiement Stripe ───────────────────────────────────── */
-  payBtn.addEventListener('click', async () => {
+  async function payStripe() {
     const items = loadCart();
     if (!items.length) return;
     payBtn.disabled = true;
@@ -360,7 +445,7 @@
       payBtn.textContent = 'Erreur — Réessayer';
       payBtn.disabled = false;
     }
-  });
+  }
 
   /* Message d'encaissement « sur place » (non Stripe) */
   function showPayInfo(msg) {
@@ -369,6 +454,99 @@
     payBtn.textContent = 'Commande prête';
     payBtn.disabled = true;
   }
+
+  /* ─── Mode cuisine (payment_provider = 'none') ──────────── */
+  function kitchenMsg(text, kind) {
+    cartMsg.textContent = text;
+    cartMsg.className = 'show ' + (kind || 'info');
+  }
+  function clearKitchenMsg() { cartMsg.className = ''; cartMsg.textContent = ''; }
+
+  function readTableNumber() {
+    const n = parseInt(tableInput.value, 10);
+    if (!Number.isInteger(n) || n < 1) {
+      tableField.classList.add('error');
+      tableInput.focus();
+      return null;
+    }
+    tableField.classList.remove('error');
+    return n;
+  }
+
+  function currentRestaurantId() {
+    try { return (window.menuAPI && window.menuAPI.restaurantId) || localStorage.getItem('mv_rid'); }
+    catch (_) { return null; }
+  }
+
+  async function sendToKitchen() {
+    const items = loadCart();
+    if (!items.length) return;
+    const table = readTableNumber();
+    if (table == null) { kitchenMsg('Veuillez indiquer votre numéro de table.', 'error'); return; }
+
+    clearKitchenMsg();
+    payBtn.disabled = true;
+    const prevLabel = payBtn.textContent;
+    payBtn.textContent = 'Envoi en cours…';
+    try {
+      const plats = items.map(i => ({ nom: i.name, qte: i.qty, prix: i.price }));
+      const res = await fetch(RAILWAY + '/commandes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ restaurant_id: currentRestaurantId(), table_numero: table, plats })
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.ok) {
+        try { sessionStorage.removeItem(STORAGE_KEY); } catch (_) {}
+        showKitchenSuccess('Votre commande a été transmise — un serveur arrive.');
+      } else {
+        payBtn.disabled = false;
+        payBtn.textContent = prevLabel;
+        kitchenMsg(data.error || 'Envoi impossible. Veuillez réessayer.', 'error');
+      }
+    } catch (err) {
+      console.error('[cart] envoi cuisine:', err);
+      payBtn.disabled = false;
+      payBtn.textContent = prevLabel;
+      kitchenMsg('Service momentanément indisponible.', 'error');
+    }
+  }
+
+  async function callServer() {
+    const table = readTableNumber();
+    if (table == null) { kitchenMsg('Indiquez votre table pour appeler un serveur.', 'error'); return; }
+    kitchenMsg('Un serveur arrive à votre table.', 'info');
+  }
+
+  function showKitchenSuccess(msg) {
+    cartItemsEl.innerHTML =
+      '<div class="cart-success">' +
+        '<div class="cart-success-icon">✓</div>' +
+        '<p class="cart-success-title">Commande transmise</p>' +
+        '<p class="cart-success-sub">' + escHtml(msg) + '</p>' +
+      '</div>';
+    footerEl.style.display = 'none';
+    // Le panier est vidé : masque la pastille flottante.
+    pill.classList.remove('visible');
+    document.body.classList.remove('cart-has-items');
+  }
+
+  // Applique le mode selon le prestataire de paiement du restaurant.
+  function applyMode() {
+    var provider = null;
+    try { provider = window.menuAPI && window.menuAPI.theme && window.menuAPI.theme.payment_provider; } catch (_) {}
+    // Mode cuisine : uniquement hors tunnel réservation (l'acompte reste Stripe).
+    kitchenMode = (provider === 'none') && !isReservation;
+
+    tableField.classList.toggle('show', kitchenMode);
+    callBtn.classList.toggle('show', kitchenMode);
+    if (!kitchenMode) clearKitchenMsg();
+    render();
+  }
+
+  // Le prestataire arrive avec le thème (chargement asynchrone de menu-api.js).
+  window.addEventListener('menuApiReady', applyMode);
+  if (window.menuAPI && window.menuAPI.ready) applyMode();
 
   render();
 })();
