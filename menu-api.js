@@ -94,7 +94,9 @@
     if (t.couleur_accent) r.style.setProperty('--warm-mid', t.couleur_accent);
     if (t.police)         _font(t.police);
     if (t.nom)            document.querySelectorAll('.header-brand').forEach(function (e) { e.textContent = t.nom; });
-    if (!estDefaut) _schedule(function () { _enseigne(t.nom); });
+    // Tout de suite pour ce qui est déjà dans la page (le script est en fin de body),
+    // puis à la fin du chargement pour le reste.
+    if (!estDefaut) { if (document.body) _enseigne(t.nom); _schedule(function () { _enseigne(t.nom); }); }
   }
 
   // Remplace l'enseigne codée en dur (restaurant par défaut) par celle du restaurant chargé.
@@ -103,7 +105,7 @@
     if (nom) {
       document.title = ENSEIGNE.test(document.title) ? document.title.replace(ENSEIGNE, nom) : nom;
       var titre = document.querySelector('.hero-title');
-      if (titre) titre.textContent = nom;
+      if (titre && titre.textContent !== nom) titre.textContent = nom;
       // Slogan et mention d'origine propres au restaurant par défaut.
       document.querySelectorAll('.hero-label, .hero-subtitle').forEach(function (e) { e.style.display = 'none'; });
       var w = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT), n;
@@ -120,7 +122,19 @@
       if (/^\/?(index|entrees|plats|desserts|vins|success)(\.html)?(\?|$)/.test(h) && !/[?&]r=/.test(h)) a.setAttribute('href', h + (h.indexOf('?') >= 0 ? '&' : '?') + 'r=' + encodeURIComponent(rid));
     });
     document.documentElement.classList.remove('mv-attente');
+    // D'autres scripts (chat, passeport) écrivent encore l'enseigne par défaut après coup :
+    // on repasse à chaque modification de la page.
+    if (nom && !_veille && window.MutationObserver) {
+      var options = { childList: true, subtree: true, characterData: true };
+      _veille = new MutationObserver(function () {
+        _veille.disconnect();
+        _enseigne(nom);
+        _veille.observe(document.body, options);
+      });
+      _veille.observe(document.body, options);
+    }
   }
+  var _veille = null;
 
   function _dk(hex) {
     var n = parseInt(hex.replace('#', ''), 16);
