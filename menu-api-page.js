@@ -43,8 +43,9 @@
       ? '<s>' + esc(fmt(plat.prix)) + '</s> <span class="promo-new">' + esc(fmt(info.fin)) + '</span>'
       : esc(fmt(plat.prix));
     var badge = info ? '<span class="promo-badge">' + esc(info.label) + '</span>' : '';
-    var img   = plat.image_url
-      ? '<img src="' + esc(plat.image_url) + '" alt="' + esc(plat.nom) + '" class="dish-img" loading="' + (idx === 0 ? 'eager' : 'lazy') + '" />'
+    var photo = plat.image_url || plat.photo_url;
+    var img   = photo
+      ? '<img src="' + esc(photo) + '" alt="' + esc(plat.nom) + '" class="dish-img" loading="' + (idx === 0 ? 'eager' : 'lazy') + '" />'
       : '';
     return '<article class="dish-card" data-id="' + esc(pid) + '">'
       + '<div class="dish-img-wrap">' + img
@@ -102,7 +103,7 @@
         if (d) d[pid] = {
           name:     p.nom,
           price:    fmt(info ? info.fin : p.prix),
-          img:      p.image_url || '',
+          img:      p.image_url || p.photo_url || '',
           fb:       '',
           desc:     p.description_longue || p.description || '',
           allergens: p.allergenes || p.accords || [],
@@ -121,6 +122,16 @@
         initFallback(card);
       });
 
+    } else if (!api.estDefaut) {
+      // Autre restaurant sans plat dans cette catégorie : les plats codés en dur sont
+      // ceux du restaurant par défaut, on les retire au lieu de les lui attribuer.
+      var dv = window.dishes;
+      if (dv) Object.keys(dv).forEach(function (k) { delete dv[k]; });
+      document.querySelectorAll('.dish-card, .card-sep').forEach(function (el) { el.remove(); });
+      var ornVide = document.querySelector('.section-ornament');
+      if (ornVide && !document.querySelector('.carte-vide')) {
+        ornVide.insertAdjacentHTML('afterend', '<p class="carte-vide" style="text-align:center;opacity:.6;padding:56px 24px;font-style:italic;">Cette partie de la carte arrive bientôt.</p>');
+      }
     } else {
       // API returned no data for this category — augment existing hardcoded dishes
 
