@@ -1,17 +1,18 @@
 /* menu-api.js — MenuVision multi-tenant data loader */
 (function () {
   var RAILWAY    = 'https://menuvision-production.up.railway.app';
-  var DEFAULT_ID = '156dbae3-12f9-45f0-ad72-aa6966916d7c';
-  var TTL        = 5 * 60 * 1000;
+  // Restaurant de démonstration (Maison Ardent), affiché quand l'URL ne porte pas ?r=.
+  // MÊME VALEUR que DEFAULT_DEMO_RESTAURANT_ID dans public/reservation.html du dépôt menuvision :
+  // le menu et la réservation doivent montrer la même démonstration.
+  var DEFAULT_DEMO_RESTAURANT_ID = '7917c5f4-3d21-4e3d-bc69-8d87df617865';
+  var TTL        = 60 * 1000;   // cache de 60 secondes : une carte modifiée apparaît vite sur les téléphones
 
   var params = new URLSearchParams(location.search);
-  // Le restaurant vient du QR code (?r=). Les liens internes ne le portent pas :
-  // on le garde pour l'onglet, sinon la page suivante retomberait sur le restaurant par défaut.
-  var ridOnglet = null;
-  try { ridOnglet = sessionStorage.getItem('mv_rid_onglet'); } catch (_) {}
-  var rid = params.get('r') || ridOnglet || DEFAULT_ID;
-  var estDefaut = rid === DEFAULT_ID;
-  try { if (params.get('r')) sessionStorage.setItem('mv_rid_onglet', rid); } catch (_) {}
+  // Le restaurant vient uniquement de l'URL (?r=, posé par le QR code). Sans ?r=, c'est la démonstration.
+  // Les liens internes sont réécrits pour porter ?r= (voir _enseigne et les pages de catégorie).
+  var rid = params.get('r') || DEFAULT_DEMO_RESTAURANT_ID;
+  var estDefaut = rid === DEFAULT_DEMO_RESTAURANT_ID;
+  try { sessionStorage.removeItem('mv_rid_onglet'); } catch (_) {}   // ancienne mémoire d'onglet, abandonnée
   // Tant que le thème d'un autre restaurant n'est pas chargé, on masque l'enseigne
   // codée en dur plutôt que d'afficher brièvement celle du restaurant par défaut.
   if (!estDefaut) {
@@ -26,7 +27,8 @@
 
   window.menuAPI = { restaurantId: rid, estDefaut: estDefaut, plats: [], promotions: [], theme: {}, ready: false };
 
-  var ck = 'mv_' + rid;
+  // Une entrée de cache par restaurant, jamais de clé globale.
+  var ck = 'menuvision:' + rid;
   try {
     var raw = sessionStorage.getItem(ck);
     if (raw) {
@@ -85,7 +87,8 @@
   }
 
   function _theme(t) {
-    if (!t) return;
+    // La démonstration garde son habillage et son enseigne « Maison Ardent » d'origine.
+    if (!t || estDefaut) return;
     var r = document.documentElement;
     if (t.couleur_principale) {
       r.style.setProperty('--terre',    t.couleur_principale);

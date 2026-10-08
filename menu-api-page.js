@@ -92,7 +92,9 @@
       return CATS.indexOf((p.categorie || p.category || '').toLowerCase()) >= 0;
     });
 
-    if (pagePlats.length > 0) {
+    // La démonstration garde ses plats et ses photos d'origine ; les données du serveur
+    // ne servent alors qu'à compléter (allergènes, promotions) dans la dernière branche.
+    if (pagePlats.length > 0 && !api.estDefaut) {
       // Rebuild dishes from API data
       var d = window.dishes;
       if (d) Object.keys(d).forEach(function (k) { delete d[k]; });
