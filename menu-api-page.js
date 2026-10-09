@@ -184,6 +184,13 @@
         return acc;
       }, {})
     };
+    // Autre restaurant que la démonstration : le conseiller reçoit son nom et sa carte.
+    if (!api.estDefaut) {
+      window._menuApiContext.restaurant = { nom: (api.theme && api.theme.nom) || '' };
+      window._menuApiContext.carte = api.plats.slice(0, 200).map(function (p) {
+        return { nom: p.nom, prix: p.prix, categorie: p.categorie, description: p.description || '' };
+      });
+    }
     if (_prevPassport) window._menuApiContext.passport = _prevPassport;
   }
 

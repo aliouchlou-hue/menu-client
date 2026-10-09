@@ -116,7 +116,10 @@
         if (n.parentNode && /^(SCRIPT|STYLE)$/.test(n.parentNode.nodeName)) continue;
         if (n.nodeValue.indexOf('Maison Ardent') >= 0) n.nodeValue = n.nodeValue.replace(ENSEIGNE, nom);
       }
-      document.querySelectorAll('img[alt*="Maison Ardent"]').forEach(function (e) { e.alt = e.alt.replace(ENSEIGNE, nom); });
+      // Images et visualiseur 3D (model-viewer) : l'enseigne figure aussi dans les attributs.
+      ['alt', 'aria-label', 'title'].forEach(function (a) {
+        document.querySelectorAll('[' + a + '*="Maison Ardent"]').forEach(function (e) { e.setAttribute(a, e.getAttribute(a).replace(ENSEIGNE, nom)); });
+      });
     }
     // Les liens internes portent le restaurant (ouverture dans un nouvel onglet, partage).
     document.querySelectorAll('a[href]').forEach(function (a) {

@@ -22,12 +22,40 @@ function buildSystem(ctx) {
     if (pp.preferences && pp.preferences.length) lignes.push('Goûts : ' + pp.preferences.join(', ') + '. Oriente tes suggestions en ce sens.');
     if (lignes.length) extra += '\n\nCLIENT (Passeport MenuVision) :\n' + lignes.map(l => '• ' + l).join('\n');
   }
-  return SYSTEM_PROMPT + extra;
+  // Sans restaurant dans le contexte : la démonstration (Maison Ardent) et sa carte figée.
+  return (ctx && ctx.restaurant ? promptRestaurant(ctx) : SYSTEM_PROMPT) + extra;
+}
+
+const REGLE = `RÈGLE ABSOLUE : Tu réponds UNIQUEMENT aux questions sur la carte du restaurant. Pour toute autre question, réponds poliment : "Je suis là uniquement pour vous guider dans notre carte."`;
+
+const FORMAT = `FORMAT IMPÉRATIF :
+— Maximum 2 phrases courtes par réponse, jamais plus.
+— Jamais de listes, tirets, ni markdown (pas de **, *, -, •).
+— Prose naturelle et élégante uniquement.
+— Quand tu cites un plat, utilise son nom exact tel qu'il figure dans la carte ci-dessus.`;
+
+// Conseiller d'un restaurant client : son nom et sa carte viennent du contexte envoyé par la page.
+function promptRestaurant(ctx) {
+  const txt = (v, n) => String(v == null ? '' : v).replace(/\s+/g, ' ').trim().slice(0, n);
+  const nom = txt(ctx.restaurant.nom, 80) || 'ce restaurant';
+  const carte = (Array.isArray(ctx.carte) ? ctx.carte : []).slice(0, 200)
+    .filter(p => p && p.nom)
+    .map(p => '• ' + txt(p.nom, 120) + ' — ' + (Number(p.prix) || 0) + (p.categorie ? ' — ' + txt(p.categorie, 30) : '') + (p.description ? ' — ' + txt(p.description, 200) : ''))
+    .join('\n');
+  return `Tu es le conseiller du restaurant ${nom}.
+
+${REGLE}
+
+CARTE COMPLÈTE (nom — prix — catégorie — description) :
+${carte || '(carte non communiquée : invite le client à consulter la carte affichée)'}
+
+${FORMAT}
+— Ne cite que des plats de cette carte, sans en inventer.`;
 }
 
 const SYSTEM_PROMPT = `Tu es le conseiller gastronomique de Maison Ardent, un restaurant gastronomique étoilé à Paris.
 
-RÈGLE ABSOLUE : Tu réponds UNIQUEMENT aux questions sur la carte du restaurant. Pour toute autre question, réponds poliment : "Je suis là uniquement pour vous guider dans notre carte."
+${REGLE}
 
 CARTE COMPLÈTE :
 
@@ -52,11 +80,7 @@ DESSERTS
 • Île Flottante — 18 € — Crème anglaise vanille, caramel beurre salé, pralin feuilletine
 • Tarte Fraises Gariguette — 22 € — Sablé breton, crème pistache de Sicile, sorbet framboise
 
-FORMAT IMPÉRATIF :
-— Maximum 2 phrases courtes par réponse, jamais plus.
-— Jamais de listes, tirets, ni markdown (pas de **, *, -, •).
-— Prose naturelle et élégante uniquement.
-— Quand tu cites un plat, utilise son nom exact tel qu'il figure dans la carte ci-dessus.
+${FORMAT}
 
 UPSELL (naturel, jamais insistant) :
 — Entrée mentionnée → suggère un plat en harmonie
