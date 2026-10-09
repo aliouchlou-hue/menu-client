@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>Confirmation — Maison Ardent</title>
+  <title>Confirmation</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&family=Montserrat:wght@300;400&display=swap" rel="stylesheet" />
@@ -397,7 +397,7 @@
 
       <div id="review-thanks">
         <span class="review-merci">Merci ! ✦</span>
-        <a class="review-glink" href="https://www.google.com/maps/search/Maison+Ardent" target="_blank" rel="noopener noreferrer">Laisser un avis Google</a>
+        <a class="review-glink" id="review-glink" style="display:none" target="_blank" rel="noopener noreferrer">Laisser un avis Google</a>
       </div>
 
       <div id="review-form">
@@ -406,7 +406,7 @@
       </div>
     </div>
 
-    <a href="entrees.html" class="back-link">Retour à la carte</a>
+    <a href="entrees.html" class="back-link" id="back-link">Retour à la carte</a>
 
   </div>
 
@@ -420,6 +420,30 @@
       let resaCtx = null;
       try { resaCtx = JSON.parse(sessionStorage.getItem('resaCtx') || 'null'); } catch (_) {}
       const isReservation = !!(resaCtx && resaCtx.id);
+
+      /* ── Restaurant : celui du ?r= (adresse de retour du paiement), sinon le dernier menu ouvert ── */
+      const RAILWAY = 'https://menuvision-production.up.railway.app';
+      const DEMO_ID = '7917c5f4-3d21-4e3d-bc69-8d87df617865';   // démonstration (Maison Ardent)
+      let RESTO_ID = new URLSearchParams(location.search).get('r');
+      if (!RESTO_ID) { try { RESTO_ID = localStorage.getItem('mv_rid'); } catch (_) {} }
+      if (RESTO_ID) {
+        if (RESTO_ID !== DEMO_ID) document.getElementById('back-link').href = 'entrees.html?r=' + encodeURIComponent(RESTO_ID);
+        fetch(RAILWAY + '/restaurants/' + encodeURIComponent(RESTO_ID) + '/theme').then(r => r.json()).then(d => {
+          if (!d.ok) return;
+          const nom = RESTO_ID === DEMO_ID ? 'Maison Ardent' : (d.theme.nom || '');
+          if (nom) {
+            document.title = 'Confirmation — ' + nom;
+            const g = document.getElementById('review-glink');
+            g.href = 'https://www.google.com/maps/search/' + encodeURIComponent(nom);
+            g.style.display = '';
+          }
+          // Le Passeport (passport.js) lit le thème pour savoir s'il peut proposer la connexion.
+          if (!window.menuAPI) {
+            window.menuAPI = { restaurantId: RESTO_ID, theme: d.theme, plats: [], promotions: [], ready: true };
+            window.dispatchEvent(new CustomEvent('menuApiReady', { detail: window.menuAPI }));
+          }
+        }).catch(() => {});
+      }
 
       function fmtPrice(n) {
         const s = n.toFixed(2);
@@ -476,8 +500,7 @@
       }
 
       function postAvis(rating, comment) {
-        let rid = null;
-        try { rid = localStorage.getItem('mv_rid'); } catch (_) {}
+        const rid = RESTO_ID;
         fetch('/.netlify/functions/avis', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -515,6 +538,6 @@
       });
     })();
   </script>
-  <script src="passport.js"></script>
+  <script src="passport.js?v=2026-10-10a"></script>
 </body>
 </html>

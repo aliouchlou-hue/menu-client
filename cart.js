@@ -11,6 +11,7 @@
   // Mode « cuisine » : restaurant sans paiement en ligne (payment_provider='none').
   // Le client envoie sa commande en salle au lieu de payer par carte.
   let kitchenMode = false;
+  let showMode = false;   // formule sans commande en cuisine : panier à montrer au serveur
 
   /* ─── Détection du mode réservation ────────────────────── */
   let resaCtx = null;
@@ -295,7 +296,12 @@
     pill.classList.toggle('visible', count > 0);
     document.body.classList.toggle('cart-has-items', count > 0);
     totalAmtEl.textContent = fmtPrice(total);
-    if (kitchenMode) {
+    payBtn.style.display = showMode ? 'none' : '';
+    if (showMode) {
+      // Ni commande en cuisine ni paiement en ligne : le panier sert de récapitulatif à montrer.
+      resaNotice.textContent = 'Montrez cette commande à votre serveur';
+      resaNotice.classList.toggle('show', count > 0);
+    } else if (kitchenMode) {
       resaNotice.classList.remove('show');
       payBtn.textContent = 'Envoyer ma commande en cuisine';
     } else if (isReservation && count > 0) {
@@ -392,6 +398,7 @@
 
   /* ─── Clic bouton principal : route selon le mode ───────── */
   payBtn.addEventListener('click', () => {
+    if (showMode) return;
     if (kitchenMode) { sendToKitchen(); }
     else             { payStripe(); }
   });
@@ -535,8 +542,14 @@
   function applyMode() {
     var provider = null;
     try { provider = window.menuAPI && window.menuAPI.theme && window.menuAPI.theme.payment_provider; } catch (_) {}
-    // Mode cuisine : uniquement hors tunnel réservation (l'acompte reste Stripe).
-    kitchenMode = (provider === 'none') && !isReservation;
+    // Sans paiement en ligne, hors tunnel réservation (l'acompte reste Stripe) :
+    //  - la formule inclut la commande en cuisine (theme.fonctions) → envoi en cuisine ;
+    //  - sinon → le client montre son panier au serveur.
+    var cuisine = false;
+    try { cuisine = window.menuAPI.theme.fonctions.commande_cuisine === true; } catch (_) {}
+    var surPlace = (provider === 'none') && !isReservation;
+    kitchenMode = surPlace && cuisine;
+    showMode    = surPlace && !cuisine;
 
     tableField.classList.toggle('show', kitchenMode);
     callBtn.classList.toggle('show', kitchenMode);

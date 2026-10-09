@@ -183,7 +183,15 @@
   }
 
   /* ─── CTA « Débloquer » dans le footer ──────────────────────────────────── */
+  // Le serveur dit (via /theme) si la connexion Google est configurée. Tant qu'elle ne l'est pas,
+  // le bouton reste masqué : il mènerait à une page d'erreur.
+  var ctaEnAttente = false;
+  function passeportActif() {
+    try { return window.menuAPI.theme.fonctions.passeport === true; } catch (_) { return false; }
+  }
   function renderCTA() {
+    if (!passeportActif()) { ctaEnAttente = true; return; }
+    ctaEnAttente = false;
     if (document.querySelector('.mv-cta')) return;
     var footer = document.querySelector('.page-footer') || document.querySelector('footer') || document.body;
     var btn = document.createElement('button');
@@ -336,7 +344,7 @@
       '<div class="mv-sheet" role="dialog" aria-label="Mon Passeport">' +
         '<div class="mv-sheet-handle"></div>' +
         '<h3>Mon Passeport Gourmand</h3>' +
-        '<p class="mv-lead">Renseignez vos allergènes et vos goûts : nous adaptons la carte et les conseils du sommelier, ici et dans tous les restaurants MenuVision.</p>' +
+        '<p class="mv-lead">Renseignez vos allergènes et vos goûts : nous adaptons la carte et les suggestions du conseiller, ici et dans tous les restaurants MenuVision.</p>' +
         '<div class="mv-label">Mes allergènes</div>' +
         '<div class="mv-chips" id="mvAllg">' +
           ALLERGENES_COURANTS.map(function (a) {
@@ -421,6 +429,7 @@
     // (re)construite par menu-api-page.js (qui réécrit window._menuApiContext).
     window.addEventListener('menuApiReady', function () {
       apiReady = true;
+      if (ctaEnAttente) renderCTA();   // le thème vient d'arriver : le bouton peut maintenant s'afficher
       setTimeout(function () { applyAllergenGraying(); feedChatContext(); }, 60);
     });
   }
