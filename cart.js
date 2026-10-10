@@ -265,6 +265,28 @@
   const cartItemsEl = document.getElementById('cart-items');
   const totalAmtEl  = document.getElementById('cart-total-amount');
   const resaNotice  = document.getElementById('cart-resa-notice');
+
+  /* ─── Conditions d'acompte et d'annulation (mode réservation) ───
+     Affichées dans le panier AVANT le paiement, avec les valeurs du restaurant (theme.politique)
+     et les textes du serveur MenuVision (fr, es, ca, en). */
+  const politiqueEl = document.createElement('div');
+  politiqueEl.id = 'cart-politique';
+  politiqueEl.hidden = true;
+  if (resaNotice && resaNotice.parentNode) resaNotice.parentNode.insertBefore(politiqueEl, resaNotice.nextSibling);
+  let politiqueScript = null;
+  function afficherPolitique(acompteEur) {
+    let p = null;
+    try { p = window.menuAPI.theme.politique; } catch (_) {}
+    if (!isReservation || !p || !(acompteEur > 0)) { politiqueEl.hidden = true; return; }
+    const rendre = () => window.MVPolitique && window.MVPolitique.afficher(politiqueEl, { heures: p.annulation_heures, montant_cents: Math.round(acompteEur * 100) });
+    if (window.MVPolitique) return rendre();
+    if (!politiqueScript) {
+      politiqueScript = document.createElement('script');
+      politiqueScript.src = RAILWAY + '/politique-acompte.js';
+      document.head.appendChild(politiqueScript);
+    }
+    politiqueScript.addEventListener('load', rendre);
+  }
   const payBtn      = document.getElementById('cart-pay-btn');
   const tableField  = document.getElementById('cart-table-field');
   const tableInput  = document.getElementById('cart-table-input');
@@ -292,6 +314,7 @@
       payBtn.textContent = 'Envoyer ma commande en cuisine';
     } else if (isReservation && count > 0) {
       const dep = Math.round(total * 0.3 * 100) / 100;
+      afficherPolitique(dep);
       resaNotice.textContent = 'Acompte 30 % à régler : ' + fmtPrice(dep);
       resaNotice.classList.add('show');
       payBtn.textContent = 'Payer l\'acompte — ' + fmtPrice(dep);
@@ -410,7 +433,9 @@
           reservationId: resaCtx ? resaCtx.id : null,
           restaurantId,
           clientEmail: pass ? pass.email : null,
-          clientNom:   pass ? pass.nom   : null
+          clientNom:   pass ? pass.nom   : null,
+          // Langue choisie pour les conditions d'acompte : reprise sur la page de paiement Stripe.
+          lang: (window.MVPolitique && window.MVPolitique.langue()) || 'fr'
         })
       });
       const data = await res.json();
