@@ -8,7 +8,9 @@
  *  • Plats incompatibles grisés selon les allergènes enregistrés
  *  • Préférences transmises au conseiller IA
  *
- * Pré-requis : activer le provider Google dans Supabase → Authentication → Providers.
+ * Connexion Google : directe (le serveur MenuVision mène l'échange et rend un jeton Passeport
+ * dans l'adresse de retour) ou, à défaut, par Supabase Auth. Le serveur indique le mode dans
+ * /theme (fonctions.passeport_connexion). Sans connexion Google ouverte, le bouton n'apparaît pas.
  */
 (function () {
   'use strict';
@@ -127,7 +129,21 @@
   // Authorization sur chaque appel /profil/client*.
   var passportToken = null;
 
+  // Jeton rendu par la connexion directe : gardé sur l'appareil (30 jours côté serveur).
+  var CLE_JETON = 'mv_passeport_jeton';
+  function jetonDirect() { try { return localStorage.getItem(CLE_JETON); } catch (_) { return null; } }
+  function oublierJeton() { try { localStorage.removeItem(CLE_JETON); } catch (_) {} passportToken = null; }
+  // Retour de Google : « #mv_passeport=<jeton> » (ou « #mv_passeport_erreur=<motif> ») dans l'adresse.
+  var erreurConnexion = null;
+  (function lireRetour() {
+    var m = location.hash.match(/[#&]mv_passeport=([^&]+)/), e = location.hash.match(/[#&]mv_passeport_erreur=([^&]+)/);
+    if (m) { try { localStorage.setItem(CLE_JETON, decodeURIComponent(m[1])); } catch (_) {} }
+    if (e) erreurConnexion = decodeURIComponent(e[1]);
+    if (m || e) { try { history.replaceState(null, '', location.pathname + location.search); } catch (_) {} }
+  })();
+
   function exchangeToken() {
+    if (jetonDirect()) { passportToken = jetonDirect(); return Promise.resolve(passportToken); }
     if (!supa) return Promise.resolve(null);
     return supa.auth.getSession().then(function (res) {
       var session = res && res.data ? res.data.session : null;
@@ -152,6 +168,7 @@
       return fetch(RAILWAY + path, { method: opts.method || 'GET', headers: headers, body: opts.body });
     }).then(function (r) {
       if (r.status === 401 && !noRetry) {
+        if (jetonDirect()) oublierJeton();   // jeton direct refusé : il faudra se reconnecter
         passportToken = null; // token expiré → nouvel échange puis une seule relance
         return exchangeToken().then(function (tok) {
           return tok ? authedFetch(path, opts, true) : r;
@@ -202,7 +219,15 @@
     else { footer.appendChild(document.createElement('div')).appendChild(btn); }
   }
 
+  function connexionDirecte() {
+    try { return window.menuAPI.theme.fonctions.passeport_connexion === 'direct'; } catch (_) { return false; }
+  }
+
   function signIn() {
+    if (connexionDirecte()) {
+      location.href = RAILWAY + '/auth/google/start?retour=' + encodeURIComponent(location.href.split('#')[0]);
+      return;
+    }
     if (!supa) return;
     supa.auth.signInWithOAuth({
       provider: 'google',
@@ -215,6 +240,7 @@
   }
 
   function signOut() {
+    if (jetonDirect()) { oublierJeton(); location.reload(); return; }
     if (!supa) return;
     passportToken = null;
     supa.auth.signOut().then(function () { location.reload(); });
@@ -407,9 +433,32 @@
     });
   }
 
+  // Connexion directe : le jeton suffit, le profil (nom, photo, points) vient du serveur.
+  function demarrerDirect() {
+    authedFetch('/profil/client')
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (j) {
+        if (!j || !j.ok || !j.profil) { oublierJeton(); renderCTA(); return; }
+        profile = j.profil;
+        currentUser = { email: profile.email, user_metadata: { full_name: profile.nom || '', avatar_url: profile.photo_url || '' } };
+        window.MVPassport.client = { email: profile.email, nom: profile.nom || '' };
+        window.MVPassport.profile = profile;
+        renderConnected(currentUser);
+        refreshAfterPayment();
+      })
+      .catch(function () { renderCTA(); });
+  }
+
   /* ─── Init ──────────────────────────────────────────────────────────────── */
   function start() {
     injectStyles();
+    if (erreurConnexion) console.warn('[Passeport] connexion non aboutie :', erreurConnexion);
+    window.addEventListener('menuApiReady', function () {
+      apiReady = true;
+      if (ctaEnAttente) renderCTA();   // le thème vient d'arriver : le bouton peut maintenant s'afficher
+      setTimeout(function () { applyAllergenGraying(); feedChatContext(); }, 60);
+    });
+    if (jetonDirect()) { demarrerDirect(); return; }
     loadSupabase().then(function () {
       supa = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON, {
         auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
@@ -425,13 +474,6 @@
       console.warn('[Passeport] Supabase non chargé');
     });
 
-    // Re-grise les plats et ré-injecte le contexte IA quand la carte est
-    // (re)construite par menu-api-page.js (qui réécrit window._menuApiContext).
-    window.addEventListener('menuApiReady', function () {
-      apiReady = true;
-      if (ctaEnAttente) renderCTA();   // le thème vient d'arriver : le bouton peut maintenant s'afficher
-      setTimeout(function () { applyAllergenGraying(); feedChatContext(); }, 60);
-    });
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);
