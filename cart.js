@@ -197,18 +197,6 @@
     #cart-table-input:focus { outline: none; border-color: var(--terre, #8B4A2F); }
     #cart-table-field.error #cart-table-input { border-color: #B54334; background: #FCF4F2; }
 
-    #cart-call-btn {
-      display: none; width: 100%; margin-top: 9px; padding: 13px;
-      background: transparent; color: var(--terre, #8B4A2F);
-      border: 1px solid var(--sep, #D4C4B0);
-      font-family: 'Montserrat', sans-serif; font-size: 0.64rem;
-      font-weight: 400; letter-spacing: 0.24em; text-transform: uppercase;
-      cursor: pointer; transition: border-color 0.2s, background 0.2s;
-      -webkit-tap-highlight-color: transparent;
-    }
-    #cart-call-btn.show { display: block; }
-    #cart-call-btn:active { background: rgba(139,74,47,0.06); border-color: var(--terre, #8B4A2F); }
-
     #cart-msg {
       font-size: 0.72rem; letter-spacing: 0.02em; text-align: center;
       margin-top: 11px; display: none;
@@ -263,7 +251,6 @@
             <input id="cart-table-input" type="number" inputmode="numeric" min="1" step="1" placeholder="Votre table" autocomplete="off" />
           </div>
           <button id="cart-pay-btn">Payer</button>
-          <button id="cart-call-btn" type="button">Appeler le serveur</button>
           <p id="cart-msg"></p>
         </div>
       </div>
@@ -279,7 +266,6 @@
   const totalAmtEl  = document.getElementById('cart-total-amount');
   const resaNotice  = document.getElementById('cart-resa-notice');
   const payBtn      = document.getElementById('cart-pay-btn');
-  const callBtn     = document.getElementById('cart-call-btn');
   const tableField  = document.getElementById('cart-table-field');
   const tableInput  = document.getElementById('cart-table-input');
   const cartMsg     = document.getElementById('cart-msg');
@@ -403,7 +389,6 @@
     else             { payStripe(); }
   });
 
-  callBtn.addEventListener('click', callServer);
 
   /* ─── Paiement Stripe ───────────────────────────────────── */
   async function payStripe() {
@@ -505,7 +490,7 @@
       const data = await res.json().catch(() => ({}));
       if (res.ok && data.ok) {
         try { sessionStorage.removeItem(STORAGE_KEY); } catch (_) {}
-        showKitchenSuccess('Votre commande a été transmise — un serveur arrive.');
+        showKitchenSuccess('Votre commande a été transmise en cuisine.', items);
       } else {
         payBtn.disabled = false;
         payBtn.textContent = prevLabel;
@@ -519,13 +504,7 @@
     }
   }
 
-  async function callServer() {
-    const table = readTableNumber();
-    if (table == null) { kitchenMsg('Indiquez votre table pour appeler un serveur.', 'error'); return; }
-    kitchenMsg('Un serveur arrive à votre table.', 'info');
-  }
-
-  function showKitchenSuccess(msg) {
+  function showKitchenSuccess(msg, items) {
     cartItemsEl.innerHTML =
       '<div class="cart-success">' +
         '<div class="cart-success-icon">✓</div>' +
@@ -533,6 +512,10 @@
         '<p class="cart-success-sub">' + escHtml(msg) + '</p>' +
       '</div>';
     footerEl.style.display = 'none';
+    // Avis sur les plats commandés, si le restaurant les reçoit (formule avec « Avis clients »).
+    if (window.mvAvis && window.mvAvis.actifs()) {
+      (items || []).slice(0, 6).forEach(function (i) { cartItemsEl.appendChild(window.mvAvis.bloc(i.name)); });
+    }
     // Le panier est vidé : masque la pastille flottante.
     pill.classList.remove('visible');
     document.body.classList.remove('cart-has-items');
@@ -552,7 +535,6 @@
     showMode    = surPlace && !cuisine;
 
     tableField.classList.toggle('show', kitchenMode);
-    callBtn.classList.toggle('show', kitchenMode);
     if (!kitchenMode) clearKitchenMsg();
     render();
   }
