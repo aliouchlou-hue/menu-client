@@ -1,5 +1,6 @@
 /* menu-api-page.js — Integration layer: promotions, allergènes, rendu dynamique */
 (function () {
+  var RAILWAY = 'https://menuvision-production.up.railway.app';
   var CATS   = window.PAGE_CATS   || [];
   var IS_VIN = window.PAGE_IS_WINE || false;
 
@@ -201,6 +202,7 @@
       });
     }
     if (_prevPassport) window._menuApiContext.passport = _prevPassport;
+    if (avisActifs()) afficherAvisRestaurant();
   }
 
   // ── Fiche plat : modèle 3D ────────────────────────────────────────────────
@@ -242,7 +244,18 @@
       + '.mv-avis textarea{display:none;width:100%;margin-top:8px;padding:9px 10px;border:1px solid rgba(139,74,47,.3);border-radius:2px;font:inherit;font-size:.85rem;resize:vertical;min-height:54px;background:transparent;color:inherit}'
       + '.mv-avis.note textarea,.mv-avis.note .mv-avis-envoyer{display:block}'
       + '.mv-avis-envoyer{display:none;margin:8px auto 0;padding:9px 18px;background:var(--terre,#8B4A2F);color:#fff;border:none;border-radius:2px;font:inherit;font-size:.68rem;letter-spacing:.16em;text-transform:uppercase;cursor:pointer}'
-      + '.mv-avis-msg{font-size:.82rem;font-style:italic;margin-top:6px;min-height:1em}';
+      + '.mv-avis-msg{font-size:.82rem;font-style:italic;margin-top:6px;min-height:1em}'
+      + '.mv-avis input.mv-avis-prenom{display:none;width:100%;margin-top:8px;padding:9px 10px;border:1px solid rgba(139,74,47,.3);border-radius:2px;font:inherit;font-size:.85rem;background:transparent;color:inherit}'
+      + '.mv-avis.note input.mv-avis-prenom{display:block}'
+      + '.mv-avis-publics{margin:14px 0 4px;padding-top:12px;border-top:1px solid rgba(139,74,47,.18);text-align:left}'
+      + '.mv-avis-publics h3{font-size:.72rem;font-weight:400;letter-spacing:.08em;text-transform:uppercase;opacity:.75;margin:0 0 8px;text-align:center}'
+      + '.mv-avis-publics .mv-avis-moy{color:var(--terre,#8B4A2F);letter-spacing:.04em}'
+      + '.mv-avis-un{padding:8px 0;border-bottom:1px solid rgba(139,74,47,.1);font-size:.84rem;line-height:1.45}'
+      + '.mv-avis-un:last-child{border-bottom:none}'
+      + '.mv-avis-un .mv-avis-et{color:var(--terre,#8B4A2F);font-size:.8rem;letter-spacing:.06em}'
+      + '.mv-avis-un .mv-avis-qui{opacity:.7;font-size:.74rem}'
+      + '.mv-avis-un .mv-avis-rep{margin:5px 0 0 12px;padding-left:10px;border-left:2px solid rgba(139,74,47,.3);font-size:.8rem;font-style:italic;opacity:.85}'
+      + '.mv-avis-resto{max-width:560px;margin:34px auto 0;padding:0 24px}';
     document.head.appendChild(st);
   }
   // Le restaurant reçoit-il les avis ? (formule avec « Avis clients », annoncée par /theme)
@@ -255,6 +268,7 @@
     el.innerHTML = '<p class="mv-avis-q"></p><div class="mv-avis-etoiles">'
       + [1, 2, 3, 4, 5].map(function (n) { return '<button type="button" data-n="' + n + '" aria-label="' + n + ' sur 5">★</button>'; }).join('')
       + '</div><textarea maxlength="300" placeholder="Un commentaire ? (facultatif)"></textarea>'
+      + '<input class="mv-avis-prenom" type="text" maxlength="40" placeholder="Votre prénom (facultatif)" autocomplete="given-name" />'
       + '<button type="button" class="mv-avis-envoyer">Envoyer mon avis</button><p class="mv-avis-msg" role="status"></p>';
     el.querySelector('.mv-avis-q').textContent = 'Votre avis sur « ' + platNom + ' »';
     var etoiles = el.querySelectorAll('.mv-avis-etoiles button'), msg = el.querySelector('.mv-avis-msg'), btn = el.querySelector('.mv-avis-envoyer');
@@ -270,18 +284,67 @@
       btn.disabled = true; msg.textContent = 'Envoi…';
       fetch('https://menuvision-production.up.railway.app/avis', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ restaurant_id: window.menuAPI.restaurantId, plat_nom: platNom, note: note, commentaire: el.querySelector('textarea').value.trim() })
+        body: JSON.stringify({ restaurant_id: window.menuAPI.restaurantId, plat_nom: platNom, note: note, commentaire: el.querySelector('textarea').value.trim(), auteur: el.querySelector('.mv-avis-prenom').value.trim() })
       }).then(function (r) { return r.json().then(function (j) { return r.ok && j.ok; }); })
         .then(function (ok) {
           if (!ok) throw new Error('refus');
-          envoye = true; msg.textContent = 'Merci, votre avis a bien été transmis au restaurant.';
-          btn.style.display = 'none'; el.querySelector('textarea').disabled = true;
+          envoye = true; msg.textContent = 'Merci, votre avis a bien été transmis au restaurant. Il sera publié après validation.';
+          btn.style.display = 'none'; el.querySelector('textarea').disabled = true; el.querySelector('.mv-avis-prenom').disabled = true;
         })
         .catch(function () { btn.disabled = false; msg.textContent = "L'avis n'a pas pu être envoyé. Réessayez dans un instant."; });
     });
     return el;
   }
-  window.mvAvis = { actifs: avisActifs, bloc: blocAvis };
+  // ── Avis publiés (validés par le restaurateur) : une lecture par page ──
+  var avisPublics = null;
+  function chargerAvisPublics() {
+    if (avisPublics) return avisPublics;
+    var vide = { avis: [], total: 0, note_moyenne: null, par_plat: {} };
+    avisPublics = fetch(RAILWAY + '/avis/publics?restaurant_id=' + encodeURIComponent(window.menuAPI.restaurantId))
+      .then(function (r) { return r.json(); })
+      .then(function (j) { return (j && j.ok) ? j : vide; })
+      .catch(function () { return vide; });
+    return avisPublics;
+  }
+  function etoiles(note) { var n = Math.max(0, Math.min(5, Math.round(note))); return '★★★★★'.slice(0, n) + '☆☆☆☆☆'.slice(0, 5 - n); }
+  function noteTexte(n) { return String(n).replace('.', ',') + '/5'; }
+  function avisHTML(a, avecPlat) {
+    var qui = [a.auteur, avecPlat ? a.plat_nom : null].filter(Boolean).map(esc).join(' · ');
+    return '<div class="mv-avis-un"><span class="mv-avis-et" aria-label="' + a.note + ' sur 5">' + etoiles(a.note) + '</span>'
+      + (qui ? ' <span class="mv-avis-qui">' + qui + '</span>' : '')
+      + (a.commentaire ? '<div>« ' + esc(a.commentaire) + ' »</div>' : '')
+      + (a.reponse ? '<div class="mv-avis-rep">Réponse du restaurant : ' + esc(a.reponse) + '</div>' : '')
+      + '</div>';
+  }
+  // Avis publiés d'un plat, sous sa fiche. Rien n'est affiché tant qu'aucun avis n'est publié.
+  function blocAvisPlat(platNom) {
+    styleAvis();
+    var el = document.createElement('div'); el.className = 'mv-avis-publics'; el.style.display = 'none';
+    chargerAvisPublics().then(function (d) {
+      var cle = platNom.trim().toLowerCase();
+      var liste = d.avis.filter(function (a) { return (a.plat_nom || '').trim().toLowerCase() === cle; });
+      if (!liste.length) return;
+      var moy = Math.round(liste.reduce(function (s, a) { return s + a.note; }, 0) / liste.length * 10) / 10;
+      el.innerHTML = '<h3>Avis des clients — <span class="mv-avis-moy">' + noteTexte(moy) + '</span> (' + liste.length + ')</h3>'
+        + liste.slice(0, 5).map(function (a) { return avisHTML(a, false); }).join('');
+      el.style.display = '';
+    });
+    return el;
+  }
+  // Avis publiés du restaurant, en bas de la carte.
+  function afficherAvisRestaurant() {
+    if (document.querySelector('.mv-avis-resto')) return;
+    var pied = document.querySelector('.page-footer'); if (!pied) return;
+    chargerAvisPublics().then(function (d) {
+      if (!d.total || document.querySelector('.mv-avis-resto')) return;
+      styleAvis();
+      var el = document.createElement('section'); el.className = 'mv-avis-publics mv-avis-resto';
+      el.innerHTML = '<h3>Avis des clients — <span class="mv-avis-moy">' + noteTexte(d.note_moyenne) + '</span> (' + d.total + ')</h3>'
+        + d.avis.slice(0, 5).map(function (a) { return avisHTML(a, true); }).join('');
+      pied.parentNode.insertBefore(el, pied);
+    });
+  }
+  window.mvAvis = { actifs: avisActifs, bloc: blocAvis, publics: chargerAvisPublics };
 
   // À chaque ouverture de la fiche plat : bon modèle 3D, bloc d'avis pour ce plat.
   function surOuvertureFiche() {
@@ -292,7 +355,12 @@
     majModele(plat);
     var ancien = document.querySelector('.modal-sheet .mv-avis, .modal-overlay .mv-avis'); if (ancien) ancien.remove();
     var ajouter = document.getElementById('btnAdd');
-    if (nom && ajouter && avisActifs()) ajouter.parentNode.insertBefore(blocAvis(nom), ajouter.nextSibling);
+    var anciens = document.querySelector('.modal-sheet .mv-avis-publics, .modal-overlay .mv-avis-publics'); if (anciens) anciens.remove();
+    if (nom && ajouter && avisActifs()) {
+      var formulaire = blocAvis(nom);
+      ajouter.parentNode.insertBefore(formulaire, ajouter.nextSibling);
+      formulaire.parentNode.insertBefore(blocAvisPlat(nom), formulaire.nextSibling);
+    }
   }
   (function () {
     var overlay = document.querySelector('.modal-overlay'); if (!overlay || !window.MutationObserver) return;
