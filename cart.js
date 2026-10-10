@@ -446,6 +446,19 @@
         window.location.href = data.url;
         return;
       }
+      if (data.provider === 'redsys' && data.redsys && data.redsys.url) {
+        // Redsys → formulaire signé par le serveur, posté vers la page de paiement de la banque
+        const f = document.createElement('form');
+        f.method = 'POST'; f.action = data.redsys.url; f.style.display = 'none';
+        Object.keys(data.redsys.champs).forEach(function (nom) {
+          const i = document.createElement('input');
+          i.type = 'hidden'; i.name = nom; i.value = data.redsys.champs[nom];
+          f.appendChild(i);
+        });
+        document.body.appendChild(f);
+        f.submit();
+        return;
+      }
       if (data.provider === 'none') {
         // Espèces / sur place — aucun paiement en ligne
         showPayInfo(data.message || 'Paiement sur place — présentez votre commande au service.');
