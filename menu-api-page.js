@@ -222,7 +222,7 @@
     var demo = window.menuAPI && window.menuAPI.estDefaut;
     if (plat && plat.model) {
       if (mv.getAttribute('src') !== plat.model) mv.setAttribute('src', plat.model);
-      mv.removeAttribute('scale');            // l'échelle fixe ne vaut que pour le modèle d'exemple
+      mv.setAttribute('scale', '1 1 1');      // l'échelle réduite ne vaut que pour le modèle d'exemple (sans attribut, le visualiseur ne charge pas le modèle)
       etiquette.style.display = 'none'; btn.style.display = 'flex';
     } else if (demo) {
       if (mv.getAttribute('src') !== MODELE_EXEMPLE) mv.setAttribute('src', MODELE_EXEMPLE);
@@ -232,6 +232,21 @@
       btn.style.display = 'none'; wrap.style.display = 'none';
     }
   }
+
+  // Le modèle est changé pendant que la vue 3D est masquée : le visualiseur ne le charge alors
+  // pas toujours. À l'ouverture de la vue, un modèle encore absent est redemandé.
+  (function () {
+    var btn = document.getElementById('btnAr'), mv = document.getElementById('mvEl');
+    if (!btn || !mv) return;
+    btn.addEventListener('click', function () {
+      setTimeout(function () {
+        if (mv.loaded) return;
+        var src = mv.getAttribute('src'); if (!src) return;
+        mv.removeAttribute('src');
+        setTimeout(function () { mv.setAttribute('src', src); }, 60);
+      }, 250);
+    });
+  })();
 
   // ── Avis : bloc réutilisable (fiche plat, confirmation de commande en cuisine) ──
   function styleAvis() {
