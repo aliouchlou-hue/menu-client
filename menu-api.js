@@ -86,7 +86,32 @@
     });
   }
 
+  // Menu fermé par le serveur (compte du restaurant en attente d'abonnement) : un écran sobre
+  // remplace la carte sur toutes les pages. Rien n'est commandable ni payable.
+  function _indisponible(nom) {
+    if (document.getElementById('mv-indisponible')) return;
+    var d = document.createElement('div');
+    d.id = 'mv-indisponible';
+    d.setAttribute('role', 'alert');
+    d.style.cssText = 'position:fixed;inset:0;z-index:2147483000;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:32px;background:#0A0A0A;color:#F5F5F0;font-family:"DM Sans",system-ui,sans-serif;';
+    var h = document.createElement('h1');
+    h.textContent = nom || '';
+    h.style.cssText = 'font-family:"Cormorant Garamond",serif;font-weight:500;font-size:2rem;margin:0 0 14px;color:#C8A96E;';
+    var p = document.createElement('p');
+    p.textContent = 'Menu temporairement indisponible';
+    p.style.cssText = 'font-size:1.05rem;margin:0 0 10px;';
+    var s = document.createElement('p');
+    s.textContent = "La carte n'est pas consultable en ligne pour le moment. Adressez-vous à l'équipe du restaurant.";
+    s.style.cssText = 'font-size:.88rem;opacity:.7;max-width:420px;line-height:1.6;margin:0;';
+    d.appendChild(h); d.appendChild(p); d.appendChild(s);
+    document.body.appendChild(d);
+    document.body.style.overflow = 'hidden';
+    document.title = 'Menu temporairement indisponible';
+    document.documentElement.classList.remove('mv-attente');
+  }
+
   function _theme(t) {
+    if (t && t.indisponible) { _schedule(function () { _indisponible(t.nom); }); return; }
     // La démonstration garde son habillage et son enseigne « Maison Ardent » d'origine.
     if (!t || estDefaut) return;
     var r = document.documentElement;
