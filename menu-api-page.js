@@ -335,8 +335,8 @@
     }
     ligne('allergens-label', t('fiche.allergenes'));
     if (all.statut === 'non_renseigne') {
-      if (!all.regimes.length) return;
-      bloc.firstChild.remove();
+      // Rien n'est déclaré : on le dit, on ne laisse jamais un bloc vide qui se lirait « aucun ».
+      ligne('mv-all-texte', t('all.non'));
     } else {
       var valeurs = all.cles.concat(all.autres);
       if (valeurs.length) pilules(valeurs); else ligne('mv-all-texte', t('all.aucun'));
@@ -372,9 +372,10 @@
         if (f.mode === 'masquer') { card.classList.add('mv-f-masque'); masques++; return; }
         card.classList.add('mv-f-signale');
         texte = t('filtre.contient', { liste: touches.map(I.allergene).join(', ') });
-      } else if (all.statut === 'a_verifier') {
+      } else if (all.statut !== 'renseigne') {
+        // Sans déclaration complète, le plat n'est jamais présenté comme convenant : il reste affiché, signalé.
         inconnu = true;
-        texte = t('all.verifier');
+        texte = all.statut === 'a_verifier' ? t('all.verifier') : t('filtre.inconnu');
       }
       if (!texte) return;
       var b = document.createElement('span'); b.className = 'mv-f-badge' + (inconnu ? ' inconnu' : ''); b.textContent = texte;

@@ -66,6 +66,7 @@
 
     // Allergènes : fiche du plat et filtre
     'all.source': ['Informations fournies par le restaurant', 'Información facilitada por el restaurante', 'Informació facilitada pel restaurant', 'Information provided by the restaurant'],
+    'all.non': ['Allergènes non renseignés, demandez au serveur', 'Alérgenos no indicados, pregunta al camarero', 'Al·lèrgens no indicats, pregunta al cambrer', 'Allergens not provided, please ask your waiter'],
     'all.aucun': ['Aucun des 14 allergènes réglementaires déclaré', 'Ninguno de los 14 alérgenos reglamentarios declarado', 'Cap dels 14 al·lèrgens reglamentaris declarat', 'None of the 14 regulated allergens declared'],
     'all.verifier': ['Liste à confirmer auprès du serveur', 'Lista por confirmar con el camarero', 'Llista per confirmar amb el cambrer', 'List to be confirmed with your waiter'],
     'all.regimes': ['Régimes', 'Dietas', 'Dietes', 'Diets'],
@@ -77,9 +78,10 @@
     'filtre.appliquer': ['Appliquer', 'Aplicar', 'Aplicar', 'Apply'],
     'filtre.effacer': ['Tout effacer', 'Borrar todo', 'Esborrar-ho tot', 'Clear all'],
     'filtre.contient': ['Contient : {liste}', 'Contiene: {liste}', 'Conté: {liste}', 'Contains: {liste}'],
+    'filtre.inconnu': ['Allergènes non renseignés, demandez au serveur', 'Alérgenos no indicados, pregunta al camarero', 'Al·lèrgens no indicats, pregunta al cambrer', 'Allergens not provided, please ask your waiter'],
     'filtre.masques.un': ['{n} plat masqué sur cette page', '{n} plato oculto en esta página', '{n} plat amagat en aquesta pàgina', '{n} dish hidden on this page'],
     'filtre.masques.plusieurs': ['{n} plats masqués sur cette page', '{n} platos ocultos en esta página', '{n} plats amagats en aquesta pàgina', '{n} dishes hidden on this page'],
-    'filtre.note': ['Informations fournies par le restaurant.', 'Información facilitada por el restaurante.', 'Informació facilitada pel restaurant.', 'Information provided by the restaurant.'],
+    'filtre.note': ['Informations fournies par le restaurant. Un plat sans information reste affiché : demandez au serveur.', 'Información facilitada por el restaurante. Un plato sin información sigue visible: pregunta al camarero.', 'Informació facilitada pel restaurant. Un plat sense informació continua visible: pregunta al cambrer.', 'Information provided by the restaurant. A dish with no information stays visible: please ask your waiter.'],
 
     // Conseiller (chat)
     'chat.bouton': ['Conseiller', 'Asesor', 'Assessor', 'Advisor'],
