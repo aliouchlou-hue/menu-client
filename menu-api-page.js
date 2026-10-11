@@ -199,7 +199,7 @@
       noms: noms,
       promotions: api.promotions,
       allergenes: api.plats.reduce(function (acc, p) {
-        if (p.allergenes && p.allergenes.length) acc[p.nom] = p.allergenes;
+        if (p.allergenes && p.allergenes.length) acc[nomDe(p)] = p.allergenes;   // sous le nom affiché au client
         return acc;
       }, {})
     };
@@ -207,7 +207,7 @@
     if (!api.estDefaut) {
       window._menuApiContext.restaurant = { nom: (api.theme && api.theme.nom) || '' };
       window._menuApiContext.carte = api.plats.slice(0, 200).map(function (p) {
-        return { nom: nomDe(p), prix: p.prix, categorie: p.categorie, description: p.description_traduite || p.description || '' };
+        return { nom: nomDe(p), prix: p.prix, categorie: p.categorie, description: p.description_traduite || p.description || '', allergenes: p.allergenes || [] };
       });
     }
     if (_prevPassport) window._menuApiContext.passport = _prevPassport;
