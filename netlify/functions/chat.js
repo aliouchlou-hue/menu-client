@@ -9,6 +9,10 @@ const HORS_SUJET = {
   en: 'I am only here to guide you through our menu.',
 };
 
+// Toute lettre qui n'est pas de l'écriture latine (cyrillique, grec, arabe, CJC…).
+const NON_LATIN = /[^\P{L}\p{Script=Latin}]/u;
+const NON_LATIN_TOUS = /[^\P{L}\p{Script=Latin}]/gu;
+
 function buildSystem(ctx, lang) {
   let extra = '';
   // Carte affichée au client dans une autre langue que celle du restaurant : noms traduits.
@@ -17,7 +21,8 @@ function buildSystem(ctx, lang) {
       '• ' + String(origine).slice(0, 120) + ' → ' + String(affiche).slice(0, 160)
     ).join('\n');
   }
-  extra += `\n\nLANGUE : réponds exclusivement en ${LANGUES[lang]}, quelle que soit la langue de la carte ci-dessus. Hors sujet, réponds exactement : "${HORS_SUJET[lang]}"`;
+  extra += `\n\nLANGUE : réponds exclusivement en ${LANGUES[lang]}, quelle que soit la langue de la carte ci-dessus et quelle que soit la langue ou l'écriture de la question. Hors sujet, réponds exactement : "${HORS_SUJET[lang]}"`;
+  extra += `\n\nALPHABET : écris UNIQUEMENT en alphabet latin (lettres latines, avec leurs accents et signes propres au ${LANGUES[lang]}). N'utilise jamais un caractère d'une autre écriture — cyrillique, grec, arabe, hébreu, chinois, japonais, coréen ou autre — même pour une seule lettre, même si la question en contient. Relis chaque mot avant de répondre : chaque lettre doit être latine.`;
   if (ctx && ctx.promotions && ctx.promotions.length) {
     extra += '\n\nPROMOTIONS ACTIVES :\n' + ctx.promotions.map(p =>
       '• ' + (p.nom || p.label || p.plat_id || '') +
@@ -162,15 +167,24 @@ exports.handler = async (event) => {
 
     const trimmedHistory = history.slice(-10);
 
-    const data = await httpsPost({
+    const demander = async () => (await httpsPost({
       model: 'claude-haiku-4-5-20251001',
       max_tokens: 300,
       system: buildSystem(context, lang),
       messages: [...trimmedHistory, { role: 'user', content: message }]
-    }, apiKey);
+    }, apiKey)).content[0].text;
 
-    const reply = data.content[0].text;
-    return { statusCode: 200, headers, body: JSON.stringify({ reply }) };
+    // La règle « alphabet latin » est dans le prompt ; ce contrôle la garantit : une réponse qui
+    // contiendrait une lettre d'une autre écriture est redemandée une fois, jamais affichée.
+    let reply = await demander();
+    let relance = false;
+    if (NON_LATIN.test(reply)) {
+      console.warn('[chat] réponse avec caractères non latins : redemandée —', (reply.match(NON_LATIN_TOUS) || []).join(''));
+      relance = true;
+      reply = await demander();
+      if (NON_LATIN.test(reply)) throw new Error('réponse non latine après relance');
+    }
+    return { statusCode: 200, headers, body: JSON.stringify({ reply, ...(relance ? { relance: true } : {}) }) };
 
   } catch (err) {
     console.error('Chat function error:', err.message);
