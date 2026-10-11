@@ -19,7 +19,8 @@
   var SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdxenRtaXFva2Vxcmpkdm11aHh0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAxODU0MDUsImV4cCI6MjA5NTc2MTQwNX0.40WI303hdlQiMR_xVXqkXxqRgVKz3jZWE5QNJZFVGRY';
   var RAILWAY       = 'https://menuvision-production.up.railway.app';
 
-  var ALLERGENES_COURANTS = ['Gluten', 'Fruits de mer', 'Crustacés', 'Lactose', 'Œuf', 'Arachides', 'Fruits à coque', 'Soja', 'Poisson', 'Sésame'];
+  // Les 14 allergènes réglementaires, sous les clés de la carte (voir i18n.js).
+  var ALLERGENES_COURANTS = window.MVI18n.ALLERGENES_14;
 
   var I = window.MVI18n, t = I.t;
 
@@ -339,6 +340,8 @@
   /* ─── Grisé des plats incompatibles ─────────────────────────────────────── */
   function applyAllergenGraying() {
     if (!profile || !profile.allergenes || !profile.allergenes.length) return;
+    // Sur la carte, les allergies du Passeport rejoignent le filtre du client (plats signalés ou masqués).
+    if (window.mvAllergenes) { window.mvAllergenes.ajouter(profile.allergenes); return; }
     var bad = profile.allergenes.map(norm);
     var dishes = window.dishes || {};
     document.querySelectorAll('.dish-card').forEach(function (card) {
@@ -372,7 +375,12 @@
 
   /* ─── Panneau d'édition du Passeport ────────────────────────────────────── */
   function openPanel() {
-    var sel = new Set((profile && profile.allergenes ? profile.allergenes : []).map(norm));
+    // Un ancien profil peut porter des libellés (« Lactose », « Fruits de mer ») : ramenés aux clés.
+    var sel = new Set();
+    (profile && profile.allergenes ? profile.allergenes : []).forEach(function (a) {
+      var k = I.cleAllergene(a);
+      (k === 'fruits_mer' ? ['crustaces', 'mollusques'] : [k || norm(a)]).forEach(function (c) { sel.add(c); });
+    });
     var prefStr = (profile && profile.preferences ? profile.preferences : []).join(', ');
 
     var ov = document.createElement('div');
@@ -385,7 +393,7 @@
         '<div class="mv-label">' + escapeHtml(t('pass.allergenes')) + '</div>' +
         '<div class="mv-chips" id="mvAllg">' +
           ALLERGENES_COURANTS.map(function (a) {
-            return '<button class="mv-chip' + (sel.has(norm(a)) ? ' on' : '') + '" data-a="' + escapeHtml(a) + '">' + escapeHtml(I.allergene(a)) + '</button>';
+            return '<button class="mv-chip' + (sel.has(a) ? ' on' : '') + '" data-a="' + escapeHtml(a) + '">' + escapeHtml(I.allergene(a)) + '</button>';
           }).join('') +
         '</div>' +
         '<div class="mv-label">' + escapeHtml(t('pass.preferences')) + '</div>' +

@@ -120,7 +120,8 @@
           img:      p.image_url || p.photo_url || '',
           fb:       '',
           desc:     descDe(p),
-          allergens: p.allergenes || p.accords || [],
+          allergens: IS_VIN ? (p.accords || []) : (p.allergenes || []),   // page des vins : ce bloc porte les accords
+          all:      allergenesDe(p),
           wineType: p.type_vin || p.wineType || '',
           model:    p.modele_3d_url || ''
         };
@@ -151,16 +152,15 @@
       // Démonstration : ses plats sont dans la page ; le serveur les complète et les traduit.
       traduireDemo();
 
-      // Update allergens / descriptions from API where name matches
-      api.plats.forEach(function (p) {
-        var d = window.dishes;
-        if (!d) return;
-        Object.values(d).forEach(function (entry) {
-          if ((entry.name || '').toLowerCase() === (p.nom || '').toLowerCase()) {
-            if (p.allergenes && p.allergenes.length) entry.allergens = p.allergenes;
-            if (p.description_longue) entry.desc = p.description_longue;
-          }
-        });
+      // Allergènes : ce que le restaurant a renseigné sur le serveur l'emporte ; à défaut, la
+      // liste écrite dans la page de démonstration, présentée comme « à confirmer ».
+      var dd = window.dishes || {};
+      Object.keys(dd).forEach(function (k) {
+        var entry = dd[k];
+        var p = api.plats.filter(function (x) { return (x.nom || '').toLowerCase() === (entry.name || '').toLowerCase(); })[0];
+        if (p && p.description_longue) entry.desc = p.description_longue;
+        if (p && p.allergenes_statut && p.allergenes_statut !== 'non_renseigne') { entry.all = allergenesDe(p); if (!IS_VIN) entry.allergens = p.allergenes || []; }
+        else if (!entry.all) entry.all = allergenesDePage(IS_VIN ? [] : entry.allergens);
       });
 
       // Apply promo badges by matching plat_id → nom → DOM card
@@ -211,6 +211,7 @@
       });
     }
     if (_prevPassport) window._menuApiContext.passport = _prevPassport;
+    barreFiltre(); appliquerFiltre();
     if (avisActifs()) afficherAvisRestaurant();
   }
 
@@ -243,6 +244,210 @@
       }
     });
   }
+
+  // ── Allergènes ────────────────────────────────────────────────────────────
+  // Chaque plat porte { statut, cles, autres, regimes } :
+  //   statut  'renseigne'     le restaurateur a déclaré la liste (vide = aucun des 14 allergènes)
+  //           'a_verifier'    liste connue mais peut-être incomplète (ancienne saisie, démonstration)
+  //           'non_renseigne' rien n'est déclaré : on ne présume jamais « aucun »
+  //   cles    clés de la liste des 14 ; autres : valeurs hors liste (« fruits de mer », texte libre)
+  function allergenesDe(p) {
+    var cles = [], autres = [];
+    (p.allergenes || []).forEach(function (a) { var k = I.cleAllergene(a); if (k && k !== 'fruits_mer') { if (cles.indexOf(k) < 0) cles.push(k); } else autres.push(k || a); });
+    (p.allergenes_a_preciser || []).forEach(function (a) { autres.push(a); });
+    var statut = p.allergenes_statut;
+    // Serveur d'avant la liste des 14 (pas de statut) : une liste non vide reste « à confirmer ».
+    if (['renseigne', 'a_verifier', 'non_renseigne'].indexOf(statut) < 0) statut = (cles.length || autres.length) ? 'a_verifier' : 'non_renseigne';
+    return { statut: statut, cles: cles, autres: autres, regimes: p.regimes || [] };
+  }
+  // Liste écrite dans une page de démonstration : jamais présentée comme complète.
+  function allergenesDePage(liste) {
+    var a = allergenesDe({ allergenes: liste || [] });
+    return a;
+  }
+  // Le plat contient-il un des allergènes choisis ? Rend leurs clés. « Fruits de mer » vaut crustacés ou mollusques.
+  function contient(all, choisis) {
+    if (!all || !choisis || !choisis.length) return [];
+    var fruitsMer = all.autres.some(function (a) { return I.cleAllergene(a) === 'fruits_mer'; });
+    return choisis.filter(function (k) { return all.cles.indexOf(k) >= 0 || (fruitsMer && (k === 'crustaces' || k === 'mollusques')); });
+  }
+
+  function styleAllergenes() {
+    if (document.getElementById('mv-all-css')) return;
+    var st = document.createElement('style'); st.id = 'mv-all-css';
+    st.textContent = '.mv-all{margin-bottom:26px}'
+      + '.mv-all .allergens-list{margin-bottom:10px}'
+      + '.mv-all .allergen-pill.alerte{background:var(--terre,#8B4A2F);border-color:var(--terre,#8B4A2F);color:#fff}'
+      + '.mv-all .allergen-pill.regime{background:transparent;border-style:dashed}'
+      + '.mv-all-texte{font-size:.84rem;line-height:1.5;color:var(--text,#2C1F14);margin:0 0 8px}'
+      + '.mv-all-note{font-size:.68rem;line-height:1.5;letter-spacing:.02em;color:var(--text-soft,#6B5244);font-style:italic;margin:0}'
+      + '.mv-all-note + .mv-all-note{margin-top:2px}'
+      + '.mv-filtre-barre{display:flex;flex-direction:column;align-items:center;gap:8px;margin:22px auto 0;padding:0 24px;text-align:center}'
+      + '.mv-filtre-btn{display:inline-flex;align-items:center;gap:8px;padding:9px 16px;background:transparent;border:1px solid var(--sep,#D4C4B0);border-radius:30px;cursor:pointer;font-family:"Montserrat",sans-serif;font-size:.64rem;letter-spacing:.14em;text-transform:uppercase;color:var(--text-soft,#6B5244);-webkit-tap-highlight-color:transparent}'
+      + '.mv-filtre-btn.actif{border-color:var(--terre,#8B4A2F);color:var(--terre,#8B4A2F)}'
+      + '.mv-filtre-btn .n{display:inline-block;min-width:18px;padding:1px 5px;border-radius:10px;background:var(--terre,#8B4A2F);color:#fff;font-size:.62rem;letter-spacing:0}'
+      + '.mv-filtre-resume{font-family:"Montserrat",sans-serif;font-size:.7rem;line-height:1.5;color:var(--text-soft,#6B5244)}'
+      + '.dish-card.mv-f-masque{display:none}'
+      + '.dish-card.mv-f-signale .dish-img-wrap{opacity:.45;filter:grayscale(.6)}'
+      + '.mv-f-badge{display:block;margin:10px 0 0;padding:7px 11px;border-left:3px solid var(--terre,#8B4A2F);background:rgba(139,74,47,.08);font-family:"Montserrat",sans-serif;font-size:.7rem;line-height:1.45;color:var(--text,#2C1F14)}'
+      + '.mv-f-badge.inconnu{border-left-color:var(--warm-mid,#C4A882);background:rgba(196,168,130,.14);color:var(--text-soft,#6B5244)}'
+      + '.mv-f-voile{position:fixed;inset:0;z-index:400;background:rgba(20,12,6,.5);display:flex;align-items:flex-end;justify-content:center}'
+      + '.mv-f-feuille{width:100%;max-width:520px;max-height:88vh;overflow:auto;background:var(--creme,#F5F0E8);border-radius:16px 16px 0 0;padding:22px 22px calc(22px + env(safe-area-inset-bottom,0px));font-family:"Montserrat",sans-serif;color:var(--text,#2C1F14)}'
+      + '.mv-f-feuille h3{font-family:"Cormorant Garamond",serif;font-weight:400;font-size:1.5rem;margin:0 0 8px}'
+      + '.mv-f-feuille p{font-size:.78rem;line-height:1.6;color:var(--text-soft,#6B5244);margin:0 0 16px}'
+      + '.mv-f-puces{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px}'
+      + '.mv-f-puce{padding:8px 13px;background:transparent;border:1px solid var(--sep,#D4C4B0);border-radius:20px;cursor:pointer;font:inherit;font-size:.78rem;color:var(--text,#2C1F14)}'
+      + '.mv-f-puce[aria-pressed="true"]{background:var(--terre,#8B4A2F);border-color:var(--terre,#8B4A2F);color:#fff}'
+      + '.mv-f-modes{display:flex;gap:8px;margin-bottom:18px}'
+      + '.mv-f-modes button{flex:1;padding:10px 8px;background:transparent;border:1px solid var(--sep,#D4C4B0);cursor:pointer;font:inherit;font-size:.72rem;color:var(--text-soft,#6B5244)}'
+      + '.mv-f-modes button[aria-pressed="true"]{border-color:var(--terre,#8B4A2F);color:var(--terre,#8B4A2F);font-weight:500}'
+      + '.mv-f-actions{display:flex;gap:10px}'
+      + '.mv-f-actions button{flex:1;padding:14px;border:1px solid var(--terre,#8B4A2F);cursor:pointer;font:inherit;font-size:.68rem;letter-spacing:.2em;text-transform:uppercase}'
+      + '.mv-f-effacer{background:transparent;color:var(--terre,#8B4A2F)}'
+      + '.mv-f-appliquer{background:var(--terre,#8B4A2F);color:#fff}';
+    document.head.appendChild(st);
+  }
+
+  // Fiche d'un plat : allergènes déclarés, « aucun », ou « non renseignés ». Le bloc d'origine de
+  // la page ne reste que sur la page des vins, où il porte les accords.
+  function rendreAllergenesFiche(plat) {
+    var liste = document.getElementById('modalAllergens'); if (!liste) return;
+    var titre = liste.previousElementSibling && liste.previousElementSibling.classList.contains('allergens-label') ? liste.previousElementSibling : null;
+    var ancien = document.getElementById('mvAllFiche'); if (ancien) ancien.remove();
+    var garder = IS_VIN && liste.children.length > 0;
+    liste.style.display = garder ? '' : 'none';
+    if (titre) titre.style.display = garder ? '' : 'none';
+    if (!plat) return;
+    styleAllergenes();
+    var all = plat.all || { statut: 'non_renseigne', cles: [], autres: [], regimes: [] };
+    var choisis = filtre().cles, touches = contient(all, choisis);
+    var bloc = document.createElement('div'); bloc.className = 'mv-all'; bloc.id = 'mvAllFiche'; bloc.dataset.statut = all.statut;
+    function ligne(classe, texte) { var p = document.createElement('p'); p.className = classe; p.textContent = texte; bloc.appendChild(p); return p; }
+    function pilules(valeurs, classe) {
+      var l = document.createElement('div'); l.className = 'allergens-list';
+      valeurs.forEach(function (a) {
+        var s = document.createElement('span'); s.className = 'allergen-pill' + (classe ? ' ' + classe : ''); s.textContent = I.allergene(a);
+        var k = I.cleAllergene(a);
+        if (!classe && (touches.indexOf(k) >= 0 || (k === 'fruits_mer' && touches.length))) s.className += ' alerte';
+        l.appendChild(s);
+      });
+      bloc.appendChild(l);
+    }
+    ligne('allergens-label', t('fiche.allergenes'));
+    if (all.statut === 'non_renseigne') {
+      if (!all.regimes.length) return;
+      bloc.firstChild.remove();
+    } else {
+      var valeurs = all.cles.concat(all.autres);
+      if (valeurs.length) pilules(valeurs); else ligne('mv-all-texte', t('all.aucun'));
+      if (all.statut === 'a_verifier') ligne('mv-all-note', t('all.verifier'));
+      ligne('mv-all-note', t('all.source'));
+    }
+    if (all.regimes.length) { ligne('allergens-label', t('all.regimes')).style.marginTop = '16px'; pilules(all.regimes, 'regime'); }
+    liste.parentNode.insertBefore(bloc, garder ? liste.nextSibling : liste);
+  }
+
+  // ── Filtre du client : allergènes à éviter, plats signalés ou masqués ──
+  // Le choix est gardé sur l'appareil et vaut pour toutes les pages de la carte.
+  var CLE_FILTRE = 'mv_filtre_allergenes';
+  function filtre() {
+    try {
+      var f = JSON.parse(localStorage.getItem(CLE_FILTRE) || 'null');
+      if (f && Array.isArray(f.cles)) return { cles: f.cles.filter(function (k) { return I.ALLERGENES_14.indexOf(k) >= 0; }), mode: f.mode === 'masquer' ? 'masquer' : 'signaler' };
+    } catch (_) {}
+    return { cles: [], mode: 'signaler' };
+  }
+  function garderFiltre(f) { try { localStorage.setItem(CLE_FILTRE, JSON.stringify(f)); } catch (_) {} }
+
+  function appliquerFiltre() {
+    var f = filtre(), d = window.dishes || {}, masques = 0;
+    styleAllergenes();
+    document.querySelectorAll('.dish-card').forEach(function (card) {
+      var entree = d[card.dataset.id], all = entree && entree.all;
+      var ancien = card.querySelector('.mv-f-badge'); if (ancien) ancien.remove();
+      card.classList.remove('mv-f-masque', 'mv-f-signale');
+      if (!f.cles.length || !all) return;
+      var touches = contient(all, f.cles), texte = null, inconnu = false;
+      if (touches.length) {
+        if (f.mode === 'masquer') { card.classList.add('mv-f-masque'); masques++; return; }
+        card.classList.add('mv-f-signale');
+        texte = t('filtre.contient', { liste: touches.map(I.allergene).join(', ') });
+      } else if (all.statut === 'a_verifier') {
+        inconnu = true;
+        texte = t('all.verifier');
+      }
+      if (!texte) return;
+      var b = document.createElement('span'); b.className = 'mv-f-badge' + (inconnu ? ' inconnu' : ''); b.textContent = texte;
+      (card.querySelector('.dish-body') || card).appendChild(b);
+    });
+    var barre = document.querySelector('.mv-filtre-barre');
+    if (barre) {
+      var btn = barre.querySelector('.mv-filtre-btn'), resume = barre.querySelector('.mv-filtre-resume');
+      btn.classList.toggle('actif', f.cles.length > 0);
+      btn.querySelector('.n').textContent = f.cles.length || '';
+      btn.querySelector('.n').style.display = f.cles.length ? '' : 'none';
+      resume.textContent = !f.cles.length ? '' : f.cles.map(I.allergene).join(', ') + (masques ? ' — ' + I.t2('filtre.masques', masques) : '');
+    }
+  }
+
+  function ouvrirFiltre() {
+    var f = filtre(), choisis = f.cles.slice(), mode = f.mode;
+    var voile = document.createElement('div'); voile.className = 'mv-f-voile';
+    voile.innerHTML = '<div class="mv-f-feuille" role="dialog" aria-modal="true"><h3></h3><p class="mv-f-intro"></p><div class="mv-f-puces"></div><div class="mv-f-modes"></div><p class="mv-f-note"></p><div class="mv-f-actions"><button type="button" class="mv-f-effacer"></button><button type="button" class="mv-f-appliquer"></button></div></div>';
+    voile.querySelector('h3').textContent = t('filtre.titre');
+    voile.querySelector('.mv-f-feuille').setAttribute('aria-label', t('filtre.titre'));
+    voile.querySelector('.mv-f-intro').textContent = t('filtre.intro');
+    voile.querySelector('.mv-f-note').textContent = t('filtre.note');
+    voile.querySelector('.mv-f-effacer').textContent = t('filtre.effacer');
+    voile.querySelector('.mv-f-appliquer').textContent = t('filtre.appliquer');
+    var puces = voile.querySelector('.mv-f-puces');
+    I.ALLERGENES_14.forEach(function (k) {
+      var b = document.createElement('button'); b.type = 'button'; b.className = 'mv-f-puce'; b.dataset.cle = k; b.textContent = I.allergene(k);
+      b.setAttribute('aria-pressed', String(choisis.indexOf(k) >= 0));
+      b.addEventListener('click', function () {
+        var i = choisis.indexOf(k); if (i >= 0) choisis.splice(i, 1); else choisis.push(k);
+        b.setAttribute('aria-pressed', String(i < 0));
+      });
+      puces.appendChild(b);
+    });
+    var modes = voile.querySelector('.mv-f-modes');
+    ['signaler', 'masquer'].forEach(function (m) {
+      var b = document.createElement('button'); b.type = 'button'; b.dataset.mode = m; b.textContent = t('filtre.' + m);
+      b.setAttribute('aria-pressed', String(mode === m));
+      b.addEventListener('click', function () { mode = m; modes.querySelectorAll('button').forEach(function (x) { x.setAttribute('aria-pressed', String(x.dataset.mode === m)); }); });
+      modes.appendChild(b);
+    });
+    function fermer() { voile.remove(); }
+    voile.addEventListener('click', function (e) { if (e.target === voile) fermer(); });
+    voile.querySelector('.mv-f-effacer').addEventListener('click', function () { garderFiltre({ cles: [], mode: mode }); fermer(); appliquerFiltre(); });
+    voile.querySelector('.mv-f-appliquer').addEventListener('click', function () {
+      garderFiltre({ cles: I.ALLERGENES_14.filter(function (k) { return choisis.indexOf(k) >= 0; }), mode: mode }); fermer(); appliquerFiltre();
+    });
+    document.body.appendChild(voile);
+  }
+
+  // Bouton « Allergènes », au-dessus des plats de chaque page de la carte.
+  function barreFiltre() {
+    if (document.querySelector('.mv-filtre-barre')) return;
+    var orn = document.querySelector('.section-ornament'); if (!orn) return;
+    styleAllergenes();
+    var barre = document.createElement('div'); barre.className = 'mv-filtre-barre';
+    barre.innerHTML = '<button type="button" class="mv-filtre-btn"><span class="l"></span><span class="n" style="display:none"></span></button><span class="mv-filtre-resume" role="status"></span>';
+    barre.querySelector('.l').textContent = t('filtre.bouton');
+    barre.querySelector('.mv-filtre-btn').addEventListener('click', ouvrirFiltre);
+    orn.parentNode.insertBefore(barre, orn);
+  }
+  // Passeport : les allergies enregistrées du client rejoignent son filtre.
+  function ajouterAuFiltre(valeurs) {
+    var f = filtre(), n = f.cles.length;
+    (valeurs || []).forEach(function (v) {
+      var k = I.cleAllergene(v);
+      (k === 'fruits_mer' ? ['crustaces', 'mollusques'] : [k]).forEach(function (c) { if (c && f.cles.indexOf(c) < 0) f.cles.push(c); });
+    });
+    if (f.cles.length !== n) garderFiltre(f);
+    appliquerFiltre();
+  }
+  window.mvAllergenes = { filtre: filtre, appliquer: appliquerFiltre, ouvrir: ouvrirFiltre, ajouter: ajouterAuFiltre, contient: contient };
 
   // ── Fiche plat : modèle 3D ────────────────────────────────────────────────
   // Le bouton « Voir sur ma table en 3D » n'apparaît que si le restaurant a un modèle pour CE plat.
@@ -411,6 +616,7 @@
     var plat = null, d = window.dishes || {};
     Object.keys(d).forEach(function (k) { if (!plat && (d[k].name || '').trim() === nom) plat = d[k]; });
     majModele(plat);
+    rendreAllergenesFiche(plat);
     var ancien = document.querySelector('.modal-sheet .mv-avis, .modal-overlay .mv-avis'); if (ancien) ancien.remove();
     var ajouter = document.getElementById('btnAdd');
     var anciens = document.querySelector('.modal-sheet .mv-avis-publics, .modal-overlay .mv-avis-publics'); if (anciens) anciens.remove();
@@ -430,6 +636,13 @@
     }).observe(overlay, { attributes: true, attributeFilter: ['class'] });
     if (ouverte) surOuvertureFiche();
   })();
+  // La veille ci-dessus ne voit pas une fiche fermée puis rouverte dans le même instant : chaque
+  // ouverture passe aussi par ici, pour que la fiche ne garde jamais les allergènes d'un autre plat.
+  if (typeof window.openModal === 'function' && !window.openModal.mvSuivi) {
+    var ouvrirFiche = window.openModal;
+    window.openModal = function (id) { ouvrirFiche(id); surOuvertureFiche(); };
+    window.openModal.mvSuivi = true;
+  }
 
   if (window.menuAPI && window.menuAPI.ready) { run(); }
   else { window.addEventListener('menuApiReady', run, { once: true }); }

@@ -64,6 +64,23 @@
     'fiche.ajoute': ['Ajouté à votre commande', 'Añadido a tu pedido', 'Afegit a la teva comanda', 'Added to your order'],
     'fiche.ajoute.vin': ['Ajouté à votre sélection', 'Añadido a tu selección', 'Afegit a la teva selecció', 'Added to your selection'],
 
+    // Allergènes : fiche du plat et filtre
+    'all.source': ['Informations fournies par le restaurant', 'Información facilitada por el restaurante', 'Informació facilitada pel restaurant', 'Information provided by the restaurant'],
+    'all.aucun': ['Aucun des 14 allergènes réglementaires déclaré', 'Ninguno de los 14 alérgenos reglamentarios declarado', 'Cap dels 14 al·lèrgens reglamentaris declarat', 'None of the 14 regulated allergens declared'],
+    'all.verifier': ['Liste à confirmer auprès du serveur', 'Lista por confirmar con el camarero', 'Llista per confirmar amb el cambrer', 'List to be confirmed with your waiter'],
+    'all.regimes': ['Régimes', 'Dietas', 'Dietes', 'Diets'],
+    'filtre.bouton': ['Allergènes', 'Alérgenos', 'Al·lèrgens', 'Allergens'],
+    'filtre.titre': ['Filtrer par allergène', 'Filtrar por alérgeno', 'Filtrar per al·lergen', 'Filter by allergen'],
+    'filtre.intro': ['Choisissez les allergènes à éviter : les plats qui en contiennent sont signalés ou masqués.', 'Elige los alérgenos que quieres evitar: los platos que los contienen se señalan o se ocultan.', 'Tria els al·lèrgens que vols evitar: els plats que en contenen se senyalen o s\'amaguen.', 'Choose the allergens to avoid: dishes containing them are flagged or hidden.'],
+    'filtre.signaler': ['Signaler les plats', 'Señalar los platos', 'Assenyalar els plats', 'Flag the dishes'],
+    'filtre.masquer': ['Masquer les plats', 'Ocultar los platos', 'Amagar els plats', 'Hide the dishes'],
+    'filtre.appliquer': ['Appliquer', 'Aplicar', 'Aplicar', 'Apply'],
+    'filtre.effacer': ['Tout effacer', 'Borrar todo', 'Esborrar-ho tot', 'Clear all'],
+    'filtre.contient': ['Contient : {liste}', 'Contiene: {liste}', 'Conté: {liste}', 'Contains: {liste}'],
+    'filtre.masques.un': ['{n} plat masqué sur cette page', '{n} plato oculto en esta página', '{n} plat amagat en aquesta pàgina', '{n} dish hidden on this page'],
+    'filtre.masques.plusieurs': ['{n} plats masqués sur cette page', '{n} platos ocultos en esta página', '{n} plats amagats en aquesta pàgina', '{n} dishes hidden on this page'],
+    'filtre.note': ['Informations fournies par le restaurant.', 'Información facilitada por el restaurante.', 'Informació facilitada pel restaurant.', 'Information provided by the restaurant.'],
+
     // Conseiller (chat)
     'chat.bouton': ['Conseiller', 'Asesor', 'Assessor', 'Advisor'],
     'chat.aria': ['Conseiller gastronomique', 'Asesor gastronómico', 'Assessor gastronòmic', 'Food advisor'],
@@ -194,8 +211,14 @@
     'resa.confirmer': ['Confirmer ma sélection', 'Confirmar mi selección', 'Confirmar la meva selecció', 'Confirm my selection'],
   };
 
+  // Les 14 allergènes à déclaration obligatoire (règlement UE 1169/2011), dans l'ordre de la liste
+  // du serveur (public/allergenes.js du dépôt menuvision) : mêmes clés.
+  var ALLERGENES_14 = ['gluten', 'crustaces', 'oeufs', 'poisson', 'arachides', 'soja', 'lait', 'fruits_coque', 'celeri', 'moutarde', 'sesame', 'sulfites', 'lupin', 'mollusques'];
+  // Libellés saisis en clair (démonstration, anciens profils) → clé de la liste.
+  var ALIAS_ALLERGENES = { 'lactose': 'lait', 'oeuf': 'oeufs', 'fruits a coque': 'fruits_coque', 'fruits coque': 'fruits_coque', 'noix': 'fruits_coque', 'fruits de mer': 'fruits_mer', 'fruits mer': 'fruits_mer' };
   // Allergènes et régimes : libellés du dashboard (clés) et des cartes saisies en clair.
   var ALLERGENES = {
+    'fruits coque': ['Fruits à coque', 'Frutos de cáscara', 'Fruits de closca', 'Tree nuts'],
     'gluten': ['Gluten', 'Gluten', 'Gluten', 'Gluten'],
     'lait': ['Lait', 'Leche', 'Llet', 'Milk'],
     'lactose': ['Lactose', 'Lactosa', 'Lactosa', 'Lactose'],
@@ -280,6 +303,11 @@
   }
   function dico(table, texte) { var e = table[norm(texte)]; return e ? (e[IDX] || e[0]) : null; }
   function allergene(a) { return dico(ALLERGENES, a) || String(a == null ? '' : a); }
+  // Clé de la liste des 14 pour une valeur (clé ou libellé) ; 'fruits_mer' pour l'ancienne valeur ; sinon null.
+  function cleAllergene(a) {
+    var n = norm(a), k = ALIAS_ALLERGENES[n] || n.replace(/ /g, '_');
+    return (k === 'fruits_mer' || ALLERGENES_14.indexOf(k) >= 0) ? k : null;
+  }
 
   // ── Plats traduits (rangés par menu-api.js à partir des réponses du serveur) ──
   var plats = {};   // nom d'origine normalisé → { nom, description }
@@ -432,7 +460,7 @@
 
   window.MVI18n = {
     LANGUES: LANGUES, NOMS: NOMS, lang: lang, origine: origine,
-    t: t, t2: t2, prix: prix, allergene: allergene, libelle: libelle, unites: unites, erreur: erreur,
+    t: t, t2: t2, prix: prix, allergene: allergene, cleAllergene: cleAllergene, ALLERGENES_14: ALLERGENES_14, libelle: libelle, unites: unites, erreur: erreur,
     plat: plat, rangerPlats: rangerPlats, appliquer: appliquer, choisir: choisir, set: choisir, restaurant: restaurant,
   };
 
