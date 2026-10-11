@@ -553,7 +553,7 @@
       const res = await fetch(RAILWAY + '/commandes', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ restaurant_id: currentRestaurantId(), table_numero: table, plats })
+        body: JSON.stringify({ restaurant_id: currentRestaurantId(), table_numero: table, plats, lang: I.lang })
       });
       const data = await res.json().catch(() => ({}));
       if (res.ok && data.ok) {

@@ -505,7 +505,7 @@
         fetch('/.netlify/functions/avis', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ rating, comment: comment || '', restaurant_id: rid })
+          body: JSON.stringify({ rating, comment: comment || '', restaurant_id: rid, lang: MVI18n.lang })
         }).catch(() => {});
       }
 

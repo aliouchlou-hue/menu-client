@@ -19,9 +19,9 @@ exports.handler = async (event) => {
     return { statusCode: 405, body: 'Method Not Allowed' };
   }
 
-  let rating, comment, restaurant_id, plat_nom;
+  let rating, comment, restaurant_id, plat_nom, lang;
   try {
-    ({ rating, comment, restaurant_id, plat_nom } = JSON.parse(event.body || '{}'));
+    ({ rating, comment, restaurant_id, plat_nom, lang } = JSON.parse(event.body || '{}'));
   } catch (_) {
     return { statusCode: 400, body: JSON.stringify({ error: 'JSON invalide' }) };
   }
@@ -39,6 +39,7 @@ exports.handler = async (event) => {
         plat_nom:      plat_nom || 'Avis général',
         note:          rating,
         commentaire:   comment || '',
+        lang:          lang || null,
       }),
     });
     if (!r.ok) console.error('[avis] backend a répondu', r.status);

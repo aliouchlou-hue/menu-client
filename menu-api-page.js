@@ -342,7 +342,7 @@
       btn.disabled = true; msg.textContent = t('avis.envoi');
       fetch('https://menuvision-production.up.railway.app/avis', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ restaurant_id: window.menuAPI.restaurantId, plat_nom: platNom, note: note, commentaire: el.querySelector('textarea').value.trim(), auteur: el.querySelector('.mv-avis-prenom').value.trim() })
+        body: JSON.stringify({ restaurant_id: window.menuAPI.restaurantId, plat_nom: platNom, note: note, commentaire: el.querySelector('textarea').value.trim(), auteur: el.querySelector('.mv-avis-prenom').value.trim(), lang: I.lang })
       }).then(function (r) { return r.json().then(function (j) { return r.ok && j.ok; }); })
         .then(function (ok) {
           if (!ok) throw new Error('refus');
