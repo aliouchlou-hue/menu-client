@@ -1,7 +1,23 @@
 const https = require('https');
 
-function buildSystem(ctx) {
+const LANGUES = { fr: 'français', es: 'espagnol (castillan)', ca: 'catalan', en: 'anglais' };
+// Phrase de refus hors sujet, dans la langue du client.
+const HORS_SUJET = {
+  fr: 'Je suis là uniquement pour vous guider dans notre carte.',
+  es: 'Estoy aquí únicamente para orientarte con nuestra carta.',
+  ca: 'Soc aquí únicament per orientar-te amb la nostra carta.',
+  en: 'I am only here to guide you through our menu.',
+};
+
+function buildSystem(ctx, lang) {
   let extra = '';
+  // Carte affichée au client dans une autre langue que celle du restaurant : noms traduits.
+  if (ctx && ctx.noms && Object.keys(ctx.noms).length) {
+    extra += '\n\nNOMS AFFICHÉS AU CLIENT (utilise ces noms, à la lettre, quand tu cites un plat) :\n' + Object.entries(ctx.noms).slice(0, 200).map(([origine, affiche]) =>
+      '• ' + String(origine).slice(0, 120) + ' → ' + String(affiche).slice(0, 160)
+    ).join('\n');
+  }
+  extra += `\n\nLANGUE : réponds exclusivement en ${LANGUES[lang]}, quelle que soit la langue de la carte ci-dessus. Hors sujet, réponds exactement : "${HORS_SUJET[lang]}"`;
   if (ctx && ctx.promotions && ctx.promotions.length) {
     extra += '\n\nPROMOTIONS ACTIVES :\n' + ctx.promotions.map(p =>
       '• ' + (p.nom || p.label || p.plat_id || '') +
@@ -26,7 +42,7 @@ function buildSystem(ctx) {
   return (ctx && ctx.restaurant ? promptRestaurant(ctx) : SYSTEM_PROMPT) + extra;
 }
 
-const REGLE = `RÈGLE ABSOLUE : Tu réponds UNIQUEMENT aux questions sur la carte du restaurant. Pour toute autre question, réponds poliment : "Je suis là uniquement pour vous guider dans notre carte."`;
+const REGLE = `RÈGLE ABSOLUE : Tu réponds UNIQUEMENT aux questions sur la carte du restaurant. Pour toute autre question, réponds poliment par la phrase de refus indiquée à la rubrique LANGUE.`;
 
 const FORMAT = `FORMAT IMPÉRATIF :
 — Maximum 2 phrases courtes par réponse, jamais plus.
@@ -134,11 +150,12 @@ exports.handler = async (event) => {
 
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
-    return { statusCode: 503, headers, body: JSON.stringify({ error: 'Service non configuré.' }) };
+    return { statusCode: 503, headers, body: JSON.stringify({ code: 'SERVICE_NON_CONFIGURE', error: 'Service non configuré.' }) };
   }
 
   try {
-    const { message, history = [], context = null } = JSON.parse(event.body || '{}');
+    const { message, history = [], context = null, lang: langue } = JSON.parse(event.body || '{}');
+    const lang = LANGUES[langue] ? langue : 'fr';
     if (!message || typeof message !== 'string') {
       return { statusCode: 400, headers, body: JSON.stringify({ error: 'Message requis.' }) };
     }
@@ -148,7 +165,7 @@ exports.handler = async (event) => {
     const data = await httpsPost({
       model: 'claude-haiku-4-5-20251001',
       max_tokens: 300,
-      system: buildSystem(context),
+      system: buildSystem(context, lang),
       messages: [...trimmedHistory, { role: 'user', content: message }]
     }, apiKey);
 
@@ -157,6 +174,7 @@ exports.handler = async (event) => {
 
   } catch (err) {
     console.error('Chat function error:', err.message);
-    return { statusCode: 500, headers, body: JSON.stringify({ error: 'Service momentanément indisponible.' }) };
+    // La page affiche son propre message, dans la langue du client.
+    return { statusCode: 500, headers, body: JSON.stringify({ code: 'SERVICE_INDISPONIBLE', error: 'Service momentanément indisponible.' }) };
   }
 };

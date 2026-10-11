@@ -7,6 +7,10 @@
   var DEFAULT_DEMO_RESTAURANT_ID = '7917c5f4-3d21-4e3d-bc69-8d87df617865';
   var TTL        = 60 * 1000;   // cache de 60 secondes : une carte modifiée apparaît vite sur les téléphones
 
+  // Langue du client (i18n.js) : la carte est demandée au serveur dans cette langue.
+  var I = window.MVI18n;
+  var LANG = I ? I.lang : 'fr';
+
   var params = new URLSearchParams(location.search);
   // Le restaurant vient uniquement de l'URL (?r=, posé par le QR code). Sans ?r=, c'est la démonstration.
   // Les liens internes sont réécrits pour porter ?r= (voir _enseigne et les pages de catégorie).
@@ -27,23 +31,26 @@
 
   window.menuAPI = { restaurantId: rid, estDefaut: estDefaut, plats: [], promotions: [], theme: {}, ready: false };
 
-  // Une entrée de cache par restaurant, jamais de clé globale.
-  var ck = 'menuvision:' + rid;
+  // Une entrée de cache par restaurant et par langue, jamais de clé globale.
+  var ck = 'menuvision:' + rid + ':' + LANG;
   try {
     var raw = sessionStorage.getItem(ck);
     if (raw) {
       var c = JSON.parse(raw);
       if (Date.now() - c.ts < TTL) {
         Object.assign(window.menuAPI, c.d, { ready: true });
+        _langue(window.menuAPI.theme);
+        if (I) I.rangerPlats(window.menuAPI.plats);
         _theme(window.menuAPI.theme);
         _schedule(_fire);
+        if (c.d.a_traduire) _completer();
         return;
       }
     }
   } catch (_) {}
 
   Promise.all([
-    _get(RAILWAY + '/plats?restaurant_id='      + rid),
+    _get(RAILWAY + '/plats?restaurant_id='      + rid + '&lang=' + LANG),
     _get(RAILWAY + '/promotions?restaurant_id=' + rid),
     _get(RAILWAY + '/restaurants/' + rid + '/theme'),
   ]).then(function (r) {
@@ -51,16 +58,47 @@
     if (r[1] && r[1].ok) window.menuAPI.promotions = _flattenPromos(r[1].promotions);
     if (r[2] && r[2].ok) window.menuAPI.theme      = r[2].theme       || {};
     window.menuAPI.ready = true;
+    // Des plats n'ont pas encore de traduction dans cette langue : la carte s'affiche tout de
+    // suite dans sa langue d'origine, la traduction est demandée ensuite (voir _completer).
+    var aTraduire = !!(r[0] && r[0].traduction && r[0].traduction.manquants > 0);
+    _langue(window.menuAPI.theme);
+    if (I) I.rangerPlats(window.menuAPI.plats);
+    _cache(aTraduire);
+    _theme(window.menuAPI.theme);
+    _fire();
+    if (aTraduire) _completer();
+  }).catch(function () { window.menuAPI.ready = true; if (!estDefaut) _schedule(function () { _enseigne(''); }); _fire(); });
+
+  function _cache(aTraduire) {
     try {
       sessionStorage.setItem(ck, JSON.stringify({ ts: Date.now(), d: {
         plats: window.menuAPI.plats,
         promotions: window.menuAPI.promotions,
-        theme: window.menuAPI.theme
+        theme: window.menuAPI.theme,
+        a_traduire: !!aTraduire
       }}));
     } catch (_) {}
-    _theme(window.menuAPI.theme);
-    _fire();
-  }).catch(function () { window.menuAPI.ready = true; if (!estDefaut) _schedule(function () { _enseigne(''); }); _fire(); });
+  }
+
+  // Repli sur la langue de la carte du restaurant (client sans choix ni langue de navigateur connue).
+  function _langue(t) { if (I && t && t.langue) I.restaurant(t.langue); }
+
+  // Traductions manquantes : le serveur les génère (API Claude) et les garde. S'il ne peut pas
+  // (service indisponible), rien ne change : la carte reste dans sa langue d'origine, sans erreur.
+  function _completer() {
+    _get(RAILWAY + '/plats/traductions?restaurant_id=' + rid + '&lang=' + LANG, 45000).then(function (d) {
+      if (!d || !d.ok || !d.traductions) return;
+      var n = 0;
+      window.menuAPI.plats.forEach(function (p) {
+        var tr = d.traductions[p.id];
+        if (tr && tr.nom) { p.nom_traduit = tr.nom; p.description_traduite = tr.description || ''; n++; }
+      });
+      if (!n) return;
+      if (I) I.rangerPlats(window.menuAPI.plats);
+      _cache(d.etat === 'indisponible');
+      window.dispatchEvent(new CustomEvent('mvPlatsTraduits', { detail: window.menuAPI }));
+    });
+  }
 
   // Le backend renvoie chaque promo avec un tableau plats[{id,nom,prix,prix_promo}].
   // Le menu attend une liste plate par plat : {plat_id, prix_promo}. On aplatit.
@@ -76,9 +114,9 @@
     return out;
   }
 
-  function _get(url) {
+  function _get(url, delai) {
     return new Promise(function (resolve) {
-      var t = setTimeout(function () { resolve(null); }, 5000);
+      var t = setTimeout(function () { resolve(null); }, delai || 5000);
       fetch(url)
         .then(function (res) { return res.json(); })
         .then(function (d)   { clearTimeout(t); resolve(d); })
@@ -98,15 +136,15 @@
     h.textContent = nom || '';
     h.style.cssText = 'font-family:"Cormorant Garamond",serif;font-weight:500;font-size:2rem;margin:0 0 14px;color:#C8A96E;';
     var p = document.createElement('p');
-    p.textContent = 'Menu temporairement indisponible';
+    p.textContent = I ? I.t('indispo.titre') : 'Menu temporairement indisponible';
     p.style.cssText = 'font-size:1.05rem;margin:0 0 10px;';
     var s = document.createElement('p');
-    s.textContent = "La carte n'est pas consultable en ligne pour le moment. Adressez-vous à l'équipe du restaurant.";
+    s.textContent = I ? I.t('indispo.texte') : "La carte n'est pas consultable en ligne pour le moment. Adressez-vous à l'équipe du restaurant.";
     s.style.cssText = 'font-size:.88rem;opacity:.7;max-width:420px;line-height:1.6;margin:0;';
     d.appendChild(h); d.appendChild(p); d.appendChild(s);
     document.body.appendChild(d);
     document.body.style.overflow = 'hidden';
-    document.title = 'Menu temporairement indisponible';
+    document.title = p.textContent;
     document.documentElement.classList.remove('mv-attente');
   }
 

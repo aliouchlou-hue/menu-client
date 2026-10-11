@@ -2,10 +2,14 @@
  * cart.js — Maison Ardent
  * Panier persistant (sessionStorage), tiroir récapitulatif, paiement Stripe.
  * Fonctionne en mode direct (100 %) et en mode réservation (acompte 30 %).
+ * Textes : MVI18n (fr, es, ca, en). Un article du panier garde le nom d'ORIGINE du plat
+ * (`name`, celui que le serveur connaît) ; le nom affiché est sa traduction.
  */
 (function () {
   /* ─── Constantes ────────────────────────────────────────── */
   const STORAGE_KEY = 'maCart';
+  const I = window.MVI18n;
+  const t = I.t;
   const RAILWAY     = 'https://menuvision-production.up.railway.app';
 
   // Mode « cuisine » : restaurant sans paiement en ligne (payment_provider='none').
@@ -23,6 +27,8 @@
     try { return JSON.parse(sessionStorage.getItem(STORAGE_KEY) || '[]'); } catch (_) { return []; }
   }
   function saveCart(items) {
+    // Nom affiché de chaque article, pour la page de confirmation (qui n'a pas la carte).
+    if (window.MVI18n) items.forEach(i => { i.label = window.MVI18n.plat(i.name).nom; });
     try { sessionStorage.setItem(STORAGE_KEY, JSON.stringify(items)); } catch (_) {}
     if (isReservation) {
       const rc = {};
@@ -36,12 +42,11 @@
   }
   function totalItems(items) { return items.reduce((s, i) => s + i.qty, 0); }
   function totalPrice(items) { return items.reduce((s, i) => s + i.price * i.qty, 0); }
-  function fmtPrice(n) {
-    const s = n.toFixed(2);
-    return (s.endsWith('.00') ? String(Math.round(n)) : s.replace('.', ',')) + ' €';
-  }
+  const fmtPrice = n => I.prix(n);
+  // Nom affiché d'un article : la traduction du plat quand elle existe.
+  const nomAffiche = item => I.plat(item.name).nom;
   function escHtml(s) {
-    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   }
 
   /* ─── CSS ───────────────────────────────────────────────── */
@@ -226,31 +231,31 @@
 
   /* ─── HTML ──────────────────────────────────────────────── */
   document.body.insertAdjacentHTML('beforeend', `
-    <button id="cart-pill" aria-label="Voir mon panier">
+    <button id="cart-pill" aria-label="${escHtml(t('panier.voir'))}">
       <svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
       <span id="cart-pill-count"></span><span class="cart-pill-sep"> · </span><span id="cart-pill-total"></span>
     </button>
     <div id="cart-overlay" aria-hidden="true">
-      <div id="cart-sheet" role="dialog" aria-label="Mon panier">
+      <div id="cart-sheet" role="dialog" aria-label="${escHtml(t('panier.aria'))}">
         <div id="cart-handle"></div>
         <div id="cart-header">
-          <span id="cart-title">Ma commande</span>
-          <button id="cart-close-btn" aria-label="Fermer">
+          <span id="cart-title">${escHtml(t('panier.titre'))}</span>
+          <button id="cart-close-btn" aria-label="${escHtml(t('fermer'))}">
             <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
           </button>
         </div>
         <div id="cart-items"></div>
         <div id="cart-footer">
           <div class="cart-total-row">
-            <span class="cart-total-label">Total</span>
+            <span class="cart-total-label">${escHtml(t('panier.total'))}</span>
             <span id="cart-total-amount">0&nbsp;€</span>
           </div>
           <p id="cart-resa-notice"></p>
           <div id="cart-table-field">
-            <label id="cart-table-label" for="cart-table-input">Numéro de table</label>
-            <input id="cart-table-input" type="number" inputmode="numeric" min="1" step="1" placeholder="Votre table" autocomplete="off" />
+            <label id="cart-table-label" for="cart-table-input">${escHtml(t('panier.table'))}</label>
+            <input id="cart-table-input" type="number" inputmode="numeric" min="1" step="1" placeholder="${escHtml(t('panier.table.saisie'))}" autocomplete="off" />
           </div>
-          <button id="cart-pay-btn">Payer</button>
+          <button id="cart-pay-btn">${escHtml(t('panier.payer'))}</button>
           <p id="cart-msg"></p>
         </div>
       </div>
@@ -299,7 +304,7 @@
     const count = totalItems(items);
     const total = totalPrice(items);
 
-    pillCount.textContent = count + ' ' + (count <= 1 ? 'article' : 'articles');
+    pillCount.textContent = I.t2('panier.article', count);
     pillTotal.textContent = fmtPrice(total);
     pill.classList.toggle('visible', count > 0);
     document.body.classList.toggle('cart-has-items', count > 0);
@@ -307,35 +312,35 @@
     payBtn.style.display = showMode ? 'none' : '';
     if (showMode) {
       // Ni commande en cuisine ni paiement en ligne : le panier sert de récapitulatif à montrer.
-      resaNotice.textContent = 'Montrez cette commande à votre serveur';
+      resaNotice.textContent = t('panier.montrer');
       resaNotice.classList.toggle('show', count > 0);
     } else if (kitchenMode) {
       resaNotice.classList.remove('show');
-      payBtn.textContent = 'Envoyer ma commande en cuisine';
+      payBtn.textContent = t('panier.cuisine');
     } else if (isReservation && count > 0) {
       const dep = Math.round(total * 0.3 * 100) / 100;
       afficherPolitique(dep);
-      resaNotice.textContent = 'Acompte 30 % à régler : ' + fmtPrice(dep);
+      resaNotice.textContent = t('panier.acompte.info', { montant: fmtPrice(dep) });
       resaNotice.classList.add('show');
-      payBtn.textContent = 'Payer l\'acompte — ' + fmtPrice(dep);
+      payBtn.textContent = t('panier.acompte.payer', { montant: fmtPrice(dep) });
     } else {
       resaNotice.classList.remove('show');
-      payBtn.textContent = 'Payer';
+      payBtn.textContent = t('panier.payer');
     }
 
     if (!items.length) {
-      cartItemsEl.innerHTML = '<p class="cart-empty">Votre panier est vide</p>';
+      cartItemsEl.innerHTML = '<p class="cart-empty">' + escHtml(t('panier.vide')) + '</p>';
     } else {
       cartItemsEl.innerHTML = items.map((item, i) => `
         <div class="cart-item">
           <div class="cart-item-info">
-            <div class="cart-item-name">${escHtml(item.name)}</div>
-            <div class="cart-item-sub">${fmtPrice(item.price)} / article</div>
+            <div class="cart-item-name">${escHtml(nomAffiche(item))}</div>
+            <div class="cart-item-sub">${escHtml(t('panier.unite', { prix: fmtPrice(item.price) }))}</div>
           </div>
           <div class="cart-qty-ctrl">
-            <button class="cart-qty-btn" data-action="dec" data-idx="${i}" aria-label="Retirer un">−</button>
+            <button class="cart-qty-btn" data-action="dec" data-idx="${i}" aria-label="${escHtml(t('panier.moins'))}">−</button>
             <span class="cart-qty-num">${item.qty}</span>
-            <button class="cart-qty-btn" data-action="inc" data-idx="${i}" aria-label="Ajouter un">+</button>
+            <button class="cart-qty-btn" data-action="inc" data-idx="${i}" aria-label="${escHtml(t('panier.plus'))}">+</button>
           </div>
         </div>`).join('');
     }
@@ -418,24 +423,25 @@
     const items = loadCart();
     if (!items.length) return;
     payBtn.disabled = true;
-    payBtn.textContent = 'Redirection…';
+    payBtn.textContent = t('panier.redirection');
     try {
       // Restaurant courant + client connecté au Passeport (si dispo)
       let restaurantId = null;
       try { restaurantId = (window.menuAPI && window.menuAPI.restaurantId) || localStorage.getItem('mv_rid'); } catch (_) {}
       const pass = window.MVPassport && window.MVPassport.client;
+      saveCart(items);
       const res = await fetch('/.netlify/functions/create-checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          items,
+          items: items.map(i => ({ name: i.name, price: i.price, qty: i.qty })),
           mode: isReservation ? 'reservation' : 'direct',
           reservationId: resaCtx ? resaCtx.id : null,
           restaurantId,
           clientEmail: pass ? pass.email : null,
           clientNom:   pass ? pass.nom   : null,
           // Langue choisie pour les conditions d'acompte : reprise sur la page de paiement Stripe.
-          lang: (window.MVPolitique && window.MVPolitique.langue()) || 'fr'
+          lang: I.lang
         })
       });
       const data = await res.json();
@@ -461,7 +467,7 @@
       }
       if (data.provider === 'none') {
         // Espèces / sur place — aucun paiement en ligne
-        showPayInfo(data.message || 'Paiement sur place — présentez votre commande au service.');
+        showPayInfo(t('panier.surplace'));
         return;
       }
       if (prixMisAJour(data)) {
@@ -470,13 +476,17 @@
       }
       if (data.provider === 'cmi' || data.provider === 'payzone') {
         // Passerelle marocaine — règlement sur place en attendant l'intégration redirigée
-        showPayInfo('Le règlement s\'effectue sur place. Présentez votre commande au service.');
+        showPayInfo(t('panier.surplace'));
         return;
       }
-      throw new Error(data.error || 'Paiement indisponible.');
+      // Refus du serveur : le motif est affiché dans la langue du client (par code).
+      kitchenMsg(I.erreur(data, res.status, 'err.paiement'), 'error');
+      payBtn.textContent = t('panier.erreur');
+      payBtn.disabled = false;
     } catch (err) {
       console.error('[cart] erreur paiement:', err);
-      payBtn.textContent = 'Erreur — Réessayer';
+      kitchenMsg(t('err.paiement'), 'error');
+      payBtn.textContent = t('panier.erreur');
       payBtn.disabled = false;
     }
   }
@@ -493,7 +503,7 @@
     });
     saveCart(items);
     render();
-    kitchenMsg('Les prix de la carte ont changé : votre panier a été mis à jour. Vérifiez le total puis validez de nouveau.', 'info');
+    kitchenMsg(t('panier.prix.maj'), 'info');
     return true;
   }
 
@@ -501,7 +511,7 @@
   function showPayInfo(msg) {
     resaNotice.textContent = msg;
     resaNotice.classList.add('show');
-    payBtn.textContent = 'Commande prête';
+    payBtn.textContent = t('panier.prete');
     payBtn.disabled = true;
   }
 
@@ -532,12 +542,12 @@
     const items = loadCart();
     if (!items.length) return;
     const table = readTableNumber();
-    if (table == null) { kitchenMsg('Veuillez indiquer votre numéro de table.', 'error'); return; }
+    if (table == null) { kitchenMsg(t('panier.table.requise'), 'error'); return; }
 
     clearKitchenMsg();
     payBtn.disabled = true;
     const prevLabel = payBtn.textContent;
-    payBtn.textContent = 'Envoi en cours…';
+    payBtn.textContent = t('panier.envoi');
     try {
       const plats = items.map(i => ({ nom: i.name, qte: i.qty, prix: i.price }));
       const res = await fetch(RAILWAY + '/commandes', {
@@ -548,19 +558,19 @@
       const data = await res.json().catch(() => ({}));
       if (res.ok && data.ok) {
         try { sessionStorage.removeItem(STORAGE_KEY); } catch (_) {}
-        showKitchenSuccess('Votre commande a été transmise en cuisine.', items);
+        showKitchenSuccess(t('panier.transmis'), items);
       } else if (prixMisAJour(data)) {
         payBtn.disabled = false;
       } else {
         payBtn.disabled = false;
         payBtn.textContent = prevLabel;
-        kitchenMsg(data.error || 'Envoi impossible. Veuillez réessayer.', 'error');
+        kitchenMsg(I.erreur(data, res.status, 'err.envoi'), 'error');
       }
     } catch (err) {
       console.error('[cart] envoi cuisine:', err);
       payBtn.disabled = false;
       payBtn.textContent = prevLabel;
-      kitchenMsg('Service momentanément indisponible.', 'error');
+      kitchenMsg(t('chat.indispo'), 'error');
     }
   }
 
@@ -568,7 +578,7 @@
     cartItemsEl.innerHTML =
       '<div class="cart-success">' +
         '<div class="cart-success-icon">✓</div>' +
-        '<p class="cart-success-title">Commande transmise</p>' +
+        '<p class="cart-success-title">' + escHtml(t('panier.transmis.titre')) + '</p>' +
         '<p class="cart-success-sub">' + escHtml(msg) + '</p>' +
       '</div>';
     footerEl.style.display = 'none';
@@ -602,6 +612,8 @@
   // Le prestataire arrive avec le thème (chargement asynchrone de menu-api.js).
   window.addEventListener('menuApiReady', applyMode);
   if (window.menuAPI && window.menuAPI.ready) applyMode();
+  // Les traductions de la carte arrivent après coup : les noms du panier se mettent à jour.
+  window.addEventListener('mvPlatsTraduits', function () { saveCart(loadCart()); render(); });
 
   render();
 })();

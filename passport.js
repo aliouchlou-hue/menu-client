@@ -21,6 +21,8 @@
 
   var ALLERGENES_COURANTS = ['Gluten', 'Fruits de mer', 'Crustacés', 'Lactose', 'Œuf', 'Arachides', 'Fruits à coque', 'Soja', 'Poisson', 'Sésame'];
 
+  var I = window.MVI18n, t = I.t;
+
   // État global exposé (lu par cart.js pour le paiement)
   window.MVPassport = { client: null, profile: null };
 
@@ -193,7 +195,7 @@
 
   /* ─── Helpers ───────────────────────────────────────────────────────────── */
   function norm(s) { return String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').trim(); }
-  function firstName(nom) { return (nom || '').trim().split(' ')[0] || 'Gourmet'; }
+  function firstName(nom) { return (nom || '').trim().split(' ')[0] || t('pass.defaut'); }
 
   function googleSvg() {
     return '<svg viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>';
@@ -213,7 +215,7 @@
     var footer = document.querySelector('.page-footer') || document.querySelector('footer') || document.body;
     var btn = document.createElement('button');
     btn.className = 'mv-cta';
-    btn.innerHTML = '<span class="mv-spark">✦</span> Débloquer mon Passeport Gourmand ' + googleSvg();
+    btn.innerHTML = '<span class="mv-spark">✦</span> ' + escapeHtml(t('pass.debloquer')) + ' ' + googleSvg();
     btn.addEventListener('click', signIn);
     if (footer === document.body) { footer.appendChild(btn); }
     else { footer.appendChild(document.createElement('div')).appendChild(btn); }
@@ -234,7 +236,16 @@
       options: { redirectTo: location.href.split('#')[0] }
     }).then(function (res) {
       if (res && res.error) {
-        alert('Connexion indisponible pour le moment. (' + res.error.message + ')');
+        // Message sous le bouton (pas de fenêtre d'alerte).
+        console.warn('[Passeport] connexion :', res.error.message);
+        var cta = document.querySelector('.mv-cta');
+        var note = document.getElementById('mv-cta-note');
+        if (cta && !note) {
+          note = document.createElement('p'); note.id = 'mv-cta-note'; note.setAttribute('role', 'alert');
+          note.style.cssText = 'margin-top:8px;font-size:.72rem;color:#B54334;';
+          cta.parentNode.appendChild(note);
+        }
+        if (note) note.textContent = t('pass.indispo');
       }
     });
   }
@@ -263,13 +274,13 @@
       b.innerHTML =
         (pic ? '<img class="mv-banner-pic" src="' + pic + '" alt="" referrerpolicy="no-referrer"/>' : '<span class="mv-banner-pic"></span>') +
         '<div class="mv-banner-txt">' +
-          '<div class="mv-banner-hi">Bienvenue ' + escapeHtml(firstName(nom)) + '</div>' +
-          '<div class="mv-banner-sub"><span class="mv-banner-spark">✦ ' + pts + ' points</span>' +
-            (nbRes ? ' · ' + nbRes + ' restaurant' + (nbRes > 1 ? 's' : '') + ' visité' + (nbRes > 1 ? 's' : '') : '') +
+          '<div class="mv-banner-hi">' + escapeHtml(t('pass.bienvenue', { prenom: firstName(nom) })) + '</div>' +
+          '<div class="mv-banner-sub"><span class="mv-banner-spark">✦ ' + escapeHtml(t('pass.points', { n: pts })) + '</span>' +
+            (nbRes ? ' · ' + escapeHtml(I.t2('pass.visite', nbRes)) : '') +
           '</div>' +
         '</div>' +
-        '<button class="mv-banner-edit" id="mvEdit">Mon passeport</button>' +
-        '<button class="mv-banner-out" id="mvOut" title="Se déconnecter">⏏</button>';
+        '<button class="mv-banner-edit" id="mvEdit">' + escapeHtml(t('pass.mon')) + '</button>' +
+        '<button class="mv-banner-out" id="mvOut" title="' + escapeHtml(t('pass.deconnexion')) + '" aria-label="' + escapeHtml(t('pass.deconnexion')) + '">⏏</button>';
       document.body.insertBefore(b, document.body.firstChild);
       requestAnimationFrame(function () { b.classList.add('show'); });
       document.getElementById('mvEdit').addEventListener('click', openPanel);
@@ -280,7 +291,7 @@
     if (!document.querySelector('.mv-points')) {
       var p = document.createElement('div');
       p.className = 'mv-points';
-      p.innerHTML = '<span class="mv-spark">✦</span> <span id="mvPts">' + pts + '</span> points MenuVision';
+      p.innerHTML = '<span class="mv-spark">✦</span> <span id="mvPts">' + pts + '</span> ' + escapeHtml(t('pass.points.mv'));
       document.body.appendChild(p);
       requestAnimationFrame(function () { p.classList.add('show'); });
     } else {
@@ -342,7 +353,7 @@
       if (hit && !existing) {
         var w = document.createElement('span');
         w.className = 'mv-warn';
-        w.textContent = '⚠ Allergène';
+        w.textContent = '⚠ ' + t('pass.allergene');
         (card.querySelector('.dish-img-wrap') || card).appendChild(w);
       } else if (!hit && existing) { existing.remove(); }
     });
@@ -367,19 +378,19 @@
     var ov = document.createElement('div');
     ov.className = 'mv-overlay';
     ov.innerHTML =
-      '<div class="mv-sheet" role="dialog" aria-label="Mon Passeport">' +
+      '<div class="mv-sheet" role="dialog" aria-label="' + escapeHtml(t('pass.mon')) + '">' +
         '<div class="mv-sheet-handle"></div>' +
-        '<h3>Mon Passeport Gourmand</h3>' +
-        '<p class="mv-lead">Renseignez vos allergènes et vos goûts : nous adaptons la carte et les suggestions du conseiller, ici et dans tous les restaurants MenuVision.</p>' +
-        '<div class="mv-label">Mes allergènes</div>' +
+        '<h3>' + escapeHtml(t('pass.titre')) + '</h3>' +
+        '<p class="mv-lead">' + escapeHtml(t('pass.intro')) + '</p>' +
+        '<div class="mv-label">' + escapeHtml(t('pass.allergenes')) + '</div>' +
         '<div class="mv-chips" id="mvAllg">' +
           ALLERGENES_COURANTS.map(function (a) {
-            return '<button class="mv-chip' + (sel.has(norm(a)) ? ' on' : '') + '" data-a="' + escapeHtml(a) + '">' + escapeHtml(a) + '</button>';
+            return '<button class="mv-chip' + (sel.has(norm(a)) ? ' on' : '') + '" data-a="' + escapeHtml(a) + '">' + escapeHtml(I.allergene(a)) + '</button>';
           }).join('') +
         '</div>' +
-        '<div class="mv-label">Mes préférences</div>' +
-        '<input class="mv-pref-input" id="mvPref" placeholder="ex. vins rouges corsés, cuisine épicée, peu sucré…" value="' + escapeHtml(prefStr) + '"/>' +
-        '<button class="mv-save" id="mvSave">Enregistrer</button>' +
+        '<div class="mv-label">' + escapeHtml(t('pass.preferences')) + '</div>' +
+        '<input class="mv-pref-input" id="mvPref" placeholder="' + escapeHtml(t('pass.pref.saisie')) + '" value="' + escapeHtml(prefStr) + '"/>' +
+        '<button class="mv-save" id="mvSave">' + escapeHtml(t('pass.enregistrer')) + '</button>' +
       '</div>';
     document.body.appendChild(ov);
     requestAnimationFrame(function () { ov.classList.add('open'); });
@@ -393,7 +404,7 @@
       var allergenes = Array.prototype.slice.call(ov.querySelectorAll('.mv-chip.on')).map(function (c) { return c.dataset.a; });
       var preferences = document.getElementById('mvPref').value.split(',').map(function (s) { return s.trim(); }).filter(Boolean);
       var btn = document.getElementById('mvSave');
-      btn.disabled = true; btn.textContent = 'Enregistrement…';
+      btn.disabled = true; btn.textContent = t('pass.enregistrement');
       apiUpsertProfile({ allergenes: allergenes, preferences: preferences })
         .then(function (p) {
           if (p) { profile = p; window.MVPassport.profile = p; }

@@ -9,6 +9,8 @@
   'use strict';
   var RAILWAY = 'https://menuvision-production.up.railway.app';
   var CLE_APPEL = 'mv_appel_', CLE_TABLE = 'mv_table_';
+  var I = window.MVI18n, t = I.t;
+  function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
   var SUIVI_MS = 5000, SUIVI_MAX = 30 * 60 * 1000;
 
   var rid = null, appel = null, minuterie = null, debutSuivi = 0;
@@ -65,7 +67,7 @@
     document.body.appendChild(btn);
     overlay = document.createElement('div');
     overlay.id = 'mv-appel-overlay'; overlay.setAttribute('aria-hidden', 'true');
-    overlay.innerHTML = '<div id="mv-appel-sheet" role="dialog" aria-label="Appeler un serveur"></div>';
+    overlay.innerHTML = '<div id="mv-appel-sheet" role="dialog" aria-label="' + esc(t('appel.bouton')) + '"></div>';
     document.body.appendChild(overlay);
     sheet = overlay.firstChild;
     btn.addEventListener('click', ouvrir);
@@ -74,9 +76,9 @@
 
   function majBouton() {
     btn.classList.remove('transmis', 'pris');
-    if (appel && appel.statut === 'pris_en_charge') { btn.classList.add('pris'); btn.innerHTML = COCHE + '<span>Un serveur arrive</span>'; }
-    else if (appel && appel.statut === 'nouveau') { btn.classList.add('transmis'); btn.innerHTML = CLOCHE + '<span>Serveur prévenu</span>'; }
-    else btn.innerHTML = CLOCHE + '<span>Appeler un serveur</span>';
+    if (appel && appel.statut === 'pris_en_charge') { btn.classList.add('pris'); btn.innerHTML = COCHE + '<span>' + esc(t('appel.arrive')) + '</span>'; }
+    else if (appel && appel.statut === 'nouveau') { btn.classList.add('transmis'); btn.innerHTML = CLOCHE + '<span>' + esc(t('appel.prevenu')) + '</span>'; }
+    else btn.innerHTML = CLOCHE + '<span>' + esc(t('appel.bouton')) + '</span>';
   }
 
   function ouvrir() { rendreFeuille(); overlay.classList.add('open'); overlay.setAttribute('aria-hidden', 'false'); }
@@ -87,24 +89,22 @@
       var pris = appel.statut === 'pris_en_charge';
       sheet.innerHTML = '<div class="mv-appel-poignee"></div><div class="mv-appel-etat' + (pris ? ' pris' : '') + '" id="mv-appel-etat" data-statut="' + appel.statut + '">'
         + '<div class="mv-appel-rond">' + (pris ? COCHE : CLOCHE) + '</div>'
-        + '<h3>' + (pris ? 'Un serveur arrive' : 'Votre appel est transmis') + '</h3>'
-        + '<p class="mv-appel-texte">' + (pris
-            ? 'Votre demande a été prise en charge pour la table ' + appel.table_numero + '.'
-            : "L'équipe a été prévenue pour la table " + appel.table_numero + '. Cet écran se met à jour dès qu\'un serveur prend votre demande.') + '</p>'
+        + '<h3>' + esc(pris ? t('appel.arrive') : t('appel.transmis.titre')) + '</h3>'
+        + '<p class="mv-appel-texte">' + esc(t(pris ? 'appel.pris' : 'appel.transmis', { table: appel.table_numero })) + '</p>'
         + '</div>';
       return;
     }
     var tableConnue = lire(CLE_TABLE) || (document.getElementById('cart-table-input') || {}).value || '';
-    sheet.innerHTML = '<div class="mv-appel-poignee"></div><h3>Appeler un serveur</h3>'
-      + '<p class="mv-appel-texte">Indiquez votre table : l\'équipe est prévenue aussitôt.</p>'
-      + '<label for="mv-appel-table">Numéro de table</label>'
-      + '<input id="mv-appel-table" type="number" inputmode="numeric" min="1" step="1" placeholder="Votre table" autocomplete="off" />'
+    sheet.innerHTML = '<div class="mv-appel-poignee"></div><h3>' + esc(t('appel.bouton')) + '</h3>'
+      + '<p class="mv-appel-texte">' + esc(t('appel.texte')) + '</p>'
+      + '<label for="mv-appel-table">' + esc(t('panier.table')) + '</label>'
+      + '<input id="mv-appel-table" type="number" inputmode="numeric" min="1" step="1" placeholder="' + esc(t('panier.table.saisie')) + '" autocomplete="off" />'
       + '<div class="mv-appel-motifs">'
-      + '<button type="button" class="mv-appel-motif on" data-motif="serveur">Un serveur</button>'
-      + '<button type="button" class="mv-appel-motif" data-motif="addition">L\'addition</button>'
-      + '<button type="button" class="mv-appel-motif" data-motif="eau">De l\'eau</button>'
+      + '<button type="button" class="mv-appel-motif on" data-motif="serveur">' + esc(t('appel.motif.serveur')) + '</button>'
+      + '<button type="button" class="mv-appel-motif" data-motif="addition">' + esc(t('appel.motif.addition')) + '</button>'
+      + '<button type="button" class="mv-appel-motif" data-motif="eau">' + esc(t('appel.motif.eau')) + '</button>'
       + '</div>'
-      + '<button type="button" id="mv-appel-envoyer">Appeler</button><p id="mv-appel-msg" role="alert"></p>';
+      + '<button type="button" id="mv-appel-envoyer">' + esc(t('appel.appeler')) + '</button><p id="mv-appel-msg" role="alert"></p>';
     var champ = document.getElementById('mv-appel-table'); champ.value = tableConnue;
     sheet.querySelectorAll('.mv-appel-motif').forEach(function (b) {
       b.addEventListener('click', function () { sheet.querySelectorAll('.mv-appel-motif').forEach(function (x) { x.classList.toggle('on', x === b); }); });
@@ -115,20 +115,21 @@
   function envoyer() {
     var champ = document.getElementById('mv-appel-table'), msg = document.getElementById('mv-appel-msg'), bouton = document.getElementById('mv-appel-envoyer');
     var table = parseInt(champ.value, 10);
-    if (!(table >= 1)) { msg.textContent = 'Indiquez votre numéro de table.'; champ.focus(); return; }
+    if (!(table >= 1)) { msg.textContent = t('panier.table.requise'); champ.focus(); return; }
     var motif = (sheet.querySelector('.mv-appel-motif.on') || {}).dataset; motif = motif ? motif.motif : 'serveur';
     bouton.disabled = true; msg.textContent = '';
     fetch(RAILWAY + '/appels-serveur', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ restaurant_id: rid, table_numero: table, motif: motif })
-    }).then(function (r) { return r.json().then(function (j) { return { ok: r.ok && j.ok, j: j }; }); })
+    }).then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { return { ok: r.ok && j.ok, j: j, statut: r.status }; }); })
       .then(function (x) {
-        if (!x.ok) { bouton.disabled = false; msg.textContent = (x.j && x.j.error) || "L'appel n'a pas pu être transmis. Réessayez."; return; }
+        // Refus du serveur : motif affiché dans la langue du client (par code).
+        if (!x.ok) { bouton.disabled = false; msg.textContent = I.erreur(x.j, x.statut, 'appel.echec'); return; }
         ecrire(CLE_TABLE, String(table));
         definir(x.j.appel);
         rendreFeuille();
       })
-      .catch(function () { bouton.disabled = false; msg.textContent = "L'appel n'a pas pu être transmis. Vérifiez votre connexion."; });
+      .catch(function () { bouton.disabled = false; msg.textContent = t('appel.echec.reseau'); });
   }
 
   // Mémorise l'appel en cours (il suit le client d'une page de la carte à l'autre) et lance le suivi.

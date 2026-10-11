@@ -3,11 +3,13 @@
   var RAILWAY = 'https://menuvision-production.up.railway.app';
   var CATS   = window.PAGE_CATS   || [];
   var IS_VIN = window.PAGE_IS_WINE || false;
+  var I = window.MVI18n, t = I.t;
 
-  function fmt(n) {
-    var num = +n;
-    return (Number.isInteger(num) ? num : num.toFixed(2).replace('.', ',')) + (IS_VIN ? ' €/v' : ' €');
-  }
+  // Prix dans la langue du client ; un vin est affiché au verre.
+  function fmt(n) { return I.prix(n) + (IS_VIN ? '/' + t('unite.verre') : ''); }
+  // Nom et description affichés d'un plat de la carte (traduction du serveur quand elle existe).
+  function nomDe(plat) { return plat.nom_traduit || plat.nom; }
+  function descDe(plat) { return plat.description_traduite || plat.description_longue || plat.description || ''; }
 
   function esc(s) {
     return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
@@ -19,13 +21,13 @@
     var label;
     if (p.prix_promo != null) {
       fin   = +p.prix_promo;
-      label = '−' + Math.round(prix - p.prix_promo) + ' €';
+      label = '−' + I.prix(Math.round(prix - p.prix_promo));
     } else if (p.type === 'pourcent') {
       fin   = prix * (1 - p.valeur / 100);
       label = '−' + p.valeur + '%';
     } else if (p.type === 'fixe') {
       fin   = prix - p.valeur;
-      label = '−' + p.valeur + ' €';
+      label = '−' + I.prix(p.valeur);
     } else {
       return null;
     }
@@ -55,16 +57,16 @@
     var badge = info ? '<span class="promo-badge">' + esc(info.label) + '</span>' : '';
     var photo = plat.image_url || plat.photo_url;
     var img   = photo
-      ? '<img src="' + esc(photo) + '" alt="' + esc(plat.nom) + '" class="dish-img" loading="' + (idx === 0 ? 'eager' : 'lazy') + '" />'
+      ? '<img src="' + esc(photo) + '" alt="' + esc(nomDe(plat)) + '" class="dish-img" loading="' + (idx === 0 ? 'eager' : 'lazy') + '" />'
       : '';
     return '<article class="dish-card" data-id="' + esc(pid) + '">'
       + '<div class="dish-img-wrap">' + img
       + '<span class="dish-num">' + String(idx + 1).padStart(2, '0') + '</span>' + badge
       + '</div>'
       + '<div class="dish-body"><div class="dish-row">'
-      + '<h2 class="dish-name">' + esc(plat.nom) + '</h2>'
+      + '<h2 class="dish-name">' + esc(nomDe(plat)) + '</h2>'
       + '<span class="dish-price">' + priceHTML + '</span>'
-      + '</div><p class="dish-desc">' + esc(plat.description || '') + '</p>'
+      + '</div><p class="dish-desc">' + esc(plat.description_traduite || plat.description || '') + '</p>'
       + '</div></article>';
   }
 
@@ -112,11 +114,12 @@
         var pid  = p.id || p._id;
         var info = promoDe(p);
         if (d) d[pid] = {
-          name:     p.nom,
+          name:     p.nom,          // nom d'origine : c'est lui que le panier envoie au serveur
+          label:    nomDe(p),       // nom affiché
           price:    fmt(info ? info.fin : p.prix),
           img:      p.image_url || p.photo_url || '',
           fb:       '',
-          desc:     p.description_longue || p.description || '',
+          desc:     descDe(p),
           allergens: p.allergenes || p.accords || [],
           wineType: p.type_vin || p.wineType || '',
           model:    p.modele_3d_url || ''
@@ -142,10 +145,11 @@
       document.querySelectorAll('.dish-card, .card-sep').forEach(function (el) { el.remove(); });
       var ornVide = document.querySelector('.section-ornament');
       if (ornVide && !document.querySelector('.carte-vide')) {
-        ornVide.insertAdjacentHTML('afterend', '<p class="carte-vide" style="text-align:center;opacity:.6;padding:56px 24px;font-style:italic;">Cette partie de la carte arrive bientôt.</p>');
+        ornVide.insertAdjacentHTML('afterend', '<p class="carte-vide" style="text-align:center;opacity:.6;padding:56px 24px;font-style:italic;">' + esc(t('carte.vide')) + '</p>');
       }
     } else {
-      // API returned no data for this category — augment existing hardcoded dishes
+      // Démonstration : ses plats sont dans la page ; le serveur les complète et les traduit.
+      traduireDemo();
 
       // Update allergens / descriptions from API where name matches
       api.plats.forEach(function (p) {
@@ -167,7 +171,7 @@
         if (!info) return;
         document.querySelectorAll('.dish-card').forEach(function (card) {
           var ne = card.querySelector('.dish-name');
-          if (!ne || ne.textContent.trim().toLowerCase() !== (plat.nom || '').toLowerCase()) return;
+          if (!ne || (card.dataset.nom || ne.textContent).trim().toLowerCase() !== (plat.nom || '').toLowerCase()) return;
           // Badge
           var wrap = card.querySelector('.dish-img-wrap');
           if (wrap && !wrap.querySelector('.promo-badge')) {
@@ -187,7 +191,12 @@
     // Expose live context for chat. On préserve un éventuel passeport déjà
     // injecté par passport.js (l'ordre de résolution des deux est indéterminé).
     var _prevPassport = window._menuApiContext && window._menuApiContext.passport;
+    // Noms affichés au client dans sa langue : le conseiller cite les plats sous ces noms.
+    var noms = {};
+    api.plats.forEach(function (p) { if (p.nom_traduit && p.nom_traduit !== p.nom) noms[p.nom] = p.nom_traduit; });
     window._menuApiContext = {
+      langue: I.lang,
+      noms: noms,
       promotions: api.promotions,
       allergenes: api.plats.reduce(function (acc, p) {
         if (p.allergenes && p.allergenes.length) acc[p.nom] = p.allergenes;
@@ -198,11 +207,41 @@
     if (!api.estDefaut) {
       window._menuApiContext.restaurant = { nom: (api.theme && api.theme.nom) || '' };
       window._menuApiContext.carte = api.plats.slice(0, 200).map(function (p) {
-        return { nom: p.nom, prix: p.prix, categorie: p.categorie, description: p.description || '' };
+        return { nom: nomDe(p), prix: p.prix, categorie: p.categorie, description: p.description_traduite || p.description || '' };
       });
     }
     if (_prevPassport) window._menuApiContext.passport = _prevPassport;
     if (avisActifs()) afficherAvisRestaurant();
+  }
+
+  // ── Démonstration : cartes codées dans la page, mises dans la langue du client ──
+  // Le nom d'origine de chaque carte est gardé (data-nom) : c'est la clé des traductions, et le
+  // nom que le panier envoie au serveur.
+  function traduireDemo() {
+    var d = window.dishes || {};
+    document.querySelectorAll('.dish-card').forEach(function (card) {
+      var nomEl = card.querySelector('.dish-name'), descEl = card.querySelector('.dish-desc');
+      var prixEl = card.querySelector('.dish-price'), typeEl = card.querySelector('.wine-type'), img = card.querySelector('.dish-img');
+      if (!nomEl) return;
+      if (card.dataset.nom === undefined) {
+        card.dataset.nom = nomEl.textContent.trim();
+        if (descEl) card.dataset.desc = descEl.textContent;
+        if (prixEl && !prixEl.querySelector('s')) card.dataset.prix = prixEl.textContent;
+        if (typeEl) card.dataset.type = typeEl.textContent;
+      }
+      var tr = I.plat(card.dataset.nom), entree = d[card.dataset.id];
+      nomEl.textContent = tr.nom;
+      if (img) img.alt = tr.nom;
+      var repli = card.querySelector('.img-placeholder'); if (repli) repli.textContent = tr.nom;
+      if (descEl) descEl.textContent = (tr.traduit && tr.description) || card.dataset.desc || '';
+      if (prixEl && card.dataset.prix && !prixEl.querySelector('s')) prixEl.textContent = I.unites(card.dataset.prix);
+      if (typeEl) typeEl.textContent = I.libelle(card.dataset.type);
+      if (entree) {
+        entree.label = tr.nom;
+        // Fiche : description traduite par le serveur ; en français, le texte long de la page.
+        entree.descT = (tr.traduit && tr.description) || undefined;
+      }
+    });
   }
 
   // ── Fiche plat : modèle 3D ────────────────────────────────────────────────
@@ -216,7 +255,7 @@
     var etiquette = document.getElementById('arExemple');
     if (!etiquette) {
       etiquette = document.createElement('p'); etiquette.id = 'arExemple'; etiquette.className = 'ar-hint';
-      etiquette.textContent = "Modèle 3D d'exemple — ce n'est pas le plat réel";
+      etiquette.textContent = t('fiche.3d.exemple');
       wrap.insertBefore(etiquette, wrap.firstChild);
     }
     var demo = window.menuAPI && window.menuAPI.estDefaut;
@@ -281,11 +320,15 @@
     styleAvis();
     var el = document.createElement('div'); el.className = 'mv-avis'; var note = 0, envoye = false;
     el.innerHTML = '<p class="mv-avis-q"></p><div class="mv-avis-etoiles">'
-      + [1, 2, 3, 4, 5].map(function (n) { return '<button type="button" data-n="' + n + '" aria-label="' + n + ' sur 5">★</button>'; }).join('')
-      + '</div><textarea maxlength="300" placeholder="Un commentaire ? (facultatif)"></textarea>'
-      + '<input class="mv-avis-prenom" type="text" maxlength="40" placeholder="Votre prénom (facultatif)" autocomplete="given-name" />'
-      + '<button type="button" class="mv-avis-envoyer">Envoyer mon avis</button><p class="mv-avis-msg" role="status"></p>';
-    el.querySelector('.mv-avis-q').textContent = 'Votre avis sur « ' + platNom + ' »';
+      + [1, 2, 3, 4, 5].map(function (n) { return '<button type="button" data-n="' + n + '" aria-label="' + esc(t('avis.note', { n: n })) + '">★</button>'; }).join('')
+      + '</div><textarea maxlength="300"></textarea>'
+      + '<input class="mv-avis-prenom" type="text" maxlength="40" autocomplete="given-name" />'
+      + '<button type="button" class="mv-avis-envoyer"></button><p class="mv-avis-msg" role="status"></p>';
+    el.querySelector('textarea').placeholder = t('avis.commentaire');
+    el.querySelector('.mv-avis-prenom').placeholder = t('avis.prenom');
+    el.querySelector('.mv-avis-envoyer').textContent = t('avis.envoyer');
+    // L'avis est enregistré sous le nom d'origine du plat ; la question montre son nom affiché.
+    el.querySelector('.mv-avis-q').textContent = t('avis.question', { plat: I.plat(platNom).nom });
     var etoiles = el.querySelectorAll('.mv-avis-etoiles button'), msg = el.querySelector('.mv-avis-msg'), btn = el.querySelector('.mv-avis-envoyer');
     etoiles.forEach(function (b) {
       b.addEventListener('click', function () {
@@ -296,17 +339,17 @@
     });
     btn.addEventListener('click', function () {
       if (envoye || !note) return;
-      btn.disabled = true; msg.textContent = 'Envoi…';
+      btn.disabled = true; msg.textContent = t('avis.envoi');
       fetch('https://menuvision-production.up.railway.app/avis', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ restaurant_id: window.menuAPI.restaurantId, plat_nom: platNom, note: note, commentaire: el.querySelector('textarea').value.trim(), auteur: el.querySelector('.mv-avis-prenom').value.trim() })
       }).then(function (r) { return r.json().then(function (j) { return r.ok && j.ok; }); })
         .then(function (ok) {
           if (!ok) throw new Error('refus');
-          envoye = true; msg.textContent = 'Merci, votre avis a bien été transmis au restaurant. Il sera publié après validation.';
+          envoye = true; msg.textContent = t('avis.merci');
           btn.style.display = 'none'; el.querySelector('textarea').disabled = true; el.querySelector('.mv-avis-prenom').disabled = true;
         })
-        .catch(function () { btn.disabled = false; msg.textContent = "L'avis n'a pas pu être envoyé. Réessayez dans un instant."; });
+        .catch(function () { btn.disabled = false; msg.textContent = t('avis.echec'); });
     });
     return el;
   }
@@ -322,13 +365,13 @@
     return avisPublics;
   }
   function etoiles(note) { var n = Math.max(0, Math.min(5, Math.round(note))); return '★★★★★'.slice(0, n) + '☆☆☆☆☆'.slice(0, 5 - n); }
-  function noteTexte(n) { return String(n).replace('.', ',') + '/5'; }
+  function noteTexte(n) { return (I.lang === 'en' ? String(n) : String(n).replace('.', ',')) + '/5'; }
   function avisHTML(a, avecPlat) {
-    var qui = [a.auteur, avecPlat ? a.plat_nom : null].filter(Boolean).map(esc).join(' · ');
-    return '<div class="mv-avis-un"><span class="mv-avis-et" aria-label="' + a.note + ' sur 5">' + etoiles(a.note) + '</span>'
+    var qui = [a.auteur, (avecPlat && a.plat_nom) ? I.plat(a.plat_nom).nom : null].filter(Boolean).map(esc).join(' · ');
+    return '<div class="mv-avis-un"><span class="mv-avis-et" aria-label="' + esc(t('avis.note', { n: a.note })) + '">' + etoiles(a.note) + '</span>'
       + (qui ? ' <span class="mv-avis-qui">' + qui + '</span>' : '')
       + (a.commentaire ? '<div>« ' + esc(a.commentaire) + ' »</div>' : '')
-      + (a.reponse ? '<div class="mv-avis-rep">Réponse du restaurant : ' + esc(a.reponse) + '</div>' : '')
+      + (a.reponse ? '<div class="mv-avis-rep">' + esc(t('avis.reponse')) + ' ' + esc(a.reponse) + '</div>' : '')
       + '</div>';
   }
   // Avis publiés d'un plat, sous sa fiche. Rien n'est affiché tant qu'aucun avis n'est publié.
@@ -340,7 +383,7 @@
       var liste = d.avis.filter(function (a) { return (a.plat_nom || '').trim().toLowerCase() === cle; });
       if (!liste.length) return;
       var moy = Math.round(liste.reduce(function (s, a) { return s + a.note; }, 0) / liste.length * 10) / 10;
-      el.innerHTML = '<h3>Avis des clients — <span class="mv-avis-moy">' + noteTexte(moy) + '</span> (' + liste.length + ')</h3>'
+      el.innerHTML = '<h3>' + esc(t('avis.clients')) + ' — <span class="mv-avis-moy">' + noteTexte(moy) + '</span> (' + liste.length + ')</h3>'
         + liste.slice(0, 5).map(function (a) { return avisHTML(a, false); }).join('');
       el.style.display = '';
     });
@@ -354,7 +397,7 @@
       if (!d.total || document.querySelector('.mv-avis-resto')) return;
       styleAvis();
       var el = document.createElement('section'); el.className = 'mv-avis-publics mv-avis-resto';
-      el.innerHTML = '<h3>Avis des clients — <span class="mv-avis-moy">' + noteTexte(d.note_moyenne) + '</span> (' + d.total + ')</h3>'
+      el.innerHTML = '<h3>' + esc(t('avis.clients')) + ' — <span class="mv-avis-moy">' + noteTexte(d.note_moyenne) + '</span> (' + d.total + ')</h3>'
         + d.avis.slice(0, 5).map(function (a) { return avisHTML(a, true); }).join('');
       pied.parentNode.insertBefore(el, pied);
     });
@@ -390,4 +433,6 @@
 
   if (window.menuAPI && window.menuAPI.ready) { run(); }
   else { window.addEventListener('menuApiReady', run, { once: true }); }
+  // Les traductions générées à la demande arrivent après le premier affichage : la carte est reposée.
+  window.addEventListener('mvPlatsTraduits', run);
 })();

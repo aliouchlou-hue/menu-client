@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Confirmation</title>
+  <script src="i18n.js?v=2026-10-11a"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&family=Montserrat:wght@300;400&display=swap" rel="stylesheet" />
@@ -360,19 +361,19 @@
         <span class="orn-line r"></span>
       </div>
       <p class="success-icon">✦</p>
-      <h1 class="success-title">Merci pour<br>votre visite</h1>
-      <p class="success-subtitle" id="success-sub">Paiement confirmé</p>
+      <h1 class="success-title"><span data-i18n="succes.titre1">Merci pour</span><br><span data-i18n="succes.titre2">votre visite</span></h1>
+      <p class="success-subtitle" id="success-sub" data-i18n="succes.paiement">Paiement confirmé</p>
     </header>
 
     <!-- Récapitulatif commande -->
     <div class="recap-card" id="recap-card">
       <div class="recap-header">
-        <span class="recap-label">Votre commande</span>
+        <span class="recap-label" data-i18n="succes.commande">Votre commande</span>
         <span class="recap-mode" id="recap-mode"></span>
       </div>
       <div class="recap-items" id="recap-items"></div>
       <div class="recap-footer" id="recap-footer" style="display:none">
-        <span class="recap-total-label">Total</span>
+        <span class="recap-total-label" data-i18n="panier.total">Total</span>
         <span class="recap-total-amount" id="recap-total"></span>
       </div>
     </div>
@@ -384,29 +385,29 @@
         <span class="review-sep-diamond"></span>
         <span class="review-sep-line"></span>
       </div>
-      <p class="review-q">Qu'avez-vous pensé de votre repas ?</p>
-      <p class="review-hint">Votre avis est facultatif</p>
+      <p class="review-q" data-i18n="succes.question">Qu'avez-vous pensé de votre repas ?</p>
+      <p class="review-hint" data-i18n="succes.facultatif">Votre avis est facultatif</p>
 
       <div class="review-stars">
-        <button class="review-star" data-v="1" aria-label="1 étoile">★</button>
-        <button class="review-star" data-v="2" aria-label="2 étoiles">★</button>
-        <button class="review-star" data-v="3" aria-label="3 étoiles">★</button>
-        <button class="review-star" data-v="4" aria-label="4 étoiles">★</button>
-        <button class="review-star" data-v="5" aria-label="5 étoiles">★</button>
+        <button class="review-star" data-v="1">★</button>
+        <button class="review-star" data-v="2">★</button>
+        <button class="review-star" data-v="3">★</button>
+        <button class="review-star" data-v="4">★</button>
+        <button class="review-star" data-v="5">★</button>
       </div>
 
       <div id="review-thanks">
-        <span class="review-merci">Merci ! ✦</span>
-        <a class="review-glink" id="review-glink" style="display:none" target="_blank" rel="noopener noreferrer">Laisser un avis Google</a>
+        <span class="review-merci"><span data-i18n="succes.merci">Merci !</span> ✦</span>
+        <a class="review-glink" id="review-glink" style="display:none" target="_blank" rel="noopener noreferrer" data-i18n="succes.google">Laisser un avis Google</a>
       </div>
 
       <div id="review-form">
-        <textarea class="review-ta" placeholder="Un commentaire pour nous aider à progresser ?"></textarea>
-        <button class="review-send-btn" id="review-send">Envoyer</button>
+        <textarea class="review-ta" placeholder="Un commentaire pour nous aider à progresser ?" data-i18n-attr="placeholder:succes.commentaire"></textarea>
+        <button class="review-send-btn" id="review-send" data-i18n="envoyer">Envoyer</button>
       </div>
     </div>
 
-    <a href="entrees.html" class="back-link" id="back-link">Retour à la carte</a>
+    <a href="entrees.html" class="back-link" id="back-link" data-i18n="succes.retour">Retour à la carte</a>
 
   </div>
 
@@ -430,9 +431,10 @@
         if (RESTO_ID !== DEMO_ID) document.getElementById('back-link').href = 'entrees.html?r=' + encodeURIComponent(RESTO_ID);
         fetch(RAILWAY + '/restaurants/' + encodeURIComponent(RESTO_ID) + '/theme').then(r => r.json()).then(d => {
           if (!d.ok) return;
+          MVI18n.restaurant(d.theme.langue);   // repli sur la langue de la carte du restaurant
           const nom = RESTO_ID === DEMO_ID ? 'Maison Ardent' : (d.theme.nom || '');
           if (nom) {
-            document.title = 'Confirmation — ' + nom;
+            document.title = MVI18n.t('succes.page') + ' — ' + nom;
             const g = document.getElementById('review-glink');
             g.href = 'https://www.google.com/maps/search/' + encodeURIComponent(nom);
             g.style.display = '';
@@ -445,10 +447,7 @@
         }).catch(() => {});
       }
 
-      function fmtPrice(n) {
-        const s = n.toFixed(2);
-        return (s.endsWith('.00') ? String(Math.round(n)) : s.replace('.', ',')) + ' €';
-      }
+      const fmtPrice = n => MVI18n.prix(n);
 
       function escHtml(s) {
         return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -462,17 +461,18 @@
       const successSub  = document.getElementById('success-sub');
 
       if (isReservation) {
-        recapMode.textContent = 'Acompte 30 %';
-        successSub.textContent = 'Acompte réservation confirmé';
+        recapMode.textContent = MVI18n.t('succes.acompte30');
+        successSub.textContent = MVI18n.t('succes.acompte');
       }
 
       if (!items.length) {
-        recapItems.innerHTML = '<p class="recap-empty">Commande enregistrée</p>';
+        recapItems.innerHTML = '<p class="recap-empty"></p>';
+        recapItems.firstChild.textContent = MVI18n.t('succes.enregistree');
       } else {
         const total = items.reduce((s, i) => s + i.price * i.qty, 0);
         recapItems.innerHTML = items.map(item => `
           <div class="recap-item">
-            <span class="recap-item-name">${escHtml(item.name)}</span>
+            <span class="recap-item-name">${escHtml(item.label || item.name)}</span>
             <span class="recap-item-qty">× ${item.qty}</span>
             <span class="recap-item-price">${fmtPrice(item.price * item.qty)}</span>
           </div>`).join('');
@@ -490,6 +490,7 @@
       let avisSent   = false;
 
       const stars  = document.querySelectorAll('.review-star');
+      stars.forEach(s => s.setAttribute('aria-label', MVI18n.t('avis.note', { n: s.dataset.v })));
       const thanks = document.getElementById('review-thanks');
       const form   = document.getElementById('review-form');
       const ta     = document.querySelector('.review-ta');
@@ -532,12 +533,12 @@
         if (!comment) { ta.focus(); return; }
         postAvis(avisRating, comment);
         sendBtn.disabled = true;
-        sendBtn.textContent = 'Envoyé ✦';
+        sendBtn.textContent = MVI18n.t('succes.envoye') + ' ✦';
         ta.disabled = true;
         avisSent = true;
       });
     })();
   </script>
-  <script src="passport.js?v=2026-10-10c"></script>
+  <script src="passport.js?v=2026-10-11a"></script>
 </body>
 </html>
