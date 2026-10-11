@@ -31,7 +31,7 @@ exports.handler = async (event) => {
     return { statusCode: 400, headers, body: JSON.stringify({ error: 'Corps JSON invalide' }) };
   }
 
-  const { items, mode, reservationId, restaurantId, clientEmail, clientNom } = parsed;
+  const { items, mode, reservationId, restaurantId, clientEmail, clientNom, lang } = parsed;
   if (!Array.isArray(items) || items.length === 0) {
     return { statusCode: 400, headers, body: JSON.stringify({ error: 'Panier vide' }) };
   }
@@ -47,7 +47,7 @@ exports.handler = async (event) => {
     const r = await fetch(RAILWAY + '/create-checkout-session', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Origin': origin },
-      body: JSON.stringify({ items, mode, reservationId, restaurantId, clientEmail, clientNom }),
+      body: JSON.stringify({ items, mode, reservationId, restaurantId, clientEmail, clientNom, lang }),
     });
     const data = await r.json().catch(() => ({ error: 'Réponse invalide du serveur de paiement' }));
     return { statusCode: r.ok ? 200 : (r.status || 500), headers, body: JSON.stringify(data) };

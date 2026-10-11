@@ -464,6 +464,10 @@
         showPayInfo(data.message || 'Paiement sur place — présentez votre commande au service.');
         return;
       }
+      if (prixMisAJour(data)) {
+        payBtn.disabled = false;
+        return;
+      }
       if (data.provider === 'cmi' || data.provider === 'payzone') {
         // Passerelle marocaine — règlement sur place en attendant l'intégration redirigée
         showPayInfo('Le règlement s\'effectue sur place. Présentez votre commande au service.');
@@ -475,6 +479,22 @@
       payBtn.textContent = 'Erreur — Réessayer';
       payBtn.disabled = false;
     }
+  }
+
+  /* Le serveur relit chaque prix sur la carte : si un prix du panier n'est plus celui de la carte
+     (promotion terminée, carte modifiée), il refuse et renvoie les prix à jour. Le panier se
+     corrige et le client valide de nouveau, au bon montant. */
+  function prixMisAJour(data) {
+    if (!data || data.code !== 'PRIX_MODIFIE' || !Array.isArray(data.lignes)) return false;
+    const items = loadCart();
+    data.lignes.forEach(function (l) {
+      const item = items.find(function (i) { return i.name.trim().toLowerCase() === String(l.nom).trim().toLowerCase(); });
+      if (item) item.price = Number(l.prix_unitaire);
+    });
+    saveCart(items);
+    render();
+    kitchenMsg('Les prix de la carte ont changé : votre panier a été mis à jour. Vérifiez le total puis validez de nouveau.', 'info');
+    return true;
   }
 
   /* Message d'encaissement « sur place » (non Stripe) */
@@ -529,6 +549,8 @@
       if (res.ok && data.ok) {
         try { sessionStorage.removeItem(STORAGE_KEY); } catch (_) {}
         showKitchenSuccess('Votre commande a été transmise en cuisine.', items);
+      } else if (prixMisAJour(data)) {
+        payBtn.disabled = false;
       } else {
         payBtn.disabled = false;
         payBtn.textContent = prevLabel;
