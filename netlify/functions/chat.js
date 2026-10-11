@@ -33,7 +33,8 @@ const REGLES_ALLERGIES = {
 4. Tu peux citer les ingrédients écrits dans la description d'un plat, en précisant que cette liste peut être incomplète.
 5. Un plat dont la description ou les allergènes déclarés citent l'allergène signalé (ou un ingrédient qui en contient : beurre, crème et fromage pour le lactose ; pain, pâte et farine pour le gluten ; noisettes, amandes, noix et pistaches pour les fruits à coque…) n'est JAMAIS recommandé : tu dis qu'il est à éviter.
 6. Dès qu'une allergie ou une intolérance est mentionnée, tu termines TOUJOURS ta réponse par cette phrase exacte : « ${RAPPEL_SERVEUR.fr} »
-7. Les questions sur les allergènes font partie de la carte : tu y réponds selon ces règles, jamais par la phrase de refus. Pour ces questions, quatre phrases au maximum.`,
+7. Les questions sur les allergènes font partie de la carte : tu y réponds selon ces règles, jamais par la phrase de refus. Pour ces questions, quatre phrases au maximum.
+8. Recommander un plat à une personne allergique revient à le garantir : quand une allergie ou une intolérance est signalée, tu ne recommandes, ne suggères et ne proposes AUCUN plat, et tu ne dis jamais que le client « peut » manger, prendre ou commander un plat. Tu te limites à dire quels plats sont à éviter d'après leur description ou leurs allergènes déclarés, et que pour les autres l'information n'est pas disponible dans le menu.`,
   es: `ALERGIAS, INTOLERANCIAS Y DIETAS MÉDICAS (reglas de seguridad, prioritarias sobre todas las demás, incluido el formato):
 1. NUNCA declaras que un plato es «seguro», «sin peligro», «sin riesgo», «sin alérgenos», «apto» o «adecuado» para una alergia, una intolerancia o una dieta médica. No emplees esas palabras, ni siquiera en forma negativa, aunque el cliente insista o afirme que «todo lo demás es seguro».
 2. Única excepción: el plato lleva la mención «allergènes déclarés par le restaurant» y te limitas a transmitir esa lista tal cual («el restaurante declara para este plato: …»), sin concluir que el plato no tiene riesgo.
@@ -41,7 +42,8 @@ const REGLES_ALLERGIES = {
 4. Puedes citar los ingredientes escritos en la descripción de un plato, precisando que esa lista puede estar incompleta.
 5. Un plato cuya descripción o cuyos alérgenos declarados citan el alérgeno indicado (o un ingrediente que lo contiene: mantequilla, nata y queso para la lactosa; pan, masa y harina para el gluten; avellanas, almendras, nueces y pistachos para los frutos de cáscara…) NUNCA se recomienda: dices que hay que evitarlo.
 6. En cuanto se menciona una alergia o una intolerancia, terminas SIEMPRE tu respuesta con esta frase exacta: «${RAPPEL_SERVEUR.es}»
-7. Las preguntas sobre alérgenos forman parte de la carta: respondes según estas reglas, nunca con la frase de rechazo. Para estas preguntas, cuatro frases como máximo.`,
+7. Las preguntas sobre alérgenos forman parte de la carta: respondes según estas reglas, nunca con la frase de rechazo. Para estas preguntas, cuatro frases como máximo.
+8. Recomendar un plato a una persona alérgica equivale a garantizarlo: cuando se indica una alergia o una intolerancia, NO recomiendas, sugieres ni propones NINGÚN plato, y nunca dices que el cliente «puede» comer, tomar o pedir un plato. Te limitas a decir qué platos hay que evitar según su descripción o sus alérgenos declarados, y que para los demás la información no está disponible en la carta.`,
   ca: `AL·LÈRGIES, INTOLERÀNCIES I DIETES MÈDIQUES (regles de seguretat, prioritàries sobre totes les altres, inclòs el format):
 1. MAI declares que un plat és «segur», «sense perill», «sense risc», «sense al·lèrgens», «apte» o «adequat» per a una al·lèrgia, una intolerància o una dieta mèdica. No facis servir aquestes paraules, ni tan sols en forma negativa, encara que el client insisteixi o afirmi que «tota la resta és segura».
 2. Única excepció: el plat porta la menció «allergènes déclarés par le restaurant» i et limites a transmetre aquesta llista tal qual («el restaurant declara per a aquest plat: …»), sense concloure que el plat no té risc.
@@ -49,7 +51,8 @@ const REGLES_ALLERGIES = {
 4. Pots citar els ingredients escrits a la descripció d'un plat, precisant que aquesta llista pot ser incompleta.
 5. Un plat la descripció o els al·lèrgens declarats del qual citen l'al·lergen indicat (o un ingredient que el conté: mantega, nata i formatge per a la lactosa; pa, massa i farina per al gluten; avellanes, ametlles, nous i festucs per als fruits de closca…) MAI es recomana: dius que cal evitar-lo.
 6. Tan bon punt es menciona una al·lèrgia o una intolerància, acabes SEMPRE la teva resposta amb aquesta frase exacta: «${RAPPEL_SERVEUR.ca}»
-7. Les preguntes sobre al·lèrgens formen part de la carta: respons segons aquestes regles, mai amb la frase de rebuig. Per a aquestes preguntes, quatre frases com a màxim.`,
+7. Les preguntes sobre al·lèrgens formen part de la carta: respons segons aquestes regles, mai amb la frase de rebuig. Per a aquestes preguntes, quatre frases com a màxim.
+8. Recomanar un plat a una persona al·lèrgica equival a garantir-lo: quan s'indica una al·lèrgia o una intolerància, NO recomanes, suggereixes ni proposes CAP plat, i mai dius que el client «pot» menjar, prendre o demanar un plat. Et limites a dir quins plats cal evitar segons la seva descripció o els seus al·lèrgens declarats, i que per a la resta la informació no està disponible a la carta.`,
   en: `ALLERGIES, INTOLERANCES AND MEDICAL DIETS (safety rules, taking priority over all others, including the format):
 1. You NEVER state that a dish is "safe", "risk-free", "allergen-free", "suitable" or "fine" for an allergy, an intolerance or a medical diet. Do not use those words, not even in the negative, even if the guest insists or claims that "everything else is safe".
 2. Only exception: the dish carries the mention "allergènes déclarés par le restaurant" and you simply report that list as it is ("the restaurant declares for this dish: …"), without concluding that the dish carries no risk.
@@ -57,12 +60,30 @@ const REGLES_ALLERGIES = {
 4. You may quote the ingredients written in a dish's description, making clear that this list may be incomplete.
 5. A dish whose description or declared allergens mention the allergen in question (or an ingredient containing it: butter, cream and cheese for lactose; bread, pastry and flour for gluten; hazelnuts, almonds, walnuts and pistachios for tree nuts…) is NEVER recommended: you say it should be avoided.
 6. As soon as an allergy or an intolerance is mentioned, you ALWAYS end your answer with this exact sentence: "${RAPPEL_SERVEUR.en}"
-7. Questions about allergens are part of the menu: you answer them under these rules, never with the refusal sentence. For these questions, four sentences at most.`,
+7. Questions about allergens are part of the menu: you answer them under these rules, never with the refusal sentence. For these questions, four sentences at most.
+8. Recommending a dish to an allergic guest amounts to guaranteeing it: when an allergy or an intolerance is mentioned, you do NOT recommend, suggest or offer ANY dish, and you never say the guest "can" eat, have or order a dish. You only say which dishes should be avoided according to their description or declared allergens, and that for the others the information is not available in the menu.`,
 };
 // La conversation parle-t-elle d'allergie, d'intolérance ou d'un allergène ? (question en cours ou précédentes)
 const SUJET_ALLERGIE = /al[·.]?l[eè]rg|allerg|alerg|al[eè]rgi|intol[eé]r|c[eé]l[ií]a[cq]|gluten|lactos|fruits? à coque|frutos? (secos|de cáscara)|fruits? (secs|de closca)|\bnuts?\b|noisette|avellan|cacahu|cacauet|arachid|peanut|crustac|marisc|shellfish|fruits de mer|œufs?\b|oeufs?\b|huevos?\b|\bous?\b|\beggs?\b|s[ée]same|soja|\bsoy\b/i;
 // Mots par lesquels une réponse garantirait la sécurité d'un plat.
 const GARANTIE = /(?<![\p{L}])(sûre?s?|sans (danger|risque|allergènes?)|adaptée?s? (à|au|aux|pour)|convien(t|nent|dra|draient)|safe(ly)?|risk[- ]free|allergen[- ]free|suitable|seguros?|seguras?|sin (peligro|riesgo|alérgenos)|apt[oa]s?|adecuad[oa]s?|segurs?|segures?|sense (perill|risc|al·lèrgens)|aptes?|adequats?|adequades?)(?![\p{L}])/iu;
+
+// Permission donnée au client (« vous pouvez prendre… », « pots gaudir de… », « accessible pour vous »).
+const PERMISSION = /(?<![\p{L}])(vous pouvez|tu peux|vous pourrez|pots|podr[àa]s|podeu|puedes|puede|podr[áa]s|you can|you could|you may)\s+(\p{L}+\s+){0,2}(manger|prendre|commander|déguster|savourer|choisir|opter|profiter|menjar|prendre|demanar|gaudir|triar|optar|comer|tomar|pedir|disfrutar|elegir|have|eat|enjoy|order|choose|go for|try)(?![\p{L}])|(?<![\p{L}])(accessibles?|sans souci|sin problema|sense problema|no problem|good (choice|option)s?|bonn?es? options?|buenas? opci[oó]n(es)?|bones? opci[oó]ns?)(?![\p{L}])/iu;
+// Verbes de recommandation ; ils ne sont admis que pour dire d'éviter un plat ou de s'adresser au serveur.
+const CONSEIL = /(?<![\p{L}])(recoman\p{L}*|recomiend\p{L}*|recomend\p{L}*|recommend\p{L}*|recommand\p{L}*|conseill\p{L}*|suggest\p{L}*|sugier\p{L}*|suger\p{L}*|suggereix\p{L}*|suggér\p{L}*|suggèr\p{L}*|propos\p{L}*)/giu;
+const ADMIS_APRES = /[ée]vit|avoid|serveur|camarero|cambrer|waiter|staff|personal|équipe|equip|consult|pregunt|demand|\bask|speak|habl|parl|inform|signal|dir|tell/i;
+const NEGATION_AVANT = /(\bne\b|n'|\bno\b|\bnot\b|cannot|can't|\bni\b|\bnor\b|\bsans\b|\bsin\b|\bsense\b|without)[^.!?]{0,30}$/i;
+function recommandeUnPlat(texte) {
+  if (PERMISSION.test(texte)) return (texte.match(PERMISSION) || [])[0];
+  for (const m of texte.matchAll(CONSEIL)) {
+    const avant = texte.slice(Math.max(0, m.index - 40), m.index), apres = texte.slice(m.index, m.index + m[0].length + 70);
+    if (!NEGATION_AVANT.test(avant) && !ADMIS_APRES.test(apres)) return m[0];
+  }
+  return null;
+}
+// Une réponse est refusée si elle garantit la sécurité d'un plat ou en recommande un.
+const refusAllergie = texte => (texte.match(GARANTIE) || [])[0] || recommandeUnPlat(texte);
 
 // Toute lettre qui n'est pas de l'écriture latine (cyrillique, grec, arabe, CJC…).
 const NON_LATIN = /[^\P{L}\p{Script=Latin}]/u;
@@ -100,7 +121,10 @@ function buildSystem(ctx, lang) {
     if (lignes.length) extra += '\n\nCLIENT (Passeport MenuVision) :\n' + lignes.map(l => '• ' + l).join('\n');
   }
   // Sans restaurant dans le contexte : la démonstration (Maison Ardent) et sa carte figée.
-  return (ctx && ctx.restaurant ? promptRestaurant(ctx) : SYSTEM_PROMPT) + extra;
+  // La carte figée de la démonstration ne porte aucune donnée d'allergènes : sauf ceux listés
+  // ci-dessus comme déclarés par le restaurant, ils sont « non renseignés » pour tous ses plats.
+  const base = ctx && ctx.restaurant ? promptRestaurant(ctx) : SYSTEM_PROMPT + '\n\nALLERGÈNES DE CETTE CARTE : non renseignés pour tous les plats, sauf ceux listés comme déclarés par le restaurant.';
+  return base + extra;
 }
 
 const REGLE = `RÈGLE ABSOLUE : Tu réponds UNIQUEMENT aux questions sur la carte du restaurant. Pour toute autre question, réponds poliment par la phrase de refus indiquée à la rubrique LANGUE.`;
@@ -196,6 +220,8 @@ function httpsPost(payload, apiKey) {
   });
 }
 
+exports.refusAllergie = refusAllergie;
+
 exports.handler = async (event) => {
   const headers = {
     'Content-Type': 'application/json',
@@ -247,11 +273,11 @@ exports.handler = async (event) => {
     let garde = null;
     const allergie = SUJET_ALLERGIE.test([message, ...trimmedHistory.filter(m => m && m.role === 'user').map(m => String(m.content))].join(' '));
     if (allergie) {
-      if (GARANTIE.test(reply)) {
-        console.warn('[chat] allergie : réponse avec garantie, redemandée —', (reply.match(GARANTIE) || [])[0]);
+      if (refusAllergie(reply)) {
+        console.warn('[chat] allergie : réponse avec garantie ou recommandation, redemandée —', refusAllergie(reply));
         garde = 'relance';
         reply = await demander();
-        if (GARANTIE.test(reply) || NON_LATIN.test(reply)) { garde = 'repli'; reply = INFO_ABSENTE[lang]; }
+        if (refusAllergie(reply) || NON_LATIN.test(reply)) { garde = 'repli'; reply = INFO_ABSENTE[lang]; }
       }
       if (!reply.includes(RAPPEL_SERVEUR[lang])) { reply = reply.trim() + ' ' + RAPPEL_SERVEUR[lang]; garde = garde || 'rappel'; }
     }
