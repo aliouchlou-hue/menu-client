@@ -198,16 +198,21 @@
       langue: I.lang,
       noms: noms,
       promotions: api.promotions,
-      allergenes: api.plats.reduce(function (acc, p) {
-        if (p.allergenes && p.allergenes.length) acc[nomDe(p)] = p.allergenes;   // sous le nom affiché au client
-        return acc;
-      }, {})
+      // Démonstration : allergènes déclarés des plats de cette page, sous leur nom affiché.
+      fiches: {}
     };
+    var dc = window.dishes || {};
+    if (api.estDefaut) Object.keys(dc).forEach(function (k) {
+      var a = dc[k].all;
+      if (a && a.statut !== 'non_renseigne') window._menuApiContext.fiches[dc[k].label || dc[k].name] = { statut: a.statut, allergenes: a.cles, autres: a.autres, regimes: a.regimes };
+    });
     // Autre restaurant que la démonstration : le conseiller reçoit son nom et sa carte.
     if (!api.estDefaut) {
       window._menuApiContext.restaurant = { nom: (api.theme && api.theme.nom) || '' };
       window._menuApiContext.carte = api.plats.slice(0, 200).map(function (p) {
-        return { nom: nomDe(p), prix: p.prix, categorie: p.categorie, description: p.description_traduite || p.description || '', allergenes: p.allergenes || [] };
+        // Allergènes : ce que le restaurateur a renseigné, avec son statut (jamais de suggestion non validée).
+        var a = allergenesDe(p);
+        return { nom: nomDe(p), prix: p.prix, categorie: p.categorie, description: p.description_traduite || p.description || '', allergenes: a.cles, autres: a.autres, statut: a.statut, regimes: a.regimes };
       });
     }
     if (_prevPassport) window._menuApiContext.passport = _prevPassport;

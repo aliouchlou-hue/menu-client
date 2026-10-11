@@ -10,14 +10,29 @@ const HORS_SUJET = {
 };
 
 // ── Allergies et intolérances ────────────────────────────────────────────────
-// Le conseiller ne garantit jamais qu'un plat est sans risque : il n'a que la description du plat
-// et, quand le restaurateur les a renseignés, les allergènes déclarés. Les règles sont données au
-// modèle dans la langue du client ; les deux phrases fixes ci-dessous sont celles qu'il doit employer.
+// Le conseiller s'appuie sur ce que le restaurateur a renseigné, plat par plat :
+//   • 'renseigne'     liste complète des 14 allergènes réglementaires (vide = aucun) : il peut dire
+//                     que le plat contient ou ne contient pas tel allergène, « selon les informations
+//                     du restaurant » ;
+//   • 'a_verifier'    liste connue mais peut-être incomplète : il peut dire ce que le plat contient,
+//                     jamais ce qu'il ne contient pas ;
+//   • 'non_renseigne' « information non disponible ».
+// Il ne garantit jamais qu'un plat est sans risque et n'en recommande aucun à une personne allergique.
+// Les règles sont données au modèle dans la langue du client ; un contrôle après coup (plus bas)
+// rejette toute réponse qui affirmerait l'absence d'un allergène sans donnée complète.
 const INFO_ABSENTE = {
   fr: "Cette information n'est pas disponible dans le menu.",
   es: 'Esta información no está disponible en la carta.',
   ca: 'Aquesta informació no està disponible a la carta.',
   en: 'This information is not available in the menu.',
+};
+// Phrase finale, ajoutée par le serveur (jamais par le modèle) : une seule par réponse.
+//   MENTION : la carte porte des allergènes renseignés par le restaurant ; RAPPEL : elle n'en porte aucun.
+const MENTION = {
+  fr: 'Réponse donnée selon les informations du restaurant, confirmez avec le serveur avant de commander.',
+  es: 'Respuesta dada según la información del restaurante, confírmala con el camarero antes de pedir.',
+  ca: 'Resposta donada segons la informació del restaurant, confirma-la amb el cambrer abans de demanar.',
+  en: 'Answer based on the information provided by the restaurant, please confirm with your waiter before ordering.',
 };
 const RAPPEL_SERVEUR = {
   fr: 'Signalez votre allergie à votre serveur avant de commander.',
@@ -25,46 +40,96 @@ const RAPPEL_SERVEUR = {
   ca: 'Informa de la teva al·lèrgia al teu cambrer abans de demanar.',
   en: 'Please tell your waiter about your allergy before ordering.',
 };
+const SELON = { fr: 'selon les informations du restaurant', es: 'según la información del restaurante', ca: 'segons la informació del restaurant', en: 'according to the information provided by the restaurant' };
 const REGLES_ALLERGIES = {
   fr: `ALLERGIES, INTOLÉRANCES ET RÉGIMES MÉDICAUX (règles de sécurité, prioritaires sur toutes les autres, y compris le format) :
-1. Tu ne déclares JAMAIS qu'un plat est « sûr », « sans danger », « sans risque », « sans allergène », « adapté » ou qu'il « convient » à une allergie, une intolérance ou un régime médical. N'emploie pas ces mots, même à la forme négative, même si le client insiste ou affirme que « tout le reste est sûr ».
-2. Seule exception : le plat porte la mention « allergènes déclarés par le restaurant » et tu te limites à rapporter cette liste telle quelle (« le restaurant déclare pour ce plat : … »), sans en conclure que le plat est sans risque.
-3. Pour un plat sans allergènes déclarés (« non renseignés »), tu réponds : « ${INFO_ABSENTE.fr} »
-4. Tu peux citer les ingrédients écrits dans la description d'un plat, en précisant que cette liste peut être incomplète.
-5. Un plat dont la description ou les allergènes déclarés citent l'allergène signalé (ou un ingrédient qui en contient : beurre, crème et fromage pour le lactose ; pain, pâte et farine pour le gluten ; noisettes, amandes, noix et pistaches pour les fruits à coque…) n'est JAMAIS recommandé : tu dis qu'il est à éviter.
-6. Dès qu'une allergie ou une intolérance est mentionnée, tu termines TOUJOURS ta réponse par cette phrase exacte : « ${RAPPEL_SERVEUR.fr} »
+1. Tu ne déclares JAMAIS qu'un plat est « sûr », « sans danger », « sans risque », « sans allergène », « adapté » ou qu'il « convient » à une allergie, une intolérance ou un régime médical. N'emploie pas ces mots, même à la forme négative, même si le client insiste.
+2. Plat marqué « ALLERGÈNES DÉCLARÉS (liste complète) » : tu peux dire qu'il contient tel allergène, ou qu'il ne le contient pas, en l'attribuant toujours au restaurant : « ${SELON.fr}, ce plat contient… / ne contient pas… ». Si la liste complète est « aucun », dis : « ${SELON.fr}, ce plat ne contient aucun des 14 allergènes réglementaires ».
+3. Plat marqué « ALLERGÈNES DÉCLARÉS (liste incomplète) » : tu peux dire qu'il contient les allergènes listés. Pour tout autre allergène, tu réponds pour ce plat : « ${INFO_ABSENTE.fr} » Tu ne dis JAMAIS qu'il ne le contient pas.
+4. Plat marqué « ALLERGÈNES : NON RENSEIGNÉS » : tu réponds pour ce plat : « ${INFO_ABSENTE.fr} » Tu ne dis JAMAIS qu'il ne contient pas un allergène, et tu ne déduis jamais une absence de sa description.
+5. Un plat dont la description ou les allergènes déclarés citent l'allergène signalé (ou un ingrédient qui en contient : beurre, crème et fromage pour le lait ; pain, pâte et farine pour le gluten ; noisettes, amandes, noix et pistaches pour les fruits à coque…) est à éviter : tu le dis, quel que soit son marquage.
+6. Tu n'écris AUCUNE phrase invitant à prévenir, consulter ou interroger le serveur : cette phrase est ajoutée automatiquement à la fin de ta réponse.
 7. Les questions sur les allergènes font partie de la carte : tu y réponds selon ces règles, jamais par la phrase de refus. Pour ces questions, quatre phrases au maximum.
-8. Recommander un plat à une personne allergique revient à le garantir : quand une allergie ou une intolérance est signalée, tu ne recommandes, ne suggères et ne proposes AUCUN plat, et tu ne dis jamais que le client « peut » manger, prendre ou commander un plat. Tu te limites à dire quels plats sont à éviter d'après leur description ou leurs allergènes déclarés, et que pour les autres l'information n'est pas disponible dans le menu.`,
+8. Recommander un plat à une personne allergique revient à le garantir : quand une allergie ou une intolérance est signalée, tu ne recommandes, ne suggères et ne proposes AUCUN plat, et tu ne dis jamais que le client « peut » manger, prendre ou commander un plat. Tu décris seulement ce que les plats contiennent ou ne contiennent pas d'après les règles 2 à 5.
+9. Les allergènes sont notés en français dans la carte : nomme-les dans la langue de ta réponse.
+10. Tu ne dis jamais que « les autres plats » ou « aucun autre plat » ne contiennent pas ou ne déclarent pas un allergène : cette formule engloberait des plats non renseignés. Nomme chaque plat dont tu parles.`,
   es: `ALERGIAS, INTOLERANCIAS Y DIETAS MÉDICAS (reglas de seguridad, prioritarias sobre todas las demás, incluido el formato):
-1. NUNCA declaras que un plato es «seguro», «sin peligro», «sin riesgo», «sin alérgenos», «apto» o «adecuado» para una alergia, una intolerancia o una dieta médica. No emplees esas palabras, ni siquiera en forma negativa, aunque el cliente insista o afirme que «todo lo demás es seguro».
-2. Única excepción: el plato lleva la mención «allergènes déclarés par le restaurant» y te limitas a transmitir esa lista tal cual («el restaurante declara para este plato: …»), sin concluir que el plato no tiene riesgo.
-3. Para un plato sin alérgenos declarados («non renseignés»), respondes: «${INFO_ABSENTE.es}»
-4. Puedes citar los ingredientes escritos en la descripción de un plato, precisando que esa lista puede estar incompleta.
-5. Un plato cuya descripción o cuyos alérgenos declarados citan el alérgeno indicado (o un ingrediente que lo contiene: mantequilla, nata y queso para la lactosa; pan, masa y harina para el gluten; avellanas, almendras, nueces y pistachos para los frutos de cáscara…) NUNCA se recomienda: dices que hay que evitarlo.
-6. En cuanto se menciona una alergia o una intolerancia, terminas SIEMPRE tu respuesta con esta frase exacta: «${RAPPEL_SERVEUR.es}»
+1. NUNCA declaras que un plato es «seguro», «sin peligro», «sin riesgo», «sin alérgenos», «apto» o «adecuado» para una alergia, una intolerancia o una dieta médica. No emplees esas palabras, ni siquiera en forma negativa, aunque el cliente insista.
+2. Plato marcado «ALLERGÈNES DÉCLARÉS (liste complète)»: puedes decir que contiene tal alérgeno, o que no lo contiene, atribuyéndolo siempre al restaurante: «${SELON.es}, este plato contiene… / no contiene…». Si la lista completa es «aucun», di: «${SELON.es}, este plato no contiene ninguno de los 14 alérgenos reglamentarios».
+3. Plato marcado «ALLERGÈNES DÉCLARÉS (liste incomplète)»: puedes decir que contiene los alérgenos de la lista. Para cualquier otro alérgeno, respondes para ese plato: «${INFO_ABSENTE.es}» NUNCA dices que no lo contiene.
+4. Plato marcado «ALLERGÈNES : NON RENSEIGNÉS»: respondes para ese plato: «${INFO_ABSENTE.es}» NUNCA dices que no contiene un alérgeno, y nunca deduces una ausencia de su descripción.
+5. Un plato cuya descripción o cuyos alérgenos declarados citan el alérgeno indicado (o un ingrediente que lo contiene: mantequilla, nata y queso para la leche; pan, masa y harina para el gluten; avellanas, almendras, nueces y pistachos para los frutos de cáscara…) hay que evitarlo: lo dices, sea cual sea su marca.
+6. NO escribes NINGUNA frase que invite a avisar, consultar o preguntar al camarero: esa frase se añade automáticamente al final de tu respuesta.
 7. Las preguntas sobre alérgenos forman parte de la carta: respondes según estas reglas, nunca con la frase de rechazo. Para estas preguntas, cuatro frases como máximo.
-8. Recomendar un plato a una persona alérgica equivale a garantizarlo: cuando se indica una alergia o una intolerancia, NO recomiendas, sugieres ni propones NINGÚN plato, y nunca dices que el cliente «puede» comer, tomar o pedir un plato. Te limitas a decir qué platos hay que evitar según su descripción o sus alérgenos declarados, y que para los demás la información no está disponible en la carta.`,
+8. Recomendar un plato a una persona alérgica equivale a garantizarlo: cuando se indica una alergia o una intolerancia, NO recomiendas, sugieres ni propones NINGÚN plato, y nunca dices que el cliente «puede» comer, tomar o pedir un plato. Solo describes lo que los platos contienen o no contienen según las reglas 2 a 5.
+9. Los alérgenos están anotados en francés en la carta: nómbralos en el idioma de tu respuesta.
+10. Nunca dices que «los demás platos» o «ningún otro plato» no contienen o no declaran un alérgeno: esa fórmula incluiría platos sin información. Nombra cada plato del que hablas.`,
   ca: `AL·LÈRGIES, INTOLERÀNCIES I DIETES MÈDIQUES (regles de seguretat, prioritàries sobre totes les altres, inclòs el format):
-1. MAI declares que un plat és «segur», «sense perill», «sense risc», «sense al·lèrgens», «apte» o «adequat» per a una al·lèrgia, una intolerància o una dieta mèdica. No facis servir aquestes paraules, ni tan sols en forma negativa, encara que el client insisteixi o afirmi que «tota la resta és segura».
-2. Única excepció: el plat porta la menció «allergènes déclarés par le restaurant» i et limites a transmetre aquesta llista tal qual («el restaurant declara per a aquest plat: …»), sense concloure que el plat no té risc.
-3. Per a un plat sense al·lèrgens declarats («non renseignés»), respons: «${INFO_ABSENTE.ca}»
-4. Pots citar els ingredients escrits a la descripció d'un plat, precisant que aquesta llista pot ser incompleta.
-5. Un plat la descripció o els al·lèrgens declarats del qual citen l'al·lergen indicat (o un ingredient que el conté: mantega, nata i formatge per a la lactosa; pa, massa i farina per al gluten; avellanes, ametlles, nous i festucs per als fruits de closca…) MAI es recomana: dius que cal evitar-lo.
-6. Tan bon punt es menciona una al·lèrgia o una intolerància, acabes SEMPRE la teva resposta amb aquesta frase exacta: «${RAPPEL_SERVEUR.ca}»
+1. MAI declares que un plat és «segur», «sense perill», «sense risc», «sense al·lèrgens», «apte» o «adequat» per a una al·lèrgia, una intolerància o una dieta mèdica. No facis servir aquestes paraules, ni tan sols en forma negativa, encara que el client insisteixi.
+2. Plat marcat «ALLERGÈNES DÉCLARÉS (liste complète)»: pots dir que conté tal al·lergen, o que no el conté, atribuint-ho sempre al restaurant: «${SELON.ca}, aquest plat conté… / no conté…». Si la llista completa és «aucun», digues: «${SELON.ca}, aquest plat no conté cap dels 14 al·lèrgens reglamentaris».
+3. Plat marcat «ALLERGÈNES DÉCLARÉS (liste incomplète)»: pots dir que conté els al·lèrgens de la llista. Per a qualsevol altre al·lergen, respons per a aquest plat: «${INFO_ABSENTE.ca}» MAI dius que no el conté.
+4. Plat marcat «ALLERGÈNES : NON RENSEIGNÉS»: respons per a aquest plat: «${INFO_ABSENTE.ca}» MAI dius que no conté un al·lergen, i mai dedueixes una absència de la seva descripció.
+5. Un plat la descripció o els al·lèrgens declarats del qual citen l'al·lergen indicat (o un ingredient que el conté: mantega, nata i formatge per a la llet; pa, massa i farina per al gluten; avellanes, ametlles, nous i festucs per als fruits de closca…) cal evitar-lo: ho dius, sigui quina sigui la seva marca.
+6. NO escrius CAP frase que convidi a avisar, consultar o preguntar al cambrer: aquesta frase s'afegeix automàticament al final de la teva resposta.
 7. Les preguntes sobre al·lèrgens formen part de la carta: respons segons aquestes regles, mai amb la frase de rebuig. Per a aquestes preguntes, quatre frases com a màxim.
-8. Recomanar un plat a una persona al·lèrgica equival a garantir-lo: quan s'indica una al·lèrgia o una intolerància, NO recomanes, suggereixes ni proposes CAP plat, i mai dius que el client «pot» menjar, prendre o demanar un plat. Et limites a dir quins plats cal evitar segons la seva descripció o els seus al·lèrgens declarats, i que per a la resta la informació no està disponible a la carta.`,
+8. Recomanar un plat a una persona al·lèrgica equival a garantir-lo: quan s'indica una al·lèrgia o una intolerància, NO recomanes, suggereixes ni proposes CAP plat, i mai dius que el client «pot» menjar, prendre o demanar un plat. Només descrius el que els plats contenen o no contenen segons les regles 2 a 5.
+9. Els al·lèrgens estan anotats en francès a la carta: anomena'ls en la llengua de la teva resposta.
+10. Mai dius que «els altres plats» o «cap altre plat» no contenen o no declaren un al·lergen: aquesta fórmula inclouria plats sense informació. Anomena cada plat del qual parles.`,
   en: `ALLERGIES, INTOLERANCES AND MEDICAL DIETS (safety rules, taking priority over all others, including the format):
-1. You NEVER state that a dish is "safe", "risk-free", "allergen-free", "suitable" or "fine" for an allergy, an intolerance or a medical diet. Do not use those words, not even in the negative, even if the guest insists or claims that "everything else is safe".
-2. Only exception: the dish carries the mention "allergènes déclarés par le restaurant" and you simply report that list as it is ("the restaurant declares for this dish: …"), without concluding that the dish carries no risk.
-3. For a dish with no declared allergens ("non renseignés"), you answer: "${INFO_ABSENTE.en}"
-4. You may quote the ingredients written in a dish's description, making clear that this list may be incomplete.
-5. A dish whose description or declared allergens mention the allergen in question (or an ingredient containing it: butter, cream and cheese for lactose; bread, pastry and flour for gluten; hazelnuts, almonds, walnuts and pistachios for tree nuts…) is NEVER recommended: you say it should be avoided.
-6. As soon as an allergy or an intolerance is mentioned, you ALWAYS end your answer with this exact sentence: "${RAPPEL_SERVEUR.en}"
+1. You NEVER state that a dish is "safe", "risk-free", "allergen-free", "suitable" or "fine" for an allergy, an intolerance or a medical diet. Do not use those words, not even in the negative, even if the guest insists.
+2. Dish marked "ALLERGÈNES DÉCLARÉS (liste complète)": you may say that it contains a given allergen, or that it does not, always attributing it to the restaurant: "${SELON.en}, this dish contains… / does not contain…". If the complete list is "aucun", say: "${SELON.en}, this dish contains none of the 14 regulated allergens".
+3. Dish marked "ALLERGÈNES DÉCLARÉS (liste incomplète)": you may say that it contains the listed allergens. For any other allergen, you answer for that dish: "${INFO_ABSENTE.en}" You NEVER say it does not contain it.
+4. Dish marked "ALLERGÈNES : NON RENSEIGNÉS": you answer for that dish: "${INFO_ABSENTE.en}" You NEVER say it does not contain an allergen, and you never infer an absence from its description.
+5. A dish whose description or declared allergens mention the allergen in question (or an ingredient containing it: butter, cream and cheese for milk; bread, pastry and flour for gluten; hazelnuts, almonds, walnuts and pistachios for tree nuts…) should be avoided: you say so, whatever its marking.
+6. You write NO sentence inviting the guest to tell, ask or check with the waiter: that sentence is added automatically at the end of your answer.
 7. Questions about allergens are part of the menu: you answer them under these rules, never with the refusal sentence. For these questions, four sentences at most.
-8. Recommending a dish to an allergic guest amounts to guaranteeing it: when an allergy or an intolerance is mentioned, you do NOT recommend, suggest or offer ANY dish, and you never say the guest "can" eat, have or order a dish. You only say which dishes should be avoided according to their description or declared allergens, and that for the others the information is not available in the menu.`,
+8. Recommending a dish to an allergic guest amounts to guaranteeing it: when an allergy or an intolerance is mentioned, you do NOT recommend, suggest or offer ANY dish, and you never say the guest "can" eat, have or order a dish. You only describe what dishes contain or do not contain under rules 2 to 5.
+9. Allergens are written in French in the menu: name them in the language of your answer.
+10. You never say that "the other dishes" or "no other dish" do not contain or do not declare an allergen: that wording would include dishes with no information. Name each dish you talk about.`,
 };
+// Les 14 allergènes réglementaires, tels qu'ils sont écrits dans la carte donnée au modèle.
+const LIBELLES = { gluten: 'gluten', crustaces: 'crustacés', oeufs: 'œufs', poisson: 'poisson', arachides: 'arachides', soja: 'soja', lait: 'lait', fruits_coque: 'fruits à coque', celeri: 'céleri', moutarde: 'moutarde', sesame: 'sésame', sulfites: 'sulfites', lupin: 'lupin', mollusques: 'mollusques', fruits_mer: 'fruits de mer (crustacés ou mollusques, non précisé)' };
+const STATUTS = ['renseigne', 'a_verifier', 'non_renseigne'];
+const court = (v, n) => String(v == null ? '' : v).replace(/\s+/g, ' ').trim().slice(0, n);
+// Déclaration d'un plat reçue de la page → { statut, allergenes[] }. Une liste sans statut (page
+// d'avant la liste des 14) est tenue pour incomplète ; une liste vide sans statut, pour non renseignée.
+function declaration(p) {
+  const liste = (Array.isArray(p && p.allergenes) ? p.allergenes : []).concat(Array.isArray(p && p.autres) ? p.autres : []).map(a => LIBELLES[a] || court(a, 40)).filter(Boolean);
+  const statut = STATUTS.includes(p && p.statut) ? p.statut : (liste.length ? 'a_verifier' : 'non_renseigne');
+  return { statut, allergenes: liste, regimes: (Array.isArray(p && p.regimes) ? p.regimes : []).map(r => court(r, 20)) };
+}
+// Mention écrite dans la carte donnée au modèle, à la suite du plat.
+function marquage(d) {
+  const regimes = d.regimes.length ? ' — régimes déclarés : ' + d.regimes.join(', ') : '';
+  if (d.statut === 'renseigne') return ' — ALLERGÈNES DÉCLARÉS (liste complète) : ' + (d.allergenes.join(', ') || 'aucun') + regimes;
+  if (d.statut === 'a_verifier') return ' — ALLERGÈNES DÉCLARÉS (liste incomplète) : ' + d.allergenes.join(', ') + regimes;
+  return ' — ALLERGÈNES : NON RENSEIGNÉS' + regimes;
+}
+// Plats connus du conseiller et leur statut : [{ noms[], statut }]. noms = nom d'origine et nom affiché.
+function platsDuContexte(ctx) {
+  const affiches = (ctx && ctx.noms) || {};
+  const tous = n => [n, affiches[n]].filter(Boolean).map(x => String(x));
+  if (ctx && ctx.restaurant) return (Array.isArray(ctx.carte) ? ctx.carte : []).filter(p => p && p.nom).map(p => ({ noms: tous(p.nom), statut: declaration(p).statut }));
+  // Démonstration : les plats de sa carte figée ; seuls ceux que la page déclare ont un statut.
+  const fiches = fichesDemo(ctx);
+  const inverse = {}; Object.keys(affiches).forEach(o => { inverse[affiches[o]] = o; });
+  return PLATS_DEMO().map(nom => {
+    const cle = Object.keys(fiches).find(k => k === nom || inverse[k] === nom || affiches[nom] === k);
+    return { noms: tous(nom).concat(cle ? [cle] : []), statut: cle ? fiches[cle].statut : 'non_renseigne' };
+  });
+}
+// Démonstration : déclarations envoyées par la page ({ nom affiché: { statut, allergenes } }), ou
+// l'ancien format ({ nom: [allergènes] }), tenu pour une liste incomplète.
+function fichesDemo(ctx) {
+  const sortie = {};
+  const fiches = ctx && ctx.fiches && typeof ctx.fiches === 'object' ? ctx.fiches : {};
+  Object.keys(fiches).slice(0, 200).forEach(n => { const d = declaration(fiches[n]); if (d.statut !== 'non_renseigne') sortie[court(n, 160)] = d; });
+  const anciens = ctx && ctx.allergenes && typeof ctx.allergenes === 'object' ? ctx.allergenes : {};
+  Object.keys(anciens).slice(0, 200).forEach(n => { if (!sortie[n] && Array.isArray(anciens[n]) && anciens[n].length) sortie[court(n, 160)] = declaration({ allergenes: anciens[n] }); });
+  return sortie;
+}
 // La conversation parle-t-elle d'allergie, d'intolérance ou d'un allergène ? (question en cours ou précédentes)
-const SUJET_ALLERGIE = /al[·.]?l[eè]rg|allerg|alerg|al[eè]rgi|intol[eé]r|c[eé]l[ií]a[cq]|gluten|lactos|fruits? à coque|frutos? (secos|de cáscara)|fruits? (secs|de closca)|\bnuts?\b|noisette|avellan|cacahu|cacauet|arachid|peanut|crustac|marisc|shellfish|fruits de mer|œufs?\b|oeufs?\b|huevos?\b|\bous?\b|\beggs?\b|s[ée]same|soja|\bsoy\b/i;
+const SUJET_ALLERGIE = /al[·.]?l[eè]rg|allerg|alerg|al[eè]rgi|intol[eé]r|c[eé]l[ií]a[cq]|gluten|lactos|\blait\b|\bleche\b|\bllet\b|\bmilk\b|dairy|fruits? à coque|frutos? (secos|de cáscara)|fruits? (secs|de closca)|\bnuts?\b|noisette|avellan|cacahu|cacauet|arachid|peanut|crustac|mollus|molus|marisc|shellfish|fruits de mer|œufs?\b|oeufs?\b|huevos?\b|\bous?\b|\beggs?\b|s[ée]same|sèsam|soja|\bsoy\b|c[ée]leri|\bapio\b|celery|moutarde|mostaza|mostassa|mustard|sul[fp]h?it|lupin|altramu|tramuss/i;
 // Mots par lesquels une réponse garantirait la sécurité d'un plat.
 const GARANTIE = /(?<![\p{L}])(sûre?s?|sans (danger|risque|allergènes?)|adaptée?s? (à|au|aux|pour)|convien(t|nent|dra|draient)|safe(ly)?|risk[- ]free|allergen[- ]free|suitable|seguros?|seguras?|sin (peligro|riesgo|alérgenos)|apt[oa]s?|adecuad[oa]s?|segurs?|segures?|sense (perill|risc|al·lèrgens)|aptes?|adequats?|adequades?)(?![\p{L}])/iu;
 
@@ -82,8 +147,91 @@ function recommandeUnPlat(texte) {
   }
   return null;
 }
-// Une réponse est refusée si elle garantit la sécurité d'un plat ou en recommande un.
-const refusAllergie = texte => (texte.match(GARANTIE) || [])[0] || recommandeUnPlat(texte);
+
+// Une réponse affirme-t-elle l'absence d'un allergène (« ne contient pas », « sans gluten »,
+// « does not contain », « -free »…) ? Admis seulement pour un plat dont la liste est complète.
+const MOTS_ALLERGENES = 'gluten|lactos[ea]?|lait|leche|llet|milk|dairy|œufs?|oeufs?|huevos?|ous?|eggs?|arachides?|cacahuetes?|cacauets?|peanuts?|soja|soy|fruits? à coque|frutos? (?:secos|de cáscara)|fruits? (?:secs|de closca)|(?:tree )?nuts?|s[ée]same|sésamo|sèsam|c[ée]leri|apio|api|celery|moutarde|mostaza|mostassa|mustard|sulfites?|sulfitos?|sulfits?|sulphites?|lupin|altramuces|tramussos|crustacés?|crustáceos?|crustacis?|crustaceans?|mollusques?|moluscos?|mol·luscs?|molluscs?|poisson|pescado|peix|fish|allergènes?|alérgenos?|al·lèrgens?|allergens?';
+const ABSENCE = new RegExp(
+  "(?<![\\p{L}])(?:ne\\s+(?:contien\\p{L}*|comport\\p{L}*|renferm\\p{L}*)\\s+(?:pas|aucun\\p{L}*|ni|plus)|n['’]en\\s+contien\\p{L}*\\s+pas|exempte?s?\\s+d|dépourvue?s?\\s+d|ne\\s+déclar\\p{L}*\\s+(?:pas|aucun\\p{L}*)"
+  + "|no\\s+(?:lo\\s+|la\\s+|los\\s+|las\\s+|el\\s+|en\\s+)?(?:contien\\p{L}*|cont[ée]\\p{L}*|contenen|llevan?|porta|porten|inclou\\p{L}*|incluyen?)|libres?\\s+de|lliures?\\s+de|no\\s+declar\\p{L}*"
+  + "|(?:does|do|did)\\s*(?:not|n['’]t)\\s+(?:contain|include)|contains?\\s+(?:no|none)(?![\\p{L}])|free\\s+(?:of|from)|declares?\\s+no(?:ne)?(?![\\p{L}])|(?:does|do)\\s*(?:not|n['’]t)\\s+(?:declare|list)"
+  + "|(?:sans|sin|sense|without|no)\\s+(?:" + MOTS_ALLERGENES + ")(?![\\p{L}])|(?:" + MOTS_ALLERGENES + ")[- ]free(?![\\p{L}]))", 'iu');
+const COUPE = /[.!?;:]\s+|\s+(?:mais|tandis que|alors que|en revanche|but|whereas|while|however|pero|mientras que|en cambio|però|mentre que|en canvi)\s+/iu;
+// Formules qui englobent des plats sans les nommer (« les autres plats », « everything else »…).
+const COLLECTIF = /(autres plats|aucun (autre )?plat|tous les plats|reste de la carte|dem[aá]s platos|otros platos|ning[uú]n (otro )?plato|todos los platos|resto de (la carta|los platos)|altres plats|cap (altre )?plat|tots els plats|resta de (la carta|plats)|other dish(es)?|all (the |of the )?(other |our )?dishes|rest of the menu|remaining dishes|everything else|none of (the|our) (other )?dishes)/i;
+const sansAccents = s => String(s).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+// Rend le passage fautif, ou null. plats = platsDuContexte(ctx).
+function absenceSansDonnee(texte, plats) {
+  const complets = plats.some(p => p.statut === 'renseigne');
+  for (const partie of String(texte).split(COUPE)) {
+    if (!partie || !ABSENCE.test(partie)) continue;
+    const p = sansAccents(partie);
+    const cites = plats.filter(pl => pl.noms.some(n => n.length >= 4 && p.includes(sansAccents(n))));
+    // Aucun plat à liste complète dans la carte, un plat cité dont la liste ne l'est pas, ou une
+    // formule collective alors que tous les plats ne sont pas renseignés : refus.
+    if (!complets || cites.some(pl => pl.statut !== 'renseigne') || (COLLECTIF.test(partie) && plats.some(pl => pl.statut !== 'renseigne'))) return partie.trim().slice(0, 120);
+  }
+  return null;
+}
+// Une réponse est refusée si elle garantit la sécurité d'un plat, en recommande un, ou affirme
+// l'absence d'un allergène pour un plat dont le restaurant n'a pas déclaré la liste complète.
+const refusAllergie = (texte, plats = []) => (texte.match(GARANTIE) || [])[0] || recommandeUnPlat(texte) || absenceSansDonnee(texte, plats);
+
+// Phrases où le modèle renvoie de lui-même vers le serveur : retirées, la phrase finale est posée
+// une seule fois par finAllergie (c'était la cause du rappel affiché deux fois).
+const RENVOI_SERVEUR = /(serveu(r|se)|camarer[oa]|cambrer[a]?|waiter|waitress|\bserver\b|\bstaff\b|\bteam\b|\bpersonal\b|équipe|\bequipo\b|\bequip\b)/i;
+function sansRenvois(texte) {
+  const phrases = String(texte).match(/[^.!?]+(?:[.!?]+["»”)]*\s*|$)/g) || [];
+  return phrases.filter(ph => !RENVOI_SERVEUR.test(ph)).join('').trim();
+}
+// ── Réponse prudente (quand le modèle n'a pas su répondre dans les règles) ──
+// Elle ne perd pas ce que le restaurant a déclaré : les plats qui CONTIENNENT l'allergène dont
+// parle le client sont nommés ; pour tout le reste, « information non disponible ».
+const NOMS_ALLERGENES = {   // cle : [fr, es, ca, en]
+  gluten: ['du gluten', 'gluten', 'gluten', 'gluten'], crustaces: ['des crustacés', 'crustáceos', 'crustacis', 'crustaceans'],
+  oeufs: ['des œufs', 'huevo', 'ou', 'eggs'], poisson: ['du poisson', 'pescado', 'peix', 'fish'],
+  arachides: ['des arachides', 'cacahuetes', 'cacauets', 'peanuts'], soja: ['du soja', 'soja', 'soja', 'soy'],
+  lait: ['du lait', 'leche', 'llet', 'milk'], fruits_coque: ['des fruits à coque', 'frutos de cáscara', 'fruits de closca', 'tree nuts'],
+  celeri: ['du céleri', 'apio', 'api', 'celery'], moutarde: ['de la moutarde', 'mostaza', 'mostassa', 'mustard'],
+  sesame: ['du sésame', 'sésamo', 'sèsam', 'sesame'], sulfites: ['des sulfites', 'sulfitos', 'sulfits', 'sulphites'],
+  lupin: ['du lupin', 'altramuces', 'tramussos', 'lupin'], mollusques: ['des mollusques', 'moluscos', 'mol·luscs', 'molluscs'],
+};
+const DETECTE = {
+  gluten: /gluten|c[eé]l[ií]a[cq]/i, lait: /lactos|\blait\b|laitier|\bleche\b|lácteo|\bllet\b|lacti|\bmilk\b|dairy/i,
+  oeufs: /œufs?\b|oeufs?\b|huevos?\b|\bous\b|\beggs?\b/i,
+  fruits_coque: /fruits? à coque|frutos? (secos|de cáscara)|fruits? (secs|de closca)|\bnuts?\b|noisette|avellan|amande|almendr|ametll|almond|\bnoix\b|nuec|\bnous\b|walnut|pistach|festuc/i,
+  arachides: /cacahu|cacauet|arachid|peanut/i, crustaces: /crustac|marisc|shellfish|fruits de mer/i, mollusques: /mollus|molus|mol·lusc|marisc|shellfish|fruits de mer/i,
+  poisson: /poisson|pescado|\bpeix\b|\bfish\b/i, sesame: /s[ée]same|sésamo|sèsam/i, soja: /soja|\bsoy/i, celeri: /c[ée]leri|\bapio\b|celery/i,
+  moutarde: /moutarde|mostaza|mostassa|mustard/i, sulfites: /sul[fp]h?it/i, lupin: /lupin|altramu|tramuss/i,
+};
+const REPLI_CONTIENT = {
+  fr: 'Selon les informations du restaurant, ces plats contiennent {a} : {p}.', es: 'Según la información del restaurante, estos platos contienen {a}: {p}.',
+  ca: 'Segons la informació del restaurant, aquests plats contenen {a}: {p}.', en: 'According to the information provided by the restaurant, these dishes contain {a}: {p}.',
+};
+const REPLI_AUTRES = {
+  fr: "Pour les autres plats, cette information n'est pas disponible dans le menu.", es: 'Para los demás platos, esta información no está disponible en la carta.',
+  ca: 'Per a la resta de plats, aquesta informació no està disponible a la carta.', en: 'For the other dishes, this information is not available in the menu.',
+};
+function reponsePrudente(ctx, lang, propos) {
+  const i = Object.keys(LANGUES).indexOf(lang);
+  const cherches = Object.keys(DETECTE).filter(k => DETECTE[k].test(propos) || (k === 'oeufs' && lang === 'ca' && /\bou\b/i.test(propos)));
+  // Plats et allergènes déclarés (quel que soit le statut : une déclaration de présence vaut toujours).
+  const plats = ctx && ctx.restaurant
+    ? (Array.isArray(ctx.carte) ? ctx.carte : []).filter(p => p && p.nom).map(p => ({ nom: court(p.nom, 120), cles: [].concat(p.allergenes || [], p.autres || []) }))
+    : Object.keys((ctx && ctx.fiches) || {}).map(n => ({ nom: court(n, 120), cles: [].concat(ctx.fiches[n].allergenes || [], ctx.fiches[n].autres || []) }));
+  const lignes = [];
+  for (const k of cherches) {
+    const noms = plats.filter(p => p.cles.includes(k) || (p.cles.includes('fruits_mer') && (k === 'crustaces' || k === 'mollusques'))).map(p => p.nom);
+    if (noms.length) lignes.push(REPLI_CONTIENT[lang].replace('{a}', NOMS_ALLERGENES[k][i]).replace('{p}', noms.join(', ')));
+  }
+  return lignes.length ? lignes.join(' ') + ' ' + REPLI_AUTRES[lang] : INFO_ABSENTE[lang];
+}
+
+// Réponse à une question d'allergie : sans renvoi rédigé par le modèle, avec UNE phrase finale.
+function finAllergie(texte, lang, avecDonnees) {
+  const corps = sansRenvois(texte) || INFO_ABSENTE[lang];
+  return corps + ' ' + (avecDonnees ? MENTION : RAPPEL_SERVEUR)[lang];
+}
 
 // Toute lettre qui n'est pas de l'écriture latine (cyrillique, grec, arabe, CJC…).
 const NON_LATIN = /[^\P{L}\p{Script=Latin}]/u;
@@ -106,25 +254,21 @@ function buildSystem(ctx, lang) {
       (p.prix_promo != null ? ' → ' + p.prix_promo + ' €' : p.type === 'pourcent' ? ' −' + p.valeur + '%' : '')
     ).join('\n');
   }
-  if (ctx && ctx.allergenes && Object.keys(ctx.allergenes).length) {
-    extra += '\n\nALLERGÈNES DÉCLARÉS PAR LE RESTAURANT (plats non listés ici : non renseignés) :\n' + Object.entries(ctx.allergenes).map(([n, a]) =>
-      '• ' + n + ' : ' + a.join(', ')
-    ).join('\n');
-  }
   // Passeport MenuVision : profil du client connecté (personnalisation)
   if (ctx && ctx.passport) {
     const pp = ctx.passport;
     const lignes = [];
     if (pp.prenom)      lignes.push('Prénom : ' + pp.prenom + ' (tu peux l\'appeler par son prénom, avec délicatesse).');
-    if (pp.allergenes && pp.allergenes.length)   lignes.push('ALLERGIES — ne JAMAIS recommander de plat contenant : ' + pp.allergenes.join(', ') + '.');
+    if (pp.allergenes && pp.allergenes.length)   lignes.push('ALLERGIES — ne JAMAIS recommander de plat contenant : ' + pp.allergenes.map(a => LIBELLES[a] || court(a, 40)).join(', ') + '.');
     if (pp.preferences && pp.preferences.length) lignes.push('Goûts : ' + pp.preferences.join(', ') + '. Oriente tes suggestions en ce sens.');
     if (lignes.length) extra += '\n\nCLIENT (Passeport MenuVision) :\n' + lignes.map(l => '• ' + l).join('\n');
   }
-  // Sans restaurant dans le contexte : la démonstration (Maison Ardent) et sa carte figée.
-  // La carte figée de la démonstration ne porte aucune donnée d'allergènes : sauf ceux listés
-  // ci-dessus comme déclarés par le restaurant, ils sont « non renseignés » pour tous ses plats.
-  const base = ctx && ctx.restaurant ? promptRestaurant(ctx) : SYSTEM_PROMPT + '\n\nALLERGÈNES DE CETTE CARTE : non renseignés pour tous les plats, sauf ceux listés comme déclarés par le restaurant.';
-  return base + extra;
+  // Sans restaurant dans le contexte : la démonstration (Maison Ardent) et sa carte figée. Elle ne
+  // porte aucune donnée d'allergènes : seuls les plats déclarés par la page en reçoivent.
+  if (ctx && ctx.restaurant) return promptRestaurant(ctx) + extra;
+  const fiches = fichesDemo(ctx);
+  const declares = Object.keys(fiches).map(n => '• ' + n + marquage(fiches[n])).join('\n');
+  return SYSTEM_PROMPT + '\n\nALLERGÈNES DE CETTE CARTE :\n' + (declares ? declares + '\n• Tous les autres plats' : '• Tous les plats') + ' — ALLERGÈNES : NON RENSEIGNÉS' + extra;
 }
 
 const REGLE = `RÈGLE ABSOLUE : Tu réponds UNIQUEMENT aux questions sur la carte du restaurant. Pour toute autre question, réponds poliment par la phrase de refus indiquée à la rubrique LANGUE.`;
@@ -143,7 +287,7 @@ function promptRestaurant(ctx) {
     .filter(p => p && p.nom)
     .map(p => '• ' + txt(p.nom, 120) + ' — ' + (Number(p.prix) || 0) + (p.categorie ? ' — ' + txt(p.categorie, 30) : '') + (p.description ? ' — ' + txt(p.description, 200) : '')
       // Donnée d'allergènes : seulement ce que le restaurateur a renseigné sur la fiche du plat.
-      + (Array.isArray(p.allergenes) && p.allergenes.length ? ' — allergènes déclarés par le restaurant : ' + p.allergenes.map(a => txt(a, 40)).join(', ') : ' — allergènes : non renseignés'))
+      + marquage(declaration(p)))
     .join('\n');
   return `Tu es le conseiller du restaurant ${nom}.
 
@@ -155,6 +299,9 @@ ${carte || '(carte non communiquée : invite le client à consulter la carte aff
 ${FORMAT}
 — Ne cite que des plats de cette carte, sans en inventer.`;
 }
+
+// Noms des plats de la carte figée de la démonstration.
+const PLATS_DEMO = () => (SYSTEM_PROMPT.match(/^• .+? — /gm) || []).map(l => l.slice(2, -3));
 
 const SYSTEM_PROMPT = `Tu es le conseiller gastronomique de Maison Ardent, un restaurant gastronomique étoilé à Paris.
 
@@ -221,6 +368,11 @@ function httpsPost(payload, apiKey) {
 }
 
 exports.refusAllergie = refusAllergie;
+exports.absenceSansDonnee = absenceSansDonnee;
+exports.finAllergie = finAllergie;
+exports.reponsePrudente = reponsePrudente;
+exports.platsDuContexte = platsDuContexte;
+exports.buildSystem = buildSystem;
 
 exports.handler = async (event) => {
   const headers = {
@@ -268,18 +420,22 @@ exports.handler = async (event) => {
       reply = await demander();
       if (NON_LATIN.test(reply)) throw new Error('réponse non latine après relance');
     }
-    // Allergies : une réponse qui garantirait la sécurité d'un plat est redemandée une fois ; si elle
-    // revient pareille, le client reçoit la réponse prudente. Le rappel au serveur est toujours présent.
+    // Allergies : une réponse qui garantirait la sécurité d'un plat, en recommanderait un, ou
+    // affirmerait l'absence d'un allergène sans liste complète du restaurant est redemandée une
+    // fois ; si elle revient pareille, le client reçoit la réponse prudente. La phrase finale est
+    // posée ici, une seule fois.
     let garde = null;
-    const allergie = SUJET_ALLERGIE.test([message, ...trimmedHistory.filter(m => m && m.role === 'user').map(m => String(m.content))].join(' '));
+    const propos = [message, ...trimmedHistory.filter(m => m && m.role === 'user').map(m => String(m.content))].join(' ');
+    const allergie = SUJET_ALLERGIE.test(propos);
     if (allergie) {
-      if (refusAllergie(reply)) {
-        console.warn('[chat] allergie : réponse avec garantie ou recommandation, redemandée —', refusAllergie(reply));
+      const plats = platsDuContexte(context);
+      if (refusAllergie(reply, plats)) {
+        console.warn('[chat] allergie : réponse refusée, redemandée —', refusAllergie(reply, plats));
         garde = 'relance';
         reply = await demander();
-        if (refusAllergie(reply) || NON_LATIN.test(reply)) { garde = 'repli'; reply = INFO_ABSENTE[lang]; }
+        if (refusAllergie(reply, plats) || NON_LATIN.test(reply)) { garde = 'repli'; reply = reponsePrudente(context, lang, propos); }
       }
-      if (!reply.includes(RAPPEL_SERVEUR[lang])) { reply = reply.trim() + ' ' + RAPPEL_SERVEUR[lang]; garde = garde || 'rappel'; }
+      reply = finAllergie(reply, lang, plats.some(p => p.statut !== 'non_renseigne'));
     }
     return { statusCode: 200, headers, body: JSON.stringify({ reply, ...(relance ? { relance: true } : {}), ...(garde ? { garde } : {}) }) };
 
