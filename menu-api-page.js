@@ -202,10 +202,18 @@
       fiches: {}
     };
     var dc = window.dishes || {};
-    if (api.estDefaut) Object.keys(dc).forEach(function (k) {
-      var a = dc[k].all;
-      if (a && a.statut !== 'non_renseigne') window._menuApiContext.fiches[dc[k].label || dc[k].name] = { statut: a.statut, allergenes: a.cles, autres: a.autres, regimes: a.regimes };
-    });
+    if (api.estDefaut) {
+      // Toute la carte de la démonstration lue sur le serveur (pas seulement les plats de cette page)…
+      api.plats.forEach(function (p) {
+        var a = allergenesDe(p);
+        if (a.statut !== 'non_renseigne') window._menuApiContext.fiches[nomDe(p)] = { statut: a.statut, allergenes: a.cles, autres: a.autres, regimes: a.regimes };
+      });
+      // … et, si le serveur n'a rien pour un plat de la page, la liste écrite dans la page.
+      Object.keys(dc).forEach(function (k) {
+        var a = dc[k].all, nom = dc[k].label || dc[k].name;
+        if (a && a.statut !== 'non_renseigne' && !window._menuApiContext.fiches[nom]) window._menuApiContext.fiches[nom] = { statut: a.statut, allergenes: a.cles, autres: a.autres, regimes: a.regimes };
+      });
+    }
     // Autre restaurant que la démonstration : le conseiller reçoit son nom et sa carte.
     if (!api.estDefaut) {
       window._menuApiContext.restaurant = { nom: (api.theme && api.theme.nom) || '' };
