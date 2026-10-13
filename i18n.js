@@ -28,6 +28,10 @@
     'envoyer': ['Envoyer', 'Enviar', 'Enviar', 'Send'],
     'pied.propose': ['Menu numérique proposé par', 'Carta digital ofrecida por', 'Carta digital oferta per', 'Digital menu by'],
     'pied.par': ['Menu numérique par', 'Carta digital de', 'Carta digital de', 'Digital menu by'],
+    'pied.conditions': ["Conditions d'utilisation", 'Condiciones de uso', "Condicions d'ús", 'Terms of use'],
+    'pied.confidentialite': ['Confidentialité', 'Privacidad', 'Privadesa', 'Privacy'],
+    'pied.mentions': ['Mentions légales', 'Aviso legal', 'Avís legal', 'Legal notice'],
+    'pied.legal': ['Informations légales', 'Información legal', 'Informació legal', 'Legal information'],
 
     // Accueil
     'accueil.cta': ['Découvrir la Carte', 'Descubrir la carta', 'Descobrir la carta', 'View the menu'],
@@ -475,7 +479,23 @@
     setTimeout(lever, 1500);
   }
   function lever() { var v = document.getElementById('mv-i18n-voile'); if (v) v.remove(); }
-  function pret() { appliquer(); selecteur(); lever(); setTimeout(bandeauReservation, 0); }
+  // ── Pied de page : pages légales de MenuVision (servies par le serveur), dans la langue du client ──
+  // Même adresse que RAILWAY dans menu-api.js.
+  var SERVEUR = 'https://menuvision-production.up.railway.app';
+  function piedLegal() {
+    var pied = document.querySelector('.page-footer, .hero-footer');
+    if (!pied || pied.querySelector('.mv-legal')) return;
+    var st = document.createElement('style');
+    st.textContent = '.mv-legal{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 16px;margin-top:12px;font-size:.62rem;letter-spacing:.06em}.mv-legal a{color:inherit;opacity:.75;text-decoration:underline;text-underline-offset:2px}';
+    document.head.appendChild(st);
+    var nav = document.createElement('nav'); nav.className = 'mv-legal'; nav.setAttribute('aria-label', t('pied.legal'));
+    [['/conditions', 'pied.conditions'], ['/confidentialite', 'pied.confidentialite'], ['/mentions-legales', 'pied.mentions']].forEach(function (p) {
+      var a = document.createElement('a'); a.href = SERVEUR + p[0] + '?lang=' + lang; a.target = '_blank'; a.rel = 'noopener'; a.textContent = t(p[1]);
+      nav.appendChild(a);
+    });
+    pied.appendChild(nav);
+  }
+  function pret() { appliquer(); selecteur(); piedLegal(); lever(); setTimeout(bandeauReservation, 0); }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', pret);
   else pret();
 })();
