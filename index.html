@@ -2,241 +2,95 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Maison Ardent</title>
-  <script src="i18n.js?v=2026-10-13a"></script>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&family=Montserrat:wght@300;400&display=swap" rel="stylesheet" />
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    :root {
-      --creme:    #F5F0E8;
-      --terre:    #8B4A2F;
-      --terre-dk: #6e3822;
-      --warm-mid: #C4A882;
-      --text:     #2C1F14;
-      --sep:      #D4C4B0;
-    }
-
-    html, body { height: 100%; }
-
-    body {
-      font-family: 'Montserrat', sans-serif;
-      font-weight: 300;
-      -webkit-font-smoothing: antialiased;
-      background: #100a05;
-    }
-
-    .hero {
-      position: relative;
-      min-height: 100svh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
-    }
-
-    .hero-bg {
-      position: absolute;
-      inset: 0;
-      background:
-        linear-gradient(to bottom, rgba(16,10,5,0.52) 0%, rgba(16,10,5,0.28) 40%, rgba(16,10,5,0.78) 100%),
-        url('https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=1400&h=1000&q=85') center/cover no-repeat;
-      transform: scale(1.04);
-      transition: transform 9s ease-out;
-    }
-
-    .hero-bg.loaded { transform: scale(1); }
-
-    .hero-content {
-      position: relative;
-      z-index: 2;
-      text-align: center;
-      padding: 0 36px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-
-    .stars {
-      font-size: 0.55rem;
-      letter-spacing: 0.5em;
-      color: var(--warm-mid);
-      margin-bottom: 24px;
-      opacity: 0.8;
-    }
-
-    .ornament {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      margin-bottom: 24px;
-    }
-
-    .orn-line {
-      width: 48px;
-      height: 1px;
-      background: linear-gradient(to right, transparent, rgba(196,168,130,0.65));
-    }
-    .orn-line.r { background: linear-gradient(to left, transparent, rgba(196,168,130,0.65)); }
-
-    .orn-diamond {
-      width: 5px; height: 5px;
-      background: var(--warm-mid);
-      transform: rotate(45deg);
-      opacity: 0.8;
-    }
-
-    .hero-label {
-      font-size: 0.6rem;
-      letter-spacing: 0.4em;
-      text-transform: uppercase;
-      color: rgba(196,168,130,0.75);
-      margin-bottom: 18px;
-    }
-
-    .hero-title {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: clamp(3.2rem, 13vw, 5.5rem);
-      font-weight: 300;
-      letter-spacing: 0.22em;
-      color: var(--creme);
-      line-height: 1.0;
-      margin-bottom: 6px;
-    }
-
-    .hero-title em {
-      display: block;
-      font-style: italic;
-      font-weight: 300;
-      font-size: 0.72em;
-      letter-spacing: 0.28em;
-      color: rgba(245,240,232,0.75);
-      margin-top: 4px;
-    }
-
-    .hero-subtitle {
-      font-family: 'Cormorant Garamond', serif;
-      font-style: italic;
-      font-size: clamp(1rem, 4vw, 1.25rem);
-      color: rgba(196,168,130,0.7);
-      letter-spacing: 0.12em;
-      margin-top: 20px;
-      margin-bottom: 48px;
-    }
-
-    .cta-btn {
-      display: inline-block;
-      text-decoration: none;
-      padding: 17px 40px;
-      border: 1px solid rgba(212,196,176,0.5);
-      color: var(--creme);
-      font-family: 'Montserrat', sans-serif;
-      font-size: 0.68rem;
-      font-weight: 400;
-      letter-spacing: 0.32em;
-      text-transform: uppercase;
-      background: rgba(139,74,47,0.15);
-      transition: background 0.3s, border-color 0.3s;
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    .cta-btn:active {
-      background: rgba(139,74,47,0.5);
-      border-color: rgba(212,196,176,0.9);
-    }
-
-    .scroll-hint {
-      position: absolute;
-      bottom: 40px;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 2;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 6px;
-      animation: fadeIn 2.5s ease 1.5s both;
-    }
-
-    @keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
-
-    .scroll-hint span {
-      display: block;
-      width: 1px;
-      height: 44px;
-      background: linear-gradient(to bottom, transparent, rgba(196,168,130,0.45));
-      animation: scrollLine 2.2s ease-in-out infinite;
-    }
-
-    @keyframes scrollLine {
-      0%, 100% { opacity: 0; transform: scaleY(0); transform-origin: top; }
-      50% { opacity: 1; transform: scaleY(1); transform-origin: top; }
-    }
-
-    .hero-footer {
-      position: absolute;
-      bottom: 22px;
-      left: 0; right: 0;
-      text-align: center;
-      z-index: 2;
-    }
-
-    .footer-brand {
-      font-size: 0.58rem;
-      letter-spacing: 0.3em;
-      text-transform: uppercase;
-      color: rgba(196,168,130,0.35);
-      margin-bottom: 3px;
-    }
-
-    .footer-mv {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 0.8rem;
-      letter-spacing: 0.16em;
-      color: rgba(196,168,130,0.28);
-    }
-  </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Menu</title>
+  <meta name="description" content="" />
+  <meta name="theme-color" content="#FAFAF7" />
+  <link rel="icon" href="icone.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://menuvision-production.up.railway.app" crossorigin />
+  <link rel="stylesheet" href="mv-systeme.css?v=2026-10-14a" />
+  <script src="i18n.js?v=2026-10-14a"></script>
+  <script src="menu-api.js?v=2026-10-14a"></script>
 </head>
-<body>
-  <section class="hero">
-    <div class="hero-bg" id="heroBg"></div>
-
-    <div class="hero-content">
-      <p class="stars">★ ★ ★</p>
-      <div class="ornament">
-        <span class="orn-line"></span>
-        <span class="orn-diamond"></span>
-        <span class="orn-line r"></span>
+<body class="page-accueil">
+  <main>
+    <section class="accueil-hero" id="hero">
+      <div class="hero-image" id="heroImage" aria-hidden="true"></div>
+      <div class="hero-contenu">
+        <img class="hero-logo" id="heroLogo" alt="" hidden />
+        <h1 class="hero-nom" data-mv-nom><span class="sq-titre" aria-hidden="true"></span></h1>
+        <p class="hero-accroche" id="heroAccroche" hidden></p>
+        <div class="hero-actions">
+          <a href="entrees.html" class="btn-plein" data-i18n="accueil.cta">Découvrir la carte</a>
+          <a href="#" class="btn-contour" id="lienResa" hidden data-i18n="accueil.reserver">Réserver une table</a>
+        </div>
       </div>
-      <p class="hero-label" data-i18n="demo.hero.label">Paris &nbsp;·&nbsp; Depuis 1987 &nbsp;·&nbsp; Table d'exception</p>
-      <h1 class="hero-title">
-        Maison
-        <em>Ardent</em>
-      </h1>
-      <p class="hero-subtitle" data-i18n="demo.hero.sous">Cuisine française d'exception</p>
-      <a href="entrees.html" class="cta-btn" data-i18n="accueil.cta">Découvrir la Carte</a>
-    </div>
+    </section>
 
-    <div class="scroll-hint"><span></span></div>
+    <section class="accueil-infos" id="infos" hidden aria-labelledby="infosTitre">
+      <h2 class="sr" id="infosTitre" data-i18n="accueil.infos">Informations pratiques</h2>
+      <p class="texte-accueil" id="texteAccueil" hidden></p>
+      <ul class="infos-liste">
+        <li id="infoHoraires" hidden>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+          <div><strong data-i18n="accueil.aujourdhui">Aujourd'hui</strong><span id="horairesJour"></span></div>
+        </li>
+        <li id="infoAdresse" hidden>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>
+          <div><span id="adresse"></span></div>
+        </li>
+        <li id="infoTel" hidden>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/></svg>
+          <div><a id="tel" href="#"></a></div>
+        </li>
+      </ul>
+    </section>
+  </main>
 
-    <footer class="hero-footer">
-      <p class="footer-brand" data-i18n="pied.par">Menu numérique par</p>
-      <p class="footer-mv">MenuVision</p>
-    </footer>
-  </section>
+  <footer class="page-footer">
+    <p class="propulse" data-i18n="pied.propulse">Propulsé par MenuVision</p>
+  </footer>
 
   <script>
-    window.addEventListener('load', () => {
-      document.getElementById('heroBg').classList.add('loaded');
-    });
+    // Accueil : tout vient du restaurant (/theme). Rien n'est affiché s'il n'est pas renseigné.
+    (function () {
+      var I = window.MVI18n, t = I.t;
+      var JOURS = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
+      var $ = function (id) { return document.getElementById(id); };
+      function poser() {
+        var api = window.menuAPI, th = api.theme || {};
+        if (th.image_fond_url) {
+          var img = new Image();
+          img.onload = function () { $('heroImage').style.backgroundImage = 'url("' + th.image_fond_url.replace(/"/g, '%22') + '")'; $('heroImage').classList.add('charge'); };
+          img.src = th.image_fond_url;
+          $('hero').classList.add('avec-image');
+          var l = document.getElementById('mv-langue'); if (l) l.classList.add('sombre');
+        }
+        if (th.logo_url) { $('heroLogo').src = th.logo_url; $('heroLogo').alt = th.nom || ''; $('heroLogo').hidden = false; }
+        if (th.accroche) { $('heroAccroche').textContent = th.accroche; $('heroAccroche').hidden = false; }
+        if (th.fonctions && th.fonctions.reservations) {
+          $('lienResa').href = 'https://menuvision-production.up.railway.app/reserver?r=' + encodeURIComponent(api.restaurantId) + '&lang=' + I.lang;
+          $('lienResa').hidden = false;
+        }
+        var infos = false;
+        if (th.texte_accueil) { $('texteAccueil').textContent = th.texte_accueil; $('texteAccueil').hidden = false; infos = true; }
+        var h = th.horaires && th.horaires[JOURS[new Date().getDay()]];
+        if (h) {
+          var plages = h.ouvert ? ['midi', 'soir'].filter(function (s) { return h[s] && h[s].actif !== false && h[s].debut && h[s].fin; }).map(function (s) { return h[s].debut + ' – ' + h[s].fin; }) : [];
+          $('horairesJour').textContent = plages.length ? ' ' + plages.join(' · ') : ' ' + t('accueil.ferme');
+          $('infoHoraires').hidden = false; infos = true;
+        }
+        var adresse = [th.adresse, th.ville].filter(Boolean).join(', ');
+        if (adresse) { $('adresse').textContent = adresse; $('infoAdresse').hidden = false; infos = true; }
+        if (th.telephone) { $('tel').textContent = th.telephone; $('tel').href = 'tel:' + th.telephone.replace(/[^+0-9]/g, ''); $('tel').setAttribute('aria-label', t('accueil.appeler') + ' ' + th.telephone); $('infoTel').hidden = false; infos = true; }
+        $('infos').hidden = !infos;
+      }
+      if (window.menuAPI && window.menuAPI.ready && window.menuAPI.theme && window.menuAPI.theme.nom) poser();
+      else window.addEventListener('menuApiReady', poser, { once: true });
+    })();
   </script>
-  <script src="menu-api.js?v=2026-10-12a"></script>
-  <script src="appel-serveur.js?v=2026-10-12a"></script>
+  <script src="appel-serveur.js?v=2026-10-14a"></script>
   <script src="reservation-mode.js"></script>
-  <script src="passport.js?v=2026-10-12a"></script>
+  <script src="passport.js?v=2026-10-14a"></script>
 </body>
 </html>

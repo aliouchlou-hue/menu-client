@@ -48,6 +48,7 @@
     return info;
   }
 
+  // Carte d'un plat. Sans photo, la carte est typographique : jamais de cadre vide ni d'image d'un autre restaurant.
   function cardHTML(plat, idx) {
     var pid  = plat.id || plat._id || ('api' + idx);
     var info = promoDe(plat);
@@ -56,44 +57,30 @@
       : esc(fmt(plat.prix));
     var badge = info ? '<span class="promo-badge">' + esc(info.label) + '</span>' : '';
     var photo = plat.image_url || plat.photo_url;
-    var img   = photo
-      ? '<img src="' + esc(photo) + '" alt="' + esc(nomDe(plat)) + '" class="dish-img" loading="' + (idx === 0 ? 'eager' : 'lazy') + '" />'
+    var tete = photo
+      ? '<div class="dish-img-wrap"><img src="' + esc(photo) + '" alt="" class="dish-img" width="800" height="600" decoding="async" loading="' + (idx < 2 ? 'eager' : 'lazy') + '"' + (idx === 0 ? ' fetchpriority="high"' : '') + ' />'
+        + '<span class="dish-num" aria-hidden="true">' + String(idx + 1).padStart(2, '0') + '</span>' + badge + '</div>'
       : '';
-    return '<article class="dish-card" data-id="' + esc(pid) + '">'
-      + '<div class="dish-img-wrap">' + img
-      + '<span class="dish-num">' + String(idx + 1).padStart(2, '0') + '</span>' + badge
-      + '</div>'
-      + '<div class="dish-body"><div class="dish-row">'
+    return '<article class="dish-card' + (photo ? '' : ' sans-photo') + '" data-id="' + esc(pid) + '" role="button" tabindex="0" aria-haspopup="dialog">'
+      + tete
+      + '<div class="dish-body">' + (photo ? '' : badge) + '<div class="dish-row">'
       + '<h2 class="dish-name">' + esc(nomDe(plat)) + '</h2>'
       + '<span class="dish-price">' + priceHTML + '</span>'
       + '</div><p class="dish-desc">' + esc(plat.description_traduite || plat.description || '') + '</p>'
       + '</div></article>';
   }
 
+  // Photo introuvable : la carte passe en version sans photo.
   function initFallback(card) {
-    var img  = card.querySelector('.dish-img');
+    var img = card.querySelector('.dish-img');
     if (!img) return;
-    var name = (card.querySelector('.dish-name') || {}).textContent || '';
-    var wrap = card.querySelector('.dish-img-wrap');
-    var src  = img.getAttribute('src') || '';
-    var done = false;
-    function fb() {
-      if (done) return; done = true;
-      img.style.display = 'none';
-      try { img.src = ''; } catch (_) {}
-      wrap.classList.add('fallback-active');
-      if (!wrap.querySelector('.img-placeholder')) {
-        var p = document.createElement('p');
-        p.className = 'img-placeholder'; p.textContent = name; wrap.appendChild(p);
-      }
-    }
-    img.onerror = fb;
-    if (!src) { fb(); return; }
-    var ctrl = new AbortController();
-    var t = setTimeout(function () { ctrl.abort(); }, 2000);
-    fetch(src, { method: 'HEAD', signal: ctrl.signal })
-      .then(function (r) { clearTimeout(t); if (!r.ok) fb(); })
-      .catch(function ()  { clearTimeout(t); fb(); });
+    img.addEventListener('error', function () {
+      var wrap = card.querySelector('.dish-img-wrap'), badge = wrap && wrap.querySelector('.promo-badge');
+      if (badge) card.querySelector('.dish-body').insertBefore(badge, card.querySelector('.dish-row'));
+      if (wrap) wrap.remove();
+      card.classList.add('sans-photo');
+      var d = window.dishes && window.dishes[card.dataset.id]; if (d) d.img = '';
+    }, { once: true });
   }
 
   function run() {
@@ -104,9 +91,9 @@
       return CATS.indexOf((p.categorie || p.category || '').toLowerCase()) >= 0;
     });
 
-    // La démonstration garde ses plats et ses photos d'origine ; les données du serveur
-    // ne servent alors qu'à compléter (allergènes, promotions) dans la dernière branche.
-    if (pagePlats.length > 0 && !api.estDefaut) {
+    // Les plats viennent toujours du restaurant (serveur) ; la page n'en contient aucun.
+    var grille = document.getElementById('carteGrille');
+    if (pagePlats.length > 0) {
       // Rebuild dishes from API data
       var d = window.dishes;
       if (d) Object.keys(d).forEach(function (k) { delete d[k]; });
@@ -127,66 +114,19 @@
         };
       });
 
-      // Replace DOM dish cards
-      document.querySelectorAll('.dish-card, .card-sep').forEach(function (el) { el.remove(); });
-      var orn = document.querySelector('.section-ornament');
-      orn.insertAdjacentHTML('afterend', pagePlats.map(cardHTML).join(''));
-
-      // Attach click listeners and image fallbacks on new cards
-      document.querySelectorAll('.dish-card').forEach(function (card) {
-        card.addEventListener('click', function () { if (window.openModal) window.openModal(card.dataset.id); });
+      grille.innerHTML = pagePlats.map(cardHTML).join('');
+      // Le nom affiché sert d'étiquette à la carte (lecteurs d'écran)
+      grille.querySelectorAll('.dish-card').forEach(function (card) {
+        var n = card.querySelector('.dish-name'); if (n) card.setAttribute('aria-label', n.textContent + ', ' + (card.querySelector('.dish-price') || {}).textContent);
         initFallback(card);
       });
-
-    } else if (!api.estDefaut) {
-      // Autre restaurant sans plat dans cette catégorie : les plats codés en dur sont
-      // ceux du restaurant par défaut, on les retire au lieu de les lui attribuer.
+    } else {
       var dv = window.dishes;
       if (dv) Object.keys(dv).forEach(function (k) { delete dv[k]; });
-      document.querySelectorAll('.dish-card, .card-sep').forEach(function (el) { el.remove(); });
-      var ornVide = document.querySelector('.section-ornament');
-      if (ornVide && !document.querySelector('.carte-vide')) {
-        ornVide.insertAdjacentHTML('afterend', '<p class="carte-vide" style="text-align:center;opacity:.6;padding:56px 24px;font-style:italic;">' + esc(t('carte.vide')) + '</p>');
-      }
-    } else {
-      // Démonstration : ses plats sont dans la page ; le serveur les complète et les traduit.
-      traduireDemo();
-
-      // Allergènes : ce que le restaurant a renseigné sur le serveur l'emporte ; à défaut, la
-      // liste écrite dans la page de démonstration, présentée comme « à confirmer ».
-      var dd = window.dishes || {};
-      Object.keys(dd).forEach(function (k) {
-        var entry = dd[k];
-        var p = api.plats.filter(function (x) { return (x.nom || '').toLowerCase() === (entry.name || '').toLowerCase(); })[0];
-        if (p && p.description_longue) entry.desc = p.description_longue;
-        if (p && p.allergenes_statut && p.allergenes_statut !== 'non_renseigne') { entry.all = allergenesDe(p); if (!IS_VIN) entry.allergens = p.allergenes || []; }
-        else if (!entry.all) entry.all = allergenesDePage(IS_VIN ? [] : entry.allergens);
-      });
-
-      // Apply promo badges by matching plat_id → nom → DOM card
-      api.promotions.forEach(function (pr) {
-        var plat = api.plats.find(function (p) { return String(p.id || p._id) === String(pr.plat_id); });
-        if (!plat) return;
-        var info = promoDe(plat);
-        if (!info) return;
-        document.querySelectorAll('.dish-card').forEach(function (card) {
-          var ne = card.querySelector('.dish-name');
-          if (!ne || (card.dataset.nom || ne.textContent).trim().toLowerCase() !== (plat.nom || '').toLowerCase()) return;
-          // Badge
-          var wrap = card.querySelector('.dish-img-wrap');
-          if (wrap && !wrap.querySelector('.promo-badge')) {
-            var b = document.createElement('span');
-            b.className = 'promo-badge'; b.textContent = info.label; wrap.appendChild(b);
-          }
-          // Price
-          var pe = card.querySelector('.dish-price');
-          if (pe) pe.innerHTML = '<s>' + esc(fmt(plat.prix)) + '</s> <span class="promo-new">' + esc(fmt(info.fin)) + '</span>';
-          // Update dishes object
-          var key = card.dataset.id;
-          if (window.dishes && window.dishes[key]) window.dishes[key].price = fmt(info.fin);
-        });
-      });
+      grille.innerHTML = '<p class="carte-vide">' + esc(t('carte.vide')) + '</p>';
     }
+    grille.setAttribute('aria-busy', 'false');
+    window.dispatchEvent(new CustomEvent('mvCartePosee'));
 
     // Expose live context for chat. On préserve un éventuel passeport déjà
     // injecté par passport.js (l'ordre de résolution des deux est indéterminé).
@@ -197,25 +137,10 @@
     window._menuApiContext = {
       langue: I.lang,
       noms: noms,
-      promotions: api.promotions,
-      // Démonstration : allergènes déclarés des plats de cette page, sous leur nom affiché.
-      fiches: {}
+      promotions: api.promotions
     };
-    var dc = window.dishes || {};
-    if (api.estDefaut) {
-      // Toute la carte de la démonstration lue sur le serveur (pas seulement les plats de cette page)…
-      api.plats.forEach(function (p) {
-        var a = allergenesDe(p);
-        if (a.statut !== 'non_renseigne') window._menuApiContext.fiches[nomDe(p)] = { statut: a.statut, allergenes: a.cles, autres: a.autres, regimes: a.regimes };
-      });
-      // … et, si le serveur n'a rien pour un plat de la page, la liste écrite dans la page.
-      Object.keys(dc).forEach(function (k) {
-        var a = dc[k].all, nom = dc[k].label || dc[k].name;
-        if (a && a.statut !== 'non_renseigne' && !window._menuApiContext.fiches[nom]) window._menuApiContext.fiches[nom] = { statut: a.statut, allergenes: a.cles, autres: a.autres, regimes: a.regimes };
-      });
-    }
-    // Autre restaurant que la démonstration : le conseiller reçoit son nom et sa carte.
-    if (!api.estDefaut) {
+    // Le conseiller reçoit le nom et la carte du restaurant.
+    {
       window._menuApiContext.restaurant = { nom: (api.theme && api.theme.nom) || '' };
       window._menuApiContext.carte = api.plats.slice(0, 200).map(function (p) {
         // Allergènes : ce que le restaurateur a renseigné, avec son statut (jamais de suggestion non validée).
@@ -228,40 +153,10 @@
     if (avisActifs()) afficherAvisRestaurant();
   }
 
-  // ── Démonstration : cartes codées dans la page, mises dans la langue du client ──
-  // Le nom d'origine de chaque carte est gardé (data-nom) : c'est la clé des traductions, et le
-  // nom que le panier envoie au serveur.
-  function traduireDemo() {
-    var d = window.dishes || {};
-    document.querySelectorAll('.dish-card').forEach(function (card) {
-      var nomEl = card.querySelector('.dish-name'), descEl = card.querySelector('.dish-desc');
-      var prixEl = card.querySelector('.dish-price'), typeEl = card.querySelector('.wine-type'), img = card.querySelector('.dish-img');
-      if (!nomEl) return;
-      if (card.dataset.nom === undefined) {
-        card.dataset.nom = nomEl.textContent.trim();
-        if (descEl) card.dataset.desc = descEl.textContent;
-        if (prixEl && !prixEl.querySelector('s')) card.dataset.prix = prixEl.textContent;
-        if (typeEl) card.dataset.type = typeEl.textContent;
-      }
-      var tr = I.plat(card.dataset.nom), entree = d[card.dataset.id];
-      nomEl.textContent = tr.nom;
-      if (img) img.alt = tr.nom;
-      var repli = card.querySelector('.img-placeholder'); if (repli) repli.textContent = tr.nom;
-      if (descEl) descEl.textContent = (tr.traduit && tr.description) || card.dataset.desc || '';
-      if (prixEl && card.dataset.prix && !prixEl.querySelector('s')) prixEl.textContent = I.unites(card.dataset.prix);
-      if (typeEl) typeEl.textContent = I.libelle(card.dataset.type);
-      if (entree) {
-        entree.label = tr.nom;
-        // Fiche : description traduite par le serveur ; en français, le texte long de la page.
-        entree.descT = (tr.traduit && tr.description) || undefined;
-      }
-    });
-  }
-
   // ── Allergènes ────────────────────────────────────────────────────────────
   // Chaque plat porte { statut, cles, autres, regimes } :
   //   statut  'renseigne'     le restaurateur a déclaré la liste (vide = aucun des 14 allergènes)
-  //           'a_verifier'    liste connue mais peut-être incomplète (ancienne saisie, démonstration)
+  //           'a_verifier'    liste connue mais peut-être incomplète (ancienne saisie)
   //           'non_renseigne' rien n'est déclaré : on ne présume jamais « aucun »
   //   cles    clés de la liste des 14 ; autres : valeurs hors liste (« fruits de mer », texte libre)
   function allergenesDe(p) {
@@ -272,11 +167,6 @@
     // Serveur d'avant la liste des 14 (pas de statut) : une liste non vide reste « à confirmer ».
     if (['renseigne', 'a_verifier', 'non_renseigne'].indexOf(statut) < 0) statut = (cles.length || autres.length) ? 'a_verifier' : 'non_renseigne';
     return { statut: statut, cles: cles, autres: autres, regimes: p.regimes || [] };
-  }
-  // Liste écrite dans une page de démonstration : jamais présentée comme complète.
-  function allergenesDePage(liste) {
-    var a = allergenesDe({ allergenes: liste || [] });
-    return a;
   }
   // Le plat contient-il un des allergènes choisis ? Rend leurs clés. « Fruits de mer » vaut crustacés ou mollusques.
   function contient(all, choisis) {
@@ -290,34 +180,34 @@
     var st = document.createElement('style'); st.id = 'mv-all-css';
     st.textContent = '.mv-all{margin-bottom:26px}'
       + '.mv-all .allergens-list{margin-bottom:10px}'
-      + '.mv-all .allergen-pill.alerte{background:var(--terre,#8B4A2F);border-color:var(--terre,#8B4A2F);color:#fff}'
+      + '.mv-all .allergen-pill.alerte{background:var(--accent);border-color:var(--accent);color:var(--sur-accent)}'
       + '.mv-all .allergen-pill.regime{background:transparent;border-style:dashed}'
-      + '.mv-all-texte{font-size:.84rem;line-height:1.5;color:var(--text,#2C1F14);margin:0 0 8px}'
-      + '.mv-all-note{font-size:.68rem;line-height:1.5;letter-spacing:.02em;color:var(--text-soft,#6B5244);font-style:italic;margin:0}'
+      + '.mv-all-texte{font-size:.84rem;line-height:1.5;color:var(--encre);margin:0 0 8px}'
+      + '.mv-all-note{font-size:.68rem;line-height:1.5;letter-spacing:.02em;color:var(--encre-2);font-style:italic;margin:0}'
       + '.mv-all-note + .mv-all-note{margin-top:2px}'
       + '.mv-filtre-barre{display:flex;flex-direction:column;align-items:center;gap:8px;margin:22px auto 0;padding:0 24px;text-align:center}'
-      + '.mv-filtre-btn{display:inline-flex;align-items:center;gap:8px;padding:9px 16px;background:transparent;border:1px solid var(--sep,#D4C4B0);border-radius:30px;cursor:pointer;font-family:"Montserrat",sans-serif;font-size:.64rem;letter-spacing:.14em;text-transform:uppercase;color:var(--text-soft,#6B5244);-webkit-tap-highlight-color:transparent}'
-      + '.mv-filtre-btn.actif{border-color:var(--terre,#8B4A2F);color:var(--terre,#8B4A2F)}'
-      + '.mv-filtre-btn .n{display:inline-block;min-width:18px;padding:1px 5px;border-radius:10px;background:var(--terre,#8B4A2F);color:#fff;font-size:.62rem;letter-spacing:0}'
-      + '.mv-filtre-resume{font-family:"Montserrat",sans-serif;font-size:.7rem;line-height:1.5;color:var(--text-soft,#6B5244)}'
+      + '.mv-filtre-btn{display:inline-flex;align-items:center;gap:8px;padding:9px 16px;background:transparent;border:1px solid var(--filet);border-radius:30px;cursor:pointer;font-family:var(--sans);font-size:.64rem;letter-spacing:.14em;text-transform:uppercase;color:var(--encre-2);-webkit-tap-highlight-color:transparent}'
+      + '.mv-filtre-btn.actif{border-color:var(--accent);color:var(--accent)}'
+      + '.mv-filtre-btn .n{display:inline-block;min-width:18px;padding:1px 5px;border-radius:10px;background:var(--accent);color:var(--sur-accent);font-size:.62rem;letter-spacing:0}'
+      + '.mv-filtre-resume{font-family:var(--sans);font-size:.7rem;line-height:1.5;color:var(--encre-2)}'
       + '.dish-card.mv-f-masque{display:none}'
       + '.dish-card.mv-f-signale .dish-img-wrap{opacity:.45;filter:grayscale(.6)}'
-      + '.mv-f-badge{display:block;margin:10px 0 0;padding:7px 11px;border-left:3px solid var(--terre,#8B4A2F);background:rgba(139,74,47,.08);font-family:"Montserrat",sans-serif;font-size:.7rem;line-height:1.45;color:var(--text,#2C1F14)}'
-      + '.mv-f-badge.inconnu{border-left-color:var(--warm-mid,#C4A882);background:rgba(196,168,130,.14);color:var(--text-soft,#6B5244)}'
-      + '.mv-f-voile{position:fixed;inset:0;z-index:400;background:rgba(20,12,6,.5);display:flex;align-items:flex-end;justify-content:center}'
-      + '.mv-f-feuille{width:100%;max-width:520px;max-height:88vh;overflow:auto;background:var(--creme,#F5F0E8);border-radius:16px 16px 0 0;padding:22px 22px calc(22px + env(safe-area-inset-bottom,0px));font-family:"Montserrat",sans-serif;color:var(--text,#2C1F14)}'
-      + '.mv-f-feuille h3{font-family:"Cormorant Garamond",serif;font-weight:400;font-size:1.5rem;margin:0 0 8px}'
-      + '.mv-f-feuille p{font-size:.78rem;line-height:1.6;color:var(--text-soft,#6B5244);margin:0 0 16px}'
+      + '.mv-f-badge{display:block;margin:10px 0 0;padding:7px 11px;border-left:3px solid var(--accent);background:color-mix(in srgb,var(--accent) 8%,transparent);font-family:var(--sans);font-size:.7rem;line-height:1.45;color:var(--encre)}'
+      + '.mv-f-badge.inconnu{border-left-color:var(--accent);background:color-mix(in srgb,var(--accent) 14%,transparent);color:var(--encre-2)}'
+      + '.mv-f-voile{position:fixed;inset:0;z-index:400;background:var(--voile);display:flex;align-items:flex-end;justify-content:center}'
+      + '.mv-f-feuille{width:100%;max-width:520px;max-height:88vh;overflow:auto;background:var(--fond);border-radius:16px 16px 0 0;padding:22px 22px calc(22px + env(safe-area-inset-bottom,0px));font-family:var(--sans);color:var(--encre)}'
+      + '.mv-f-feuille h3{font-family:var(--serif);font-weight:400;font-size:1.5rem;margin:0 0 8px}'
+      + '.mv-f-feuille p{font-size:.78rem;line-height:1.6;color:var(--encre-2);margin:0 0 16px}'
       + '.mv-f-puces{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px}'
-      + '.mv-f-puce{padding:8px 13px;background:transparent;border:1px solid var(--sep,#D4C4B0);border-radius:20px;cursor:pointer;font:inherit;font-size:.78rem;color:var(--text,#2C1F14)}'
-      + '.mv-f-puce[aria-pressed="true"]{background:var(--terre,#8B4A2F);border-color:var(--terre,#8B4A2F);color:#fff}'
+      + '.mv-f-puce{padding:8px 13px;background:transparent;border:1px solid var(--filet);border-radius:20px;cursor:pointer;font:inherit;font-size:.78rem;color:var(--encre)}'
+      + '.mv-f-puce[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--sur-accent)}'
       + '.mv-f-modes{display:flex;gap:8px;margin-bottom:18px}'
-      + '.mv-f-modes button{flex:1;padding:10px 8px;background:transparent;border:1px solid var(--sep,#D4C4B0);cursor:pointer;font:inherit;font-size:.72rem;color:var(--text-soft,#6B5244)}'
-      + '.mv-f-modes button[aria-pressed="true"]{border-color:var(--terre,#8B4A2F);color:var(--terre,#8B4A2F);font-weight:500}'
+      + '.mv-f-modes button{flex:1;padding:10px 8px;background:transparent;border:1px solid var(--filet);cursor:pointer;font:inherit;font-size:.72rem;color:var(--encre-2)}'
+      + '.mv-f-modes button[aria-pressed="true"]{border-color:var(--accent);color:var(--accent);font-weight:500}'
       + '.mv-f-actions{display:flex;gap:10px}'
-      + '.mv-f-actions button{flex:1;padding:14px;border:1px solid var(--terre,#8B4A2F);cursor:pointer;font:inherit;font-size:.68rem;letter-spacing:.2em;text-transform:uppercase}'
-      + '.mv-f-effacer{background:transparent;color:var(--terre,#8B4A2F)}'
-      + '.mv-f-appliquer{background:var(--terre,#8B4A2F);color:#fff}';
+      + '.mv-f-actions button{flex:1;padding:14px;border:1px solid var(--accent);cursor:pointer;font:inherit;font-size:.68rem;letter-spacing:.2em;text-transform:uppercase}'
+      + '.mv-f-effacer{background:transparent;color:var(--accent)}'
+      + '.mv-f-appliquer{background:var(--accent);color:var(--sur-accent)}';
     document.head.appendChild(st);
   }
 
@@ -465,29 +355,15 @@
 
   // ── Fiche plat : modèle 3D ────────────────────────────────────────────────
   // Le bouton « Voir sur ma table en 3D » n'apparaît que si le restaurant a un modèle pour CE plat.
-  // La démonstration garde son modèle générique, étiqueté « exemple ».
-  var MODELE_EXEMPLE = null, ECHELLE_EXEMPLE = null;
   function majModele(plat) {
     var btn = document.getElementById('btnAr'), wrap = document.getElementById('arWrap'), mv = document.getElementById('mvEl');
     if (!btn || !wrap || !mv) return;
-    if (MODELE_EXEMPLE === null) { MODELE_EXEMPLE = mv.getAttribute('src') || ''; ECHELLE_EXEMPLE = mv.getAttribute('scale'); }
-    var etiquette = document.getElementById('arExemple');
-    if (!etiquette) {
-      etiquette = document.createElement('p'); etiquette.id = 'arExemple'; etiquette.className = 'ar-hint';
-      etiquette.textContent = t('fiche.3d.exemple');
-      wrap.insertBefore(etiquette, wrap.firstChild);
-    }
-    var demo = window.menuAPI && window.menuAPI.estDefaut;
     if (plat && plat.model) {
       if (mv.getAttribute('src') !== plat.model) mv.setAttribute('src', plat.model);
-      mv.setAttribute('scale', '1 1 1');      // l'échelle réduite ne vaut que pour le modèle d'exemple (sans attribut, le visualiseur ne charge pas le modèle)
-      etiquette.style.display = 'none'; btn.style.display = 'flex';
-    } else if (demo) {
-      if (mv.getAttribute('src') !== MODELE_EXEMPLE) mv.setAttribute('src', MODELE_EXEMPLE);
-      if (ECHELLE_EXEMPLE) mv.setAttribute('scale', ECHELLE_EXEMPLE);
-      etiquette.style.display = ''; btn.style.display = 'flex';
+      mv.setAttribute('scale', '1 1 1');
+      btn.style.display = 'flex'; btn.hidden = false;
     } else {
-      btn.style.display = 'none'; wrap.style.display = 'none';
+      btn.style.display = 'none'; wrap.hidden = true;
     }
   }
 
@@ -510,24 +386,24 @@
   function styleAvis() {
     if (document.getElementById('mv-avis-css')) return;
     var st = document.createElement('style'); st.id = 'mv-avis-css';
-    st.textContent = '.mv-avis{margin:14px 0 4px;padding-top:12px;border-top:1px solid rgba(139,74,47,.18);text-align:center}'
+    st.textContent = '.mv-avis{margin:14px 0 4px;padding-top:12px;border-top:1px solid color-mix(in srgb,var(--accent) 18%,transparent);text-align:center}'
       + '.mv-avis-q{font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;opacity:.75;margin-bottom:6px}'
-      + '.mv-avis-etoiles button{background:none;border:none;font-size:1.5rem;line-height:1;color:#CDBFB0;cursor:pointer;padding:2px 3px}'
-      + '.mv-avis-etoiles button.on{color:var(--terre,#8B4A2F)}'
-      + '.mv-avis textarea{display:none;width:100%;margin-top:8px;padding:9px 10px;border:1px solid rgba(139,74,47,.3);border-radius:2px;font:inherit;font-size:.85rem;resize:vertical;min-height:54px;background:transparent;color:inherit}'
+      + '.mv-avis-etoiles button{background:none;border:none;font-size:1.5rem;line-height:1;color:var(--filet);cursor:pointer;padding:2px 3px}'
+      + '.mv-avis-etoiles button.on{color:var(--accent)}'
+      + '.mv-avis textarea{display:none;width:100%;margin-top:8px;padding:9px 10px;border:1px solid color-mix(in srgb,var(--accent) 30%,transparent);border-radius:2px;font:inherit;font-size:.85rem;resize:vertical;min-height:54px;background:transparent;color:inherit}'
       + '.mv-avis.note textarea,.mv-avis.note .mv-avis-envoyer{display:block}'
-      + '.mv-avis-envoyer{display:none;margin:8px auto 0;padding:9px 18px;background:var(--terre,#8B4A2F);color:#fff;border:none;border-radius:2px;font:inherit;font-size:.68rem;letter-spacing:.16em;text-transform:uppercase;cursor:pointer}'
+      + '.mv-avis-envoyer{display:none;margin:8px auto 0;padding:9px 18px;background:var(--accent);color:var(--sur-accent);border:none;border-radius:2px;font:inherit;font-size:.68rem;letter-spacing:.16em;text-transform:uppercase;cursor:pointer}'
       + '.mv-avis-msg{font-size:.82rem;font-style:italic;margin-top:6px;min-height:1em}'
-      + '.mv-avis input.mv-avis-prenom{display:none;width:100%;margin-top:8px;padding:9px 10px;border:1px solid rgba(139,74,47,.3);border-radius:2px;font:inherit;font-size:.85rem;background:transparent;color:inherit}'
+      + '.mv-avis input.mv-avis-prenom{display:none;width:100%;margin-top:8px;padding:9px 10px;border:1px solid color-mix(in srgb,var(--accent) 30%,transparent);border-radius:2px;font:inherit;font-size:.85rem;background:transparent;color:inherit}'
       + '.mv-avis.note input.mv-avis-prenom{display:block}'
-      + '.mv-avis-publics{margin:14px 0 4px;padding-top:12px;border-top:1px solid rgba(139,74,47,.18);text-align:left}'
+      + '.mv-avis-publics{margin:14px 0 4px;padding-top:12px;border-top:1px solid color-mix(in srgb,var(--accent) 18%,transparent);text-align:left}'
       + '.mv-avis-publics h3{font-size:.72rem;font-weight:400;letter-spacing:.08em;text-transform:uppercase;opacity:.75;margin:0 0 8px;text-align:center}'
-      + '.mv-avis-publics .mv-avis-moy{color:var(--terre,#8B4A2F);letter-spacing:.04em}'
-      + '.mv-avis-un{padding:8px 0;border-bottom:1px solid rgba(139,74,47,.1);font-size:.84rem;line-height:1.45}'
+      + '.mv-avis-publics .mv-avis-moy{color:var(--accent);letter-spacing:.04em}'
+      + '.mv-avis-un{padding:8px 0;border-bottom:1px solid color-mix(in srgb,var(--accent) 10%,transparent);font-size:.84rem;line-height:1.45}'
       + '.mv-avis-un:last-child{border-bottom:none}'
-      + '.mv-avis-un .mv-avis-et{color:var(--terre,#8B4A2F);font-size:.8rem;letter-spacing:.06em}'
+      + '.mv-avis-un .mv-avis-et{color:var(--accent);font-size:.8rem;letter-spacing:.06em}'
       + '.mv-avis-un .mv-avis-qui{opacity:.7;font-size:.74rem}'
-      + '.mv-avis-un .mv-avis-rep{margin:5px 0 0 12px;padding-left:10px;border-left:2px solid rgba(139,74,47,.3);font-size:.8rem;font-style:italic;opacity:.85}'
+      + '.mv-avis-un .mv-avis-rep{margin:5px 0 0 12px;padding-left:10px;border-left:2px solid color-mix(in srgb,var(--accent) 30%,transparent);font-size:.8rem;font-style:italic;opacity:.85}'
       + '.mv-avis-resto{max-width:560px;margin:34px auto 0;padding:0 24px}';
     document.head.appendChild(st);
   }
@@ -559,7 +435,7 @@
     btn.addEventListener('click', function () {
       if (envoye || !note) return;
       btn.disabled = true; msg.textContent = t('avis.envoi');
-      fetch('https://menuvision-production.up.railway.app/avis', {
+      fetch(RAILWAY + '/avis', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ restaurant_id: window.menuAPI.restaurantId, plat_nom: platNom, note: note, commentaire: el.querySelector('textarea').value.trim(), auteur: el.querySelector('.mv-avis-prenom').value.trim(), lang: I.lang })
       }).then(function (r) { return r.json().then(function (j) { return r.ok && j.ok; }); })

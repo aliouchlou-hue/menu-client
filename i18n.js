@@ -18,7 +18,6 @@
   'use strict';
   var LANGUES = ['fr', 'es', 'ca', 'en'];
   var NOMS = { fr: 'Français', es: 'Español', ca: 'Català', en: 'English' };
-  var DEMO = '7917c5f4-3d21-4e3d-bc69-8d87df617865';
 
   // cle : [fr, es, ca, en]
   var T = {
@@ -26,6 +25,20 @@
     'fermer': ['Fermer', 'Cerrar', 'Tancar', 'Close'],
     'retour': ['Retour', 'Volver', 'Tornar', 'Back'],
     'envoyer': ['Envoyer', 'Enviar', 'Enviar', 'Send'],
+    'pied.propulse': ['Propulsé par MenuVision', 'Con la tecnología de MenuVision', 'Amb la tecnologia de MenuVision', 'Powered by MenuVision'],
+    'accueil.reserver': ['Réserver une table', 'Reservar una mesa', 'Reservar una taula', 'Book a table'],
+    'accueil.aujourdhui': ["Aujourd'hui", 'Hoy', 'Avui', 'Today'],
+    'accueil.ferme': ["Fermé aujourd'hui", 'Cerrado hoy', 'Tancat avui', 'Closed today'],
+    'accueil.appeler': ['Appeler le restaurant', 'Llamar al restaurante', 'Trucar al restaurant', 'Call the restaurant'],
+    'accueil.infos': ['Informations pratiques', 'Información práctica', 'Informació pràctica', 'Practical information'],
+    'etat.qr.titre': ['Bienvenue', 'Bienvenido', 'Benvingut', 'Welcome'],
+    'etat.qr.texte': ['Scannez le QR code posé sur votre table pour ouvrir la carte du restaurant.', 'Escanea el código QR de tu mesa para abrir la carta del restaurante.', 'Escaneja el codi QR de la teva taula per obrir la carta del restaurant.', 'Scan the QR code on your table to open the restaurant menu.'],
+    'etat.introuvable.titre': ['Carte introuvable', 'Carta no encontrada', 'Carta no trobada', 'Menu not found'],
+    'etat.introuvable.texte': ["Cette adresse ne correspond à aucun restaurant. Scannez à nouveau le QR code ou demandez-le à l'équipe.", 'Esta dirección no corresponde a ningún restaurante. Vuelve a escanear el código QR o pídelo al equipo.', "Aquesta adreça no correspon a cap restaurant. Torna a escanejar el codi QR o demana'l a l'equip.", 'This address does not match any restaurant. Scan the QR code again or ask the staff.'],
+    'etat.connexion.titre': ['Connexion impossible', 'Sin conexión', 'Sense connexió', 'No connection'],
+    'etat.connexion.texte': ['La carte ne peut pas être chargée pour le moment. Vérifiez votre connexion puis réessayez.', 'La carta no se puede cargar ahora. Comprueba tu conexión y vuelve a intentarlo.', "La carta no es pot carregar ara. Comprova la connexió i torna-ho a provar.", 'The menu cannot be loaded right now. Check your connection and try again.'],
+    'etat.reessayer': ['Réessayer', 'Reintentar', 'Tornar-ho a provar', 'Try again'],
+    'etat.indispo.titre': ['Carte indisponible', 'Carta no disponible', 'Carta no disponible', 'Menu unavailable'],
     'pied.propose': ['Menu numérique proposé par', 'Carta digital ofrecida por', 'Carta digital oferta per', 'Digital menu by'],
     'pied.par': ['Menu numérique par', 'Carta digital de', 'Carta digital de', 'Digital menu by'],
     'pied.conditions': ["Conditions d'utilisation", 'Condiciones de uso', "Condicions d'ús", 'Terms of use'],
@@ -35,8 +48,6 @@
 
     // Accueil
     'accueil.cta': ['Découvrir la Carte', 'Descubrir la carta', 'Descobrir la carta', 'View the menu'],
-    'demo.hero.label': ["Paris · Depuis 1987 · Table d'exception", 'París · Desde 1987 · Mesa de excepción', "París · Des de 1987 · Taula d'excepció", 'Paris · Since 1987 · Fine dining'],
-    'demo.hero.sous': ["Cuisine française d'exception", 'Alta cocina francesa', 'Alta cuina francesa', 'Exceptional French cuisine'],
 
     // Carte
     'nav.entrees': ['Entrées', 'Entrantes', 'Entrants', 'Starters'],
@@ -45,11 +56,12 @@
     'nav.vins': ['Vins', 'Vinos', 'Vins', 'Wines'],
     'carte.sur': ['La Carte', 'La carta', 'La carta', 'The menu'],
     'cave.sur': ['La Cave', 'La bodega', 'El celler', 'The cellar'],
-    'intro.entrees': ["Compositions d'ouverture selon le marché", 'Composiciones de apertura según el mercado', "Composicions d'obertura segons el mercat", 'Opening dishes, inspired by the market'],
-    'intro.plats': ['Créations de notre chef, au gré des saisons', 'Creaciones de nuestro chef, al ritmo de las estaciones', 'Creacions del nostre xef, al ritme de les estacions', "Our chef's creations, following the seasons"],
-    'intro.desserts': ['Douceurs de notre pâtissier, Pierre Vanel', 'Dulces de nuestro pastelero, Pierre Vanel', 'Dolços del nostre pastisser, Pierre Vanel', 'Sweets by our pastry chef, Pierre Vanel'],
-    'intro.vins': ['Une sélection de notre sommelier', 'Una selección de nuestro sumiller', 'Una selecció del nostre sommelier', 'A selection by our sommelier'],
-    'carte.vide': ['Cette partie de la carte arrive bientôt.', 'Esta parte de la carta llegará pronto.', 'Aquesta part de la carta arribarà aviat.', 'This part of the menu is coming soon.'],
+    'intro.entrees': ['Pour commencer', 'Para empezar', 'Per començar', 'To start'],
+    'intro.plats': ['Les plats', 'Los platos', 'Els plats', 'Main courses'],
+    'intro.desserts': ['Pour finir', 'Para terminar', 'Per acabar', 'To finish'],
+    'intro.boissons': ['À boire', 'Para beber', 'Per beure', 'To drink'],
+    'nav.boissons': ['Boissons', 'Bebidas', 'Begudes', 'Drinks'],
+    'carte.vide': ['Cette rubrique ne propose rien pour le moment.', 'Esta sección no ofrece nada por ahora.', 'Aquesta secció no ofereix res de moment.', 'Nothing in this section for now.'],
     'unite.verre': ['v', 'copa', 'copa', 'glass'],
     'unite.bouteille': ['btl', 'bot.', 'amp.', 'btl'],
 
@@ -61,7 +73,6 @@
     'fiche.3d.viser': ['Pointez vers votre table', 'Apunta hacia tu mesa', 'Apunta cap a la teva taula', 'Point at your table'],
     'fiche.3d.android': ['AR disponible sur Android', 'RA disponible en Android', 'RA disponible a Android', 'AR available on Android'],
     'fiche.3d.masquer': ['Masquer la vue 3D', 'Ocultar la vista 3D', 'Amagar la vista 3D', 'Hide 3D view'],
-    'fiche.3d.exemple': ["Modèle 3D d'exemple — ce n'est pas le plat réel", 'Modelo 3D de ejemplo: no es el plato real', "Model 3D d'exemple: no és el plat real", 'Sample 3D model — not the actual dish'],
     'fiche.3d.alt': ['Aperçu 3D du plat', 'Vista 3D del plato', 'Vista 3D del plat', '3D preview of the dish'],
     'fiche.ajouter': ['Ajouter à ma commande', 'Añadir a mi pedido', 'Afegir a la meva comanda', 'Add to my order'],
     'fiche.ajouter.vin': ['Ajouter à ma sélection', 'Añadir a mi selección', 'Afegir a la meva selecció', 'Add to my selection'],
@@ -90,7 +101,8 @@
     // Conseiller (chat)
     'chat.bouton': ['Conseiller', 'Asesor', 'Assessor', 'Advisor'],
     'chat.aria': ['Conseiller gastronomique', 'Asesor gastronómico', 'Assessor gastronòmic', 'Food advisor'],
-    'chat.sous': ['Votre conseiller gastronomique', 'Tu asesor gastronómico', 'El teu assessor gastronòmic', 'Your food advisor'],
+    'chat.sous': ['Votre conseiller', 'Tu asesor', 'El teu assessor', 'Your advisor'],
+    'chat.accueil.neutre': ['Bonjour. Puis-je vous guider sur la carte ?', 'Hola. ¿Puedo orientarte con la carta?', 'Hola. Et puc orientar amb la carta?', 'Hello. May I guide you through the menu?'],
     'chat.accueil': ['Bonsoir, bienvenue chez {nom}. Puis-je vous guider sur notre carte du soir ?', 'Buenas noches, bienvenido a {nom}. ¿Puedo orientarte con nuestra carta de esta noche?', "Bona nit, benvingut a {nom}. Et puc orientar amb la nostra carta d'aquesta nit?", "Good evening, welcome to {nom}. May I guide you through tonight's menu?"],
     'chat.s1': ['Que me conseillez-vous ce soir ?', '¿Qué me recomiendas esta noche?', 'Què em recomanes aquesta nit?', 'What do you recommend tonight?'],
     'chat.s2': ["J'ai une allergie au gluten", 'Tengo alergia al gluten', 'Tinc al·lèrgia al gluten', 'I have a gluten allergy'],
@@ -250,16 +262,6 @@
     'vegetarien': ['Végétarien', 'Vegetariano', 'Vegetarià', 'Vegetarian'],
     'vegane': ['Végane', 'Vegano', 'Vegà', 'Vegan'],
   };
-  // Démonstration (Maison Ardent) : types de vin et accords abrégés codés dans ses pages.
-  var DEMO_TEXTES = {
-    'champagne brut': ['Champagne Brut', 'Champán Brut', 'Xampany Brut', 'Brut Champagne'],
-    'bourgogne blanc': ['Bourgogne Blanc', 'Borgoña blanco', 'Borgonya blanc', 'White Burgundy'],
-    'bourgogne rouge': ['Bourgogne Rouge', 'Borgoña tinto', 'Borgonya negre', 'Red Burgundy'],
-    'bordeaux liquoreux': ['Bordeaux Liquoreux', 'Burdeos licoroso', 'Bordeus licorós', 'Sweet Bordeaux'],
-    'saint-jacques': ['Saint-Jacques', 'Vieiras', 'Vieires', 'Scallops'],
-    'foie gras': ['Foie Gras', 'Foie gras', 'Foie gras', 'Foie gras'],
-    'turbot': ['Turbot', 'Rodaballo', 'Rèmol', 'Turbot'],
-  };
 
   function lire(cle) { try { return localStorage.getItem(cle); } catch (_) { return null; } }
   function ecrire(cle, v) { try { localStorage.setItem(cle, v); } catch (_) {} }
@@ -270,7 +272,7 @@
 
   // ── Langue retenue ──────────────────────────────────────────────────────────
   var rid = null;
-  try { rid = new URLSearchParams(location.search).get('r') || (/success/i.test(location.pathname) ? lire('mv_rid') : null) || DEMO; } catch (_) { rid = DEMO; }
+  try { rid = new URLSearchParams(location.search).get('r') || lire('mv_rid') || 'aucun'; } catch (_) { rid = 'aucun'; }
   var CLE_RESTO = 'mv_lang_resto:' + rid;
   var lang = null, origine = null;   // origine : 'choix' | 'navigateur' | 'restaurant' | 'defaut'
   var choisie = lire('mv_lang');
@@ -325,8 +327,8 @@
   }
   // Traduction d'un plat par son nom d'origine : { nom, description, traduit }.
   function plat(nom) { return plats[norm(nom)] || { nom: String(nom == null ? '' : nom), description: '', traduit: false }; }
-  // Accord mets et vin, type de vin (démonstration) : nom d'un plat de la carte, ou libellé connu.
-  function libelle(texte) { var p = plats[norm(texte)]; return (p && p.traduit) ? p.nom : (dico(DEMO_TEXTES, texte) || String(texte == null ? '' : texte)); }
+  // Libellé d'un plat de la carte dans la langue du client (nom traduit s'il existe).
+  function libelle(texte) { var p = plats[norm(texte)]; return (p && p.traduit) ? p.nom : String(texte == null ? '' : texte); }
   // « 22 €/v · 110 €/btl » → montants et unités dans la langue du client.
   function unites(texte) {
     var s = String(texte == null ? '' : texte);
@@ -354,7 +356,8 @@
   //   <title data-i18n-titre="cle">           → « Enseigne — texte »
   function appliquer(racine) {
     var r = racine || document;
-    var vars = { nom: 'Maison Ardent' };   // menu-api.js remplace ensuite l'enseigne par celle du restaurant
+    var th = window.menuAPI && window.menuAPI.theme;
+    var vars = { nom: (th && th.nom) || '' };
     r.querySelectorAll('[data-i18n]').forEach(function (el) { el.textContent = t(el.getAttribute('data-i18n'), vars); });
     r.querySelectorAll('[data-i18n-attr]').forEach(function (el) {
       el.getAttribute('data-i18n-attr').split(';').forEach(function (paire) {
@@ -362,7 +365,7 @@
       });
     });
     var titre = document.querySelector('title[data-i18n-titre]');
-    if (titre) document.title = 'Maison Ardent — ' + t(titre.getAttribute('data-i18n-titre'));
+    if (titre) document.title = (vars.nom ? vars.nom + ' — ' : '') + t(titre.getAttribute('data-i18n-titre'));
   }
 
   // ── Changement de langue ────────────────────────────────────────────────────
@@ -388,17 +391,17 @@
     if (document.getElementById('mv-langue')) return;
     var st = document.createElement('style');
     st.textContent = [
-      '#mv-langue{position:fixed;top:calc(12px + env(safe-area-inset-top,0px));right:14px;z-index:320;font-family:"Montserrat",system-ui,sans-serif;}',
+      '#mv-langue{position:fixed;top:calc(12px + env(safe-area-inset-top,0px));right:14px;z-index:320;font-family:var(--sans,system-ui),sans-serif;}',
       '.page-header #mv-langue{position:absolute;top:50%;right:12px;transform:translateY(-50%);}',
-      '#mv-langue-btn{display:flex;align-items:center;gap:5px;height:32px;padding:0 9px 0 10px;background:transparent;border:1px solid var(--sep,#D4C4B0);border-radius:16px;cursor:pointer;',
+      '#mv-langue-btn{display:flex;align-items:center;gap:5px;height:44px;min-width:44px;padding:0 12px;background:transparent;border:1px solid var(--filet,#ccc);border-radius:16px;cursor:pointer;',
       'font:inherit;font-size:.66rem;font-weight:400;letter-spacing:.14em;color:var(--text-soft,#6B5244);-webkit-tap-highlight-color:transparent;}',
       '#mv-langue-btn svg{width:9px;height:9px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;}',
-      '#mv-langue.sombre #mv-langue-btn{border-color:rgba(212,196,176,.5);color:#F5F0E8;background:rgba(16,10,5,.35);}',
-      '#mv-langue-menu{position:absolute;top:38px;right:0;min-width:138px;margin:0;padding:5px;list-style:none;background:#FBF8F2;border:1px solid var(--sep,#D4C4B0);border-radius:10px;box-shadow:0 8px 28px rgba(44,31,20,.18);}',
+      '#mv-langue.sombre #mv-langue-btn{border-color:rgba(255,255,255,.4);color:#FAFAF7;background:rgba(0,0,0,.35);}',
+      '#mv-langue-menu{position:absolute;top:38px;right:0;min-width:138px;margin:0;padding:5px;list-style:none;background:var(--fond,#fff);border:1px solid var(--filet,#ccc);border-radius:10px;box-shadow:0 8px 28px rgba(44,31,20,.18);}',
       '#mv-langue-menu[hidden]{display:none;}',
-      '#mv-langue-menu button{display:flex;width:100%;align-items:center;justify-content:space-between;gap:14px;padding:9px 10px;background:none;border:0;border-radius:7px;cursor:pointer;font:inherit;font-size:.78rem;letter-spacing:.02em;color:#2C1F14;text-align:left;}',
-      '#mv-langue-menu button span{font-size:.6rem;letter-spacing:.14em;color:#9A8070;}',
-      '#mv-langue-menu button[aria-checked="true"]{background:rgba(139,74,47,.09);color:var(--terre,#8B4A2F);font-weight:500;}',
+      '#mv-langue-menu button{display:flex;width:100%;align-items:center;justify-content:space-between;gap:14px;min-height:44px;padding:0 12px;background:none;border:0;border-radius:7px;cursor:pointer;font:inherit;font-size:.78rem;letter-spacing:.02em;color:#2C1F14;text-align:left;}',
+      '#mv-langue-menu button span{font-size:.7rem;letter-spacing:.14em;color:var(--encre-3,#777);}',
+      '#mv-langue-menu button[aria-checked="true"]{background:var(--accent-doux,#eee);color:var(--accent,#333);font-weight:600;}',
       // La pastille de points du Passeport laisse la place au sélecteur.
       '.mv-points{top:calc(56px + env(safe-area-inset-top,0px)) !important;}',
       'body.mv-avec-onglets .mv-points{top:calc(112px + env(safe-area-inset-top,0px)) !important;}'
@@ -486,7 +489,7 @@
     var pied = document.querySelector('.page-footer, .hero-footer');
     if (!pied || pied.querySelector('.mv-legal')) return;
     var st = document.createElement('style');
-    st.textContent = '.mv-legal{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 16px;margin-top:12px;font-size:.62rem;letter-spacing:.06em}.mv-legal a{color:inherit;opacity:.75;text-decoration:underline;text-underline-offset:2px}';
+    st.textContent = '.mv-legal{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 16px;margin-top:12px;font-size:.75rem;letter-spacing:.06em}.mv-legal a{color:inherit;opacity:.75;text-decoration:underline;text-underline-offset:2px}';
     document.head.appendChild(st);
     var nav = document.createElement('nav'); nav.className = 'mv-legal'; nav.setAttribute('aria-label', t('pied.legal'));
     [['/conditions', 'pied.conditions'], ['/confidentialite', 'pied.confidentialite'], ['/mentions-legales', 'pied.mentions']].forEach(function (p) {

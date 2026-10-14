@@ -110,23 +110,8 @@ function platsDuContexte(ctx) {
   const affiches = (ctx && ctx.noms) || {};
   const tous = n => [n, affiches[n]].filter(Boolean).map(x => String(x));
   if (ctx && ctx.restaurant) return (Array.isArray(ctx.carte) ? ctx.carte : []).filter(p => p && p.nom).map(p => ({ noms: tous(p.nom), statut: declaration(p).statut }));
-  // Démonstration : les plats de sa carte figée ; seuls ceux que la page déclare ont un statut.
-  const fiches = fichesDemo(ctx);
-  const inverse = {}; Object.keys(affiches).forEach(o => { inverse[affiches[o]] = o; });
-  return PLATS_DEMO().map(nom => {
-    const cle = Object.keys(fiches).find(k => k === nom || inverse[k] === nom || affiches[nom] === k);
-    return { noms: tous(nom).concat(cle ? [cle] : []), statut: cle ? fiches[cle].statut : 'non_renseigne' };
-  });
-}
-// Démonstration : déclarations envoyées par la page ({ nom affiché: { statut, allergenes } }), ou
-// l'ancien format ({ nom: [allergènes] }), tenu pour une liste incomplète.
-function fichesDemo(ctx) {
-  const sortie = {};
-  const fiches = ctx && ctx.fiches && typeof ctx.fiches === 'object' ? ctx.fiches : {};
-  Object.keys(fiches).slice(0, 200).forEach(n => { const d = declaration(fiches[n]); if (d.statut !== 'non_renseigne') sortie[court(n, 160)] = d; });
-  const anciens = ctx && ctx.allergenes && typeof ctx.allergenes === 'object' ? ctx.allergenes : {};
-  Object.keys(anciens).slice(0, 200).forEach(n => { if (!sortie[n] && Array.isArray(anciens[n]) && anciens[n].length) sortie[court(n, 160)] = declaration({ allergenes: anciens[n] }); });
-  return sortie;
+  // Sans restaurant dans le contexte (page chargée hors carte) : aucun plat connu.
+  return [];
 }
 // La conversation parle-t-elle d'allergie, d'intolérance ou d'un allergène ? (question en cours ou précédentes)
 const SUJET_ALLERGIE = /al[·.]?l[eè]rg|allerg|alerg|al[eè]rgi|intol[eé]r|c[eé]l[ií]a[cq]|gluten|lactos|\blait\b|\bleche\b|\bllet\b|\bmilk\b|dairy|fruits? à coque|frutos? (secos|de cáscara)|fruits? (secs|de closca)|\bnuts?\b|noisette|avellan|cacahu|cacauet|arachid|peanut|crustac|mollus|molus|marisc|shellfish|fruits de mer|œufs?\b|oeufs?\b|huevos?\b|\bous?\b|\beggs?\b|s[ée]same|sèsam|soja|\bsoy\b|c[ée]leri|\bapio\b|celery|moutarde|mostaza|mostassa|mustard|sul[fp]h?it|lupin|altramu|tramuss/i;
@@ -249,9 +234,7 @@ function faitsAllergenes(ctx, lang, propos, message) {
   if (ctx && ctx.restaurant) {
     plats = (Array.isArray(ctx.carte) ? ctx.carte : []).slice(0, 200).filter(p => p && p.nom).map(p => ({ nom: court(p.nom, 120), statut: declaration(p).statut, cles: [].concat(p.allergenes || [], p.autres || []) }));
   } else {
-    const fiches = (ctx && ctx.fiches && typeof ctx.fiches === 'object') ? ctx.fiches : {};
-    plats = Object.keys(fiches).slice(0, 200).map(n => ({ nom: court(n, 120), statut: declaration(fiches[n]).statut, cles: [].concat(fiches[n].allergenes || [], fiches[n].autres || []) }));
-    autres = plats.length < PLATS_DEMO().length;
+    plats = [];
   }
   const nommes = platsNommes(plats, message);
   if (nommes.length) {
@@ -350,12 +333,8 @@ function buildSystem(ctx, lang, propos, message) {
     if (pp.preferences && pp.preferences.length) lignes.push('Goûts : ' + pp.preferences.join(', ') + '. Oriente tes suggestions en ce sens.');
     if (lignes.length) extra += '\n\nCLIENT (Passeport MenuVision) :\n' + lignes.map(l => '• ' + l).join('\n');
   }
-  // Sans restaurant dans le contexte : la démonstration (Maison Ardent) et sa carte figée. Elle ne
-  // porte aucune donnée d'allergènes : seuls les plats déclarés par la page en reçoivent.
-  if (ctx && ctx.restaurant) return promptRestaurant(ctx) + extra;
-  const fiches = fichesDemo(ctx);
-  const declares = Object.keys(fiches).map(n => '• ' + n + marquage(fiches[n])).join('\n');
-  return SYSTEM_PROMPT + '\n\nALLERGÈNES DE CETTE CARTE :\n' + (declares ? declares + '\n• Tous les autres plats' : '• Tous les plats') + ' — ALLERGÈNES : NON RENSEIGNÉS' + extra;
+  // Le contexte porte toujours le restaurant et sa carte ; sans eux, le conseiller n'invente rien.
+  return promptRestaurant(ctx && ctx.restaurant ? ctx : { restaurant: { nom: '' }, carte: [] }) + extra;
 }
 
 const REGLE = `RÈGLE ABSOLUE : Tu réponds UNIQUEMENT aux questions sur la carte du restaurant. Pour toute autre question, réponds poliment par la phrase de refus indiquée à la rubrique LANGUE.`;
@@ -386,43 +365,6 @@ ${carte || '(carte non communiquée : invite le client à consulter la carte aff
 ${FORMAT}
 — Ne cite que des plats de cette carte, sans en inventer.`;
 }
-
-// Noms des plats de la carte figée de la démonstration.
-const PLATS_DEMO = () => (SYSTEM_PROMPT.match(/^• .+? — /gm) || []).map(l => l.slice(2, -3));
-
-const SYSTEM_PROMPT = `Tu es le conseiller gastronomique de Maison Ardent, un restaurant gastronomique étoilé à Paris.
-
-${REGLE}
-
-CARTE COMPLÈTE :
-
-ENTRÉES
-• Tartare de Saint-Jacques — 28 € — Noix de Saint-Jacques marinées au citron vert, caviar d'Aquitaine Sturia, émulsion iodée, huile de ciboulette
-• Velouté de Topinambour — 22 € — Fumé au foin, huile de truffe noire du Périgord, croûtons beurre noisette
-• Foie Gras de Canard — 32 € — Mi-cuit maison, chutney de figues Ronde de Bordeaux, brioche au beurre de Guérande
-• Huîtres Gillardeau n°3 — 24 € — Six huîtres, granité de champagne Blanc de Blancs, vinaigrette d'échalotes confites
-• Asperges Blanches d'Alsace — 26 € — Glacées, mousseline aux agrumes, œuf de caille poché, jambon Bellota
-
-PLATS
-• Homard Bleu Rôti — 58 € — Beurre demi-sel de Guérande, bisque au cognac, légumes glacés
-• Filet de Bœuf Wagyu — 65 € — BMS 9, jus de truffe noire du Périgord, purée Robuchon
-• Pigeon de Bresse Laqué — 45 € — Miel d'acacia, lentilles du Puy au lard fumé, cerfeuil tubéreux
-• Turbot Sauvage de Ligne — 52 € — Beurre blanc aux câpres de Pantelleria, grenaille dorée, aneth
-• Ris de Veau Braisés — 48 € — Morilles fraîches, crème au vin jaune du Jura
-
-DESSERTS
-• Soufflé au Grand Marnier — 22 € — Glace vanille Bourbon de Madagascar, zestes d'orange confits
-• Mille-feuille Vanille — 18 € — Feuilletage caramélisé, crème diplomate vanille, caramel beurre salé
-• Fondant Valrhona — 20 € — Chocolat Guanaja 70%, cœur coulant, fleur de sel, glace lait entier
-• Île Flottante — 18 € — Crème anglaise vanille, caramel beurre salé, pralin feuilletine
-• Tarte Fraises Gariguette — 22 € — Sablé breton, crème pistache de Sicile, sorbet framboise
-
-${FORMAT}
-
-UPSELL (naturel, jamais insistant) :
-— Entrée mentionnée → suggère un plat en harmonie
-— Plat mentionné → propose un dessert en accord
-— Recommandation demandée → mets en avant le Wagyu (65 €) ou le Homard (58 €)`;
 
 function httpsPost(payload, apiKey) {
   return new Promise((resolve, reject) => {

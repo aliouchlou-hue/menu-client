@@ -1,5 +1,5 @@
 /**
- * cart.js — Maison Ardent
+ * cart.js — panier du menu client MenuVision
  * Panier persistant (sessionStorage), tiroir récapitulatif, paiement Stripe.
  * Fonctionne en mode direct (100 %) et en mode réservation (acompte 30 %).
  * Textes : MVI18n (fr, es, ca, en). Un article du panier garde le nom d'ORIGINE du plat
@@ -56,12 +56,12 @@
       position: fixed; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); left: 50%;
       transform: translateX(-50%) translateY(88px);
       z-index: 250;
-      background: var(--terre, #8B4A2F); color: var(--creme, #F5F0E8);
+      background: var(--accent); color: var(--sur-accent);
       border: none; border-radius: 30px; padding: 13px 22px;
-      font-family: 'Montserrat', sans-serif; font-size: 0.76rem;
+      font-family: var(--sans); font-size: 0.76rem;
       font-weight: 400; letter-spacing: 0.1em;
       cursor: pointer; display: flex; align-items: center; gap: 9px;
-      box-shadow: 0 4px 24px rgba(139,74,47,0.38);
+      box-shadow: 0 4px 24px color-mix(in srgb, var(--accent) 38%, transparent);
       transition: transform 0.34s cubic-bezier(0.32,0.72,0,1), opacity 0.34s;
       white-space: nowrap; pointer-events: none; opacity: 0;
       -webkit-tap-highlight-color: transparent;
@@ -69,7 +69,7 @@
     #cart-pill.visible {
       transform: translateX(-50%) translateY(0); pointer-events: all; opacity: 1;
     }
-    #cart-pill:active { background: var(--terre-dk, #6e3822); }
+    #cart-pill:active { background: var(--terre-dk); }
     #cart-pill svg { width: 17px; height: 17px; flex-shrink: 0; fill: none; stroke: currentColor; stroke-width: 1.8; }
     .cart-pill-sep { opacity: 0.4; }
 
@@ -88,30 +88,30 @@
     #cart-overlay.open { opacity: 1; pointer-events: all; }
     #cart-sheet {
       width: 100%; max-height: 82vh;
-      background: var(--creme, #F5F0E8); border-radius: 18px 18px 0 0;
+      background: var(--fond); border-radius: 18px 18px 0 0;
       display: flex; flex-direction: column; overflow: hidden;
       transform: translateY(52px);
       transition: transform 0.35s cubic-bezier(0.32,0.72,0,1);
     }
     #cart-overlay.open #cart-sheet { transform: translateY(0); }
     #cart-handle {
-      width: 34px; height: 3px; background: var(--sep, #D4C4B0);
+      width: 34px; height: 3px; background: var(--filet);
       border-radius: 2px; margin: 14px auto 0;
     }
     #cart-header {
       display: flex; align-items: center; justify-content: space-between;
       padding: 10px 22px 14px;
-      border-bottom: 1px solid var(--sep, #D4C4B0); flex-shrink: 0;
+      border-bottom: 1px solid var(--filet); flex-shrink: 0;
     }
     #cart-title {
-      font-family: 'Cormorant Garamond', serif; font-style: italic;
+      font-family: var(--serif); font-style: italic;
       font-size: 1.45rem; font-weight: 300;
-      color: var(--text, #2C1F14); letter-spacing: 0.06em;
+      color: var(--encre); letter-spacing: 0.06em;
     }
     #cart-close-btn {
       width: 34px; height: 34px; background: none; border: none;
       cursor: pointer; display: flex; align-items: center; justify-content: center;
-      color: var(--text-soft, #6B5244); -webkit-tap-highlight-color: transparent;
+      color: var(--encre-2); -webkit-tap-highlight-color: transparent;
     }
     #cart-close-btn svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; }
     #cart-items {
@@ -120,41 +120,41 @@
     }
     .cart-item {
       display: flex; align-items: center; justify-content: space-between;
-      padding: 13px 0; border-bottom: 1px solid var(--sep, #D4C4B0); gap: 12px;
+      padding: 13px 0; border-bottom: 1px solid var(--filet); gap: 12px;
     }
     .cart-item:last-child { border-bottom: none; }
     .cart-item-info { flex: 1; min-width: 0; }
     .cart-item-name {
-      font-family: 'Cormorant Garamond', serif; font-style: italic;
-      font-size: 1.05rem; font-weight: 300; color: var(--text, #2C1F14);
+      font-family: var(--serif); font-style: italic;
+      font-size: 1.05rem; font-weight: 300; color: var(--encre);
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
     .cart-item-sub {
-      font-size: 0.68rem; color: var(--text-soft, #6B5244);
+      font-size: 0.68rem; color: var(--encre-2);
       margin-top: 2px; letter-spacing: 0.03em;
     }
     .cart-qty-ctrl { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
     .cart-qty-btn {
       width: 27px; height: 27px; background: none;
-      border: 1px solid var(--sep, #D4C4B0); border-radius: 50%;
+      border: 1px solid var(--filet); border-radius: 50%;
       cursor: pointer; font-size: 1rem; line-height: 1;
       display: flex; align-items: center; justify-content: center;
-      color: var(--text-soft, #6B5244); transition: background 0.12s;
+      color: var(--encre-2); transition: background 0.12s;
       -webkit-tap-highlight-color: transparent;
     }
-    .cart-qty-btn:active { background: rgba(196,168,130,0.2); }
+    .cart-qty-btn:active { background: color-mix(in srgb, var(--accent) 20%, transparent); }
     .cart-qty-num {
-      font-size: 0.8rem; color: var(--text, #2C1F14);
+      font-size: 0.8rem; color: var(--encre);
       min-width: 16px; text-align: center;
     }
     .cart-empty {
       text-align: center; padding: 48px 20px;
-      font-family: 'Cormorant Garamond', serif; font-style: italic;
-      font-size: 1.05rem; color: var(--text-soft, #6B5244); letter-spacing: 0.04em;
+      font-family: var(--serif); font-style: italic;
+      font-size: 1.05rem; color: var(--encre-2); letter-spacing: 0.04em;
     }
     #cart-footer {
       padding: 14px 22px calc(22px + env(safe-area-inset-bottom, 0px));
-      border-top: 1px solid var(--sep, #D4C4B0); flex-shrink: 0;
+      border-top: 1px solid var(--filet); flex-shrink: 0;
     }
     .cart-total-row {
       display: flex; justify-content: space-between;
@@ -162,27 +162,27 @@
     }
     .cart-total-label {
       font-size: 0.58rem; letter-spacing: 0.24em; text-transform: uppercase;
-      color: var(--warm-mid, #C4A882);
+      color: var(--accent);
     }
     #cart-total-amount {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 1.55rem; font-weight: 300; color: var(--terre, #8B4A2F);
+      font-family: var(--serif);
+      font-size: 1.55rem; font-weight: 300; color: var(--accent);
     }
     #cart-resa-notice {
       font-size: 0.7rem; font-style: italic; letter-spacing: 0.03em;
-      color: var(--text-soft, #6B5244);
+      color: var(--encre-2);
       margin: 4px 0 12px; display: none;
     }
     #cart-resa-notice.show { display: block; }
     #cart-pay-btn {
       width: 100%; padding: 15px;
-      background: var(--terre, #8B4A2F); color: var(--creme, #F5F0E8);
-      font-family: 'Montserrat', sans-serif; font-size: 0.7rem;
+      background: var(--accent); color: var(--sur-accent);
+      font-family: var(--sans); font-size: 0.7rem;
       font-weight: 400; letter-spacing: 0.26em; text-transform: uppercase;
       border: none; cursor: pointer; transition: background 0.2s;
       -webkit-tap-highlight-color: transparent;
     }
-    #cart-pay-btn:active { background: var(--terre-dk, #6e3822); }
+    #cart-pay-btn:active { background: var(--terre-dk); }
     #cart-pay-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
     /* ── Mode cuisine (payment_provider = none) ── */
@@ -190,16 +190,16 @@
     #cart-table-field.show { display: block; }
     #cart-table-label {
       display: block; font-size: 0.58rem; letter-spacing: 0.22em;
-      text-transform: uppercase; color: var(--warm-mid, #C4A882); margin-bottom: 7px;
+      text-transform: uppercase; color: var(--accent); margin-bottom: 7px;
     }
     #cart-table-input {
       width: 100%; padding: 13px 14px;
-      background: #fff; border: 1px solid var(--sep, #D4C4B0); border-radius: 2px;
-      font-family: 'Montserrat', sans-serif; font-size: 0.95rem; font-weight: 300;
-      color: var(--text, #2C1F14); letter-spacing: 0.02em;
+      background: var(--surface); color: var(--encre); border: 1px solid var(--filet); border-radius: 12px; min-height: 48px;
+      font-family: var(--sans); font-size: 0.95rem; font-weight: 300;
+      color: var(--encre); letter-spacing: 0.02em;
       -webkit-appearance: none; appearance: none;
     }
-    #cart-table-input:focus { outline: none; border-color: var(--terre, #8B4A2F); }
+    #cart-table-input:focus { outline: none; border-color: var(--accent); }
     #cart-table-field.error #cart-table-input { border-color: #B54334; background: #FCF4F2; }
 
     #cart-msg {
@@ -208,22 +208,22 @@
     }
     #cart-msg.show { display: block; }
     #cart-msg.error { color: #B54334; }
-    #cart-msg.info  { color: var(--text-soft, #6B5244); font-style: italic; }
+    #cart-msg.info  { color: var(--encre-2); font-style: italic; }
 
     .cart-success { text-align: center; padding: 44px 24px; }
     .cart-success-icon {
       width: 54px; height: 54px; margin: 0 auto 18px;
-      border: 1px solid var(--terre, #8B4A2F); border-radius: 50%;
+      border: 1px solid var(--accent); border-radius: 50%;
       display: flex; align-items: center; justify-content: center;
-      font-size: 1.5rem; color: var(--terre, #8B4A2F);
+      font-size: 1.5rem; color: var(--accent);
     }
     .cart-success-title {
-      font-family: 'Cormorant Garamond', serif; font-style: italic;
-      font-size: 1.5rem; font-weight: 300; color: var(--text, #2C1F14);
+      font-family: var(--serif); font-style: italic;
+      font-size: 1.5rem; font-weight: 300; color: var(--encre);
       letter-spacing: 0.04em; margin-bottom: 10px;
     }
     .cart-success-sub {
-      font-size: 0.82rem; font-weight: 300; color: var(--text-soft, #6B5244);
+      font-size: 0.82rem; font-weight: 300; color: var(--encre-2);
       letter-spacing: 0.03em; line-height: 1.6; max-width: 280px; margin: 0 auto;
     }
   `;
@@ -445,7 +445,6 @@
         })
       });
       const data = await res.json();
-      console.log('[cart] réponse checkout:', res.status, data);
 
       if (data.url) {
         // Stripe Checkout → redirection
@@ -577,7 +576,7 @@
   function showKitchenSuccess(msg, items) {
     cartItemsEl.innerHTML =
       '<div class="cart-success">' +
-        '<div class="cart-success-icon">✓</div>' +
+        '<div class="cart-success-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12l5 5L20 6"/></svg></div>' +
         '<p class="cart-success-title">' + escHtml(t('panier.transmis.titre')) + '</p>' +
         '<p class="cart-success-sub">' + escHtml(msg) + '</p>' +
       '</div>';

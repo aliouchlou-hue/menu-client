@@ -1,5 +1,5 @@
 /**
- * create-checkout.js — Maison Ardent / MenuVision
+ * create-checkout.js — menu client MenuVision
  *
  * Proxy vers Railway : le routage par prestataire (Stripe / CMI / PayZone /
  * espèces) et la création de session se font côté backend, où les clés du
@@ -41,7 +41,7 @@ exports.handler = async (event) => {
     event.headers.origin ||
     (event.headers.referer ? (() => { try { return new URL(event.headers.referer).origin; } catch (_) { return null; } })() : null) ||
     process.env.URL ||
-    'https://maison-ardent.netlify.app';
+    '';
 
   try {
     const r = await fetch(RAILWAY + '/create-checkout-session', {
