@@ -139,7 +139,7 @@
       border: 1px solid var(--filet); border-radius: 50%;
       cursor: pointer; font-size: 1rem; line-height: 1;
       display: flex; align-items: center; justify-content: center;
-      color: var(--encre-2); transition: background 0.12s;
+      color: var(--encre-2); 
       -webkit-tap-highlight-color: transparent;
     }
     .cart-qty-btn:active { background: color-mix(in srgb, var(--accent) 20%, transparent); }
@@ -179,7 +179,7 @@
       background: var(--accent); color: var(--sur-accent);
       font-family: var(--sans); font-size: 0.7rem;
       font-weight: 400; letter-spacing: 0.26em; text-transform: uppercase;
-      border: none; cursor: pointer; transition: background 0.2s;
+      border: none; cursor: pointer; 
       -webkit-tap-highlight-color: transparent;
     }
     #cart-pay-btn:active { background: var(--terre-dk); }

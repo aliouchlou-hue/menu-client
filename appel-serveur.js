@@ -24,7 +24,7 @@
       '#mv-appel-btn{position:fixed;left:18px;bottom:calc(24px + env(safe-area-inset-bottom,0px));z-index:200;height:48px;padding:0 16px 0 13px;',
       'display:none;align-items:center;gap:8px;background:var(--fond);color:var(--accent);border:1px solid var(--accent);',
       "border-radius:28px;cursor:pointer;font-family: var(--sans);font-weight:500;font-size:.9rem;letter-spacing:.02em;white-space:nowrap;",
-      'box-shadow:0 4px 20px color-mix(in srgb, var(--accent) 22%, transparent);-webkit-tap-highlight-color:transparent;transition:bottom .3s ease,background .18s,color .18s;}',
+      'box-shadow:0 4px 20px color-mix(in srgb, var(--accent) 22%, transparent);-webkit-tap-highlight-color:transparent;}',
       '#mv-appel-btn.show{display:flex;}',
       '#mv-appel-btn svg{width:19px;height:19px;flex-shrink:0;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;}',
       '#mv-appel-btn.transmis{background: var(--accent); color: var(--sur-accent);}',

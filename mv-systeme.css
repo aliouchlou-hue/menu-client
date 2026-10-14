@@ -82,7 +82,7 @@ button { font: inherit; color: inherit; }
 .tnav-item {
   position: relative; display: inline-flex; align-items: center; min-height: 44px; padding: 0 var(--e-4); margin: 4px 0;
   font-size: var(--t-s); letter-spacing: 0.04em; color: var(--encre-2); text-decoration: none; white-space: nowrap;
-  transition: color var(--duree-1) var(--courbe);
+  /* changement de couleur immédiat : seules transform et opacity sont animées */
 }
 .tnav-item::after {
   content: ''; position: absolute; left: var(--e-4); right: var(--e-4); bottom: 6px; height: 2px; border-radius: 2px; background: var(--accent);
@@ -109,7 +109,7 @@ button { font: inherit; color: inherit; }
 .dish-card {
   position: relative; display: flex; flex-direction: column; overflow: hidden; cursor: pointer;
   background: var(--surface); border: 1px solid var(--filet); border-radius: var(--r-3);
-  transition: transform var(--duree-2) var(--courbe), box-shadow var(--duree-2) var(--courbe);
+  transition: transform var(--duree-2) var(--courbe);
   animation: apparait var(--duree-3) var(--courbe) both;
 }
 .dish-card:hover { transform: translateY(-2px); box-shadow: var(--ombre-2); }
