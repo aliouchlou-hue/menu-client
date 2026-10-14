@@ -29,6 +29,7 @@
   feuille.setAttribute('aria-modal', 'true');
   feuille.setAttribute('aria-labelledby', 'modalNomAffiche');
   feuille.tabIndex = -1;
+  overlay.inert = true;   // fiche fermée : hors de l'ordre de tabulation et des lecteurs d'écran
 
   function openModal(id) {
     var d = window.dishes[id]; if (!d) return;
@@ -41,6 +42,7 @@
     $('modalPrice').textContent = d.price;
     $('modalDesc').textContent = d.desc || '';
     $('modalAllergens').textContent = '';
+    overlay.inert = false;
     overlay.classList.add('open');
     document.body.style.overflow = 'hidden';
     setTimeout(function () { $('modalClose').focus(); }, 60);
@@ -48,6 +50,7 @@
   function closeModal() {
     if (!overlay.classList.contains('open')) return;
     overlay.classList.remove('open');
+    overlay.inert = true;
     document.body.style.overflow = '';
     $('arWrap').hidden = true;
     if (dernierFocus && dernierFocus.focus) dernierFocus.focus();

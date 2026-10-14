@@ -235,7 +235,7 @@
       <svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
       <span id="cart-pill-count"></span><span class="cart-pill-sep"> · </span><span id="cart-pill-total"></span>
     </button>
-    <div id="cart-overlay" aria-hidden="true">
+    <div id="cart-overlay" aria-hidden="true" inert>
       <div id="cart-sheet" role="dialog" aria-label="${escHtml(t('panier.aria'))}">
         <div id="cart-handle"></div>
         <div id="cart-header">
@@ -382,11 +382,13 @@
     render();
     overlay.classList.add('open');
     overlay.setAttribute('aria-hidden', 'false');
+    overlay.inert = false;
     document.body.style.overflow = 'hidden';
   }
   function closeCart() {
     overlay.classList.remove('open');
     overlay.setAttribute('aria-hidden', 'true');
+    overlay.inert = true;   // panier fermé : ses boutons ne reçoivent plus le focus
     document.body.style.overflow = '';
   }
 

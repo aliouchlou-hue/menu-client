@@ -241,7 +241,7 @@ button { font: inherit; color: inherit; }
 
 /* ── Pied de page ─────────────────────────────────────────────────────── */
 .page-footer { max-width: var(--largeur); margin: 0 auto; padding: var(--e-6) var(--e-5) calc(110px + env(safe-area-inset-bottom, 0px)); text-align: center; border-top: 1px solid var(--filet); }
-.propulse { font-size: var(--t-xs); letter-spacing: 0.06em; color: var(--encre-3); }
+.propulse { font-size: var(--t-xs); letter-spacing: 0.06em; color: var(--encre-2); }
 .propulse a { text-decoration: none; }
 .mv-legal a { display: inline-flex; align-items: center; min-height: 44px; }
 

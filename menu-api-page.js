@@ -115,9 +115,8 @@
       });
 
       grille.innerHTML = pagePlats.map(cardHTML).join('');
-      // Le nom affiché sert d'étiquette à la carte (lecteurs d'écran)
+      // Nom accessible de la carte : son texte visible (nom, description, prix), sans étiquette qui le contredise.
       grille.querySelectorAll('.dish-card').forEach(function (card) {
-        var n = card.querySelector('.dish-name'); if (n) card.setAttribute('aria-label', n.textContent + ', ' + (card.querySelector('.dish-price') || {}).textContent);
         initFallback(card);
       });
     } else {

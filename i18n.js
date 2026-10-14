@@ -418,7 +418,7 @@
     var btn = document.createElement('button');
     btn.id = 'mv-langue-btn'; btn.type = 'button';
     btn.setAttribute('aria-haspopup', 'true'); btn.setAttribute('aria-expanded', 'false');
-    btn.setAttribute('aria-label', t('lang.choisir') + ' — ' + NOMS[lang]);
+    btn.setAttribute('aria-label', lang.toUpperCase() + ' — ' + t('lang.choisir') + ' (' + NOMS[lang] + ')');   // commence par le texte visible
     btn.innerHTML = '<span>' + lang.toUpperCase() + '</span><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 4l4 4 4-4"/></svg>';
     var menu = document.createElement('ul');
     menu.id = 'mv-langue-menu'; menu.hidden = true; menu.setAttribute('role', 'menu');
