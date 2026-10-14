@@ -217,6 +217,11 @@
     'succes.google': ['Laisser un avis Google', 'Dejar una reseña en Google', 'Deixar una ressenya a Google', 'Leave a Google review'],
     'succes.commentaire': ['Un commentaire pour nous aider à progresser ?', '¿Un comentario para ayudarnos a mejorar?', 'Un comentari per ajudar-nos a millorar?', 'A comment to help us improve?'],
     'succes.envoye': ['Envoyé', 'Enviado', 'Enviat', 'Sent'],
+    'succes.verif': ['Vérification du paiement…', 'Comprobando el pago…', 'Comprovant el pagament…', 'Checking the payment…'],
+    'succes.attente': ['Paiement en cours de validation par la banque.', 'Pago pendiente de validación por el banco.', 'Pagament pendent de validació pel banc.', 'Payment awaiting bank confirmation.'],
+    'succes.refuse': ["Le paiement n'a pas abouti. Aucun montant n'a été débité.", 'El pago no se ha completado. No se ha cobrado ningún importe.', "El pagament no s'ha completat. No s'ha cobrat cap import.", 'The payment did not go through. Nothing was charged.'],
+    'succes.inconnu': ["Ce paiement n'a pas pu être vérifié. Adressez-vous à l'équipe du restaurant.", 'No se ha podido comprobar este pago. Dirígete al equipo del restaurante.', "No s'ha pogut comprovar aquest pagament. Adreça't a l'equip del restaurant.", 'This payment could not be verified. Please ask the restaurant staff.'],
+    'succes.sans': ['Aucun paiement à afficher.', 'No hay ningún pago que mostrar.', 'No hi ha cap pagament per mostrar.', 'No payment to show.'],
     'succes.retour': ['Retour à la carte', 'Volver a la carta', 'Tornar a la carta', 'Back to the menu'],
 
     // Bandeau du mode réservation

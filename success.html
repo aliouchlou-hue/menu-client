@@ -3,542 +3,166 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>Confirmation</title>
-  <script src="i18n.js?v=2026-10-13a"></script>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&family=Montserrat:wght@300;400&display=swap" rel="stylesheet" />
+  <title data-i18n-titre="succes.page">Confirmation</title>
+  <meta name="robots" content="noindex" />
+  <meta name="theme-color" content="#FAFAF7" />
+  <link rel="icon" href="icone.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="mv-systeme.css?v=2026-10-14a" />
+  <script src="i18n.js?v=2026-10-14a"></script>
+  <script src="menu-api.js?v=2026-10-14a"></script>
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    :root {
-      --creme:    #F5F0E8;
-      --terre:    #8B4A2F;
-      --terre-dk: #6e3822;
-      --warm-mid: #C4A882;
-      --sep:      #D4C4B0;
-      --text:     #2C1F14;
-      --text-soft:#6B5244;
-    }
-
-    html, body {
-      min-height: 100%;
-      background: var(--creme);
-      font-family: 'Montserrat', sans-serif;
-      font-weight: 300;
-      -webkit-font-smoothing: antialiased;
-      color: var(--text);
-    }
-
-    .page {
-      max-width: 480px;
-      margin: 0 auto;
-      padding: 56px 28px calc(48px + env(safe-area-inset-bottom, 0px));
-    }
-
-    /* ── En-tête ── */
-    .success-header {
-      text-align: center;
-      margin-bottom: 42px;
-    }
-
-    .success-ornament {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 14px;
-      margin-bottom: 22px;
-    }
-
-    .orn-line {
-      width: 40px; height: 1px;
-      background: linear-gradient(to right, transparent, var(--sep));
-    }
-    .orn-line.r { background: linear-gradient(to left, transparent, var(--sep)); }
-
-    .orn-diamond {
-      width: 5px; height: 5px;
-      background: var(--warm-mid);
-      transform: rotate(45deg);
-    }
-
-    .success-icon {
-      font-size: 1.4rem;
-      color: var(--warm-mid);
-      letter-spacing: 0.3em;
-      margin-bottom: 18px;
-    }
-
-    .success-title {
-      font-family: 'Cormorant Garamond', serif;
-      font-style: italic;
-      font-weight: 300;
-      font-size: clamp(1.9rem, 7vw, 2.5rem);
-      letter-spacing: 0.06em;
-      color: var(--text);
-      line-height: 1.15;
-      margin-bottom: 10px;
-    }
-
-    .success-subtitle {
-      font-size: 0.65rem;
-      letter-spacing: 0.28em;
-      text-transform: uppercase;
-      color: var(--text-soft);
-    }
-
-    /* ── Récapitulatif ── */
-    .recap-card {
-      background: #fff;
-      border: 1px solid var(--sep);
-      border-radius: 4px;
-      margin-bottom: 36px;
-      overflow: hidden;
-    }
-
-    .recap-header {
-      padding: 14px 20px;
-      border-bottom: 1px solid var(--sep);
-      display: flex;
-      align-items: baseline;
-      justify-content: space-between;
-    }
-
-    .recap-label {
-      font-size: 0.58rem;
-      letter-spacing: 0.26em;
-      text-transform: uppercase;
-      color: var(--text-soft);
-    }
-
-    .recap-mode {
-      font-family: 'Cormorant Garamond', serif;
-      font-style: italic;
-      font-size: 0.82rem;
-      color: var(--terre);
-      letter-spacing: 0.04em;
-    }
-
-    .recap-items {
-      padding: 4px 20px 8px;
-    }
-
-    .recap-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: baseline;
-      padding: 11px 0;
-      border-bottom: 1px solid var(--sep);
-      gap: 12px;
-    }
-
-    .recap-item:last-child { border-bottom: none; }
-
-    .recap-item-name {
-      font-family: 'Cormorant Garamond', serif;
-      font-style: italic;
-      font-size: 1rem;
-      font-weight: 300;
-      color: var(--text);
-      flex: 1;
-      min-width: 0;
-    }
-
-    .recap-item-qty {
-      font-size: 0.64rem;
-      letter-spacing: 0.08em;
-      color: var(--text-soft);
-      flex-shrink: 0;
-    }
-
-    .recap-item-price {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 1rem;
-      color: var(--text-soft);
-      flex-shrink: 0;
-    }
-
-    .recap-empty {
-      padding: 32px 20px;
-      text-align: center;
-      font-family: 'Cormorant Garamond', serif;
-      font-style: italic;
-      font-size: 0.95rem;
-      color: var(--text-soft);
-    }
-
-    .recap-footer {
-      padding: 13px 20px;
-      border-top: 1px solid var(--sep);
-      display: flex;
-      justify-content: space-between;
-      align-items: baseline;
-    }
-
-    .recap-total-label {
-      font-size: 0.58rem;
-      letter-spacing: 0.24em;
-      text-transform: uppercase;
-      color: var(--warm-mid);
-    }
-
-    .recap-total-amount {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 1.45rem;
-      font-weight: 300;
-      color: var(--terre);
-    }
-
-    /* ── Bloc avis ── */
-    .review-block {
-      text-align: center;
-      padding: 32px 0 0;
-    }
-
-    .review-sep {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      margin-bottom: 28px;
-    }
-
-    .review-sep-line {
-      flex: 1; height: 1px;
-      background: var(--sep);
-    }
-
-    .review-sep-diamond {
-      width: 4px; height: 4px;
-      background: var(--sep);
-      transform: rotate(45deg);
-      flex-shrink: 0;
-    }
-
-    .review-q {
-      font-family: 'Cormorant Garamond', serif;
-      font-style: italic;
-      font-size: 1.1rem;
-      font-weight: 300;
-      color: var(--text);
-      letter-spacing: 0.04em;
-      margin-bottom: 6px;
-    }
-
-    .review-hint {
-      font-size: 0.6rem;
-      letter-spacing: 0.16em;
-      text-transform: uppercase;
-      color: var(--text-soft);
-      margin-bottom: 22px;
-    }
-
-    .review-stars {
-      display: flex;
-      justify-content: center;
-      gap: 6px;
-      margin-bottom: 20px;
-    }
-
-    .review-star {
-      background: none; border: none; padding: 4px;
-      font-size: 2rem; line-height: 1; cursor: pointer;
-      color: var(--sep);
-      transition: color 0.12s, transform 0.1s;
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    .review-star.lit { color: var(--terre); }
-    .review-star:active { transform: scale(0.88); }
-
-    #review-thanks {
-      display: none;
-      flex-direction: column;
-      align-items: center;
-      gap: 12px;
-      padding: 8px 0 16px;
-      animation: fadeUp 0.28s ease both;
-    }
-
-    #review-thanks.show { display: flex; }
-
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(8px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-
-    .review-merci {
-      font-family: 'Cormorant Garamond', serif;
-      font-style: italic;
-      font-size: 1.25rem;
-      color: var(--terre);
-      letter-spacing: 0.06em;
-    }
-
-    .review-glink {
-      font-family: 'Montserrat', sans-serif;
-      font-size: 0.58rem;
-      letter-spacing: 0.22em;
-      text-transform: uppercase;
-      color: var(--text-soft);
-      text-decoration: none;
-      border-bottom: 1px solid var(--sep);
-      padding-bottom: 2px;
-    }
-
-    #review-form {
-      display: none;
-      text-align: left;
-      animation: fadeUp 0.28s ease both;
-    }
-
-    #review-form.show { display: block; }
-
-    .review-ta {
-      width: 100%; min-height: 78px;
-      padding: 11px 14px;
-      border: 1px solid var(--sep);
-      border-radius: 4px;
-      background: #fff;
-      font-family: 'Cormorant Garamond', serif;
-      font-style: italic;
-      font-size: 0.95rem;
-      color: var(--text);
-      resize: none; outline: none;
-      display: block;
-      margin-bottom: 10px;
-      -webkit-appearance: none;
-    }
-
-    .review-ta:focus { border-color: var(--warm-mid); }
-    .review-ta::placeholder { color: var(--text-soft); opacity: 0.6; }
-
-    .review-send-btn {
-      font-family: 'Montserrat', sans-serif;
-      font-size: 0.6rem;
-      font-weight: 400;
-      letter-spacing: 0.26em;
-      text-transform: uppercase;
-      color: var(--creme);
-      background: var(--terre);
-      border: none;
-      padding: 10px 20px;
-      cursor: pointer;
-      -webkit-tap-highlight-color: transparent;
-      transition: background 0.15s;
-      display: block;
-      width: 100%;
-    }
-
-    .review-send-btn:active { background: var(--terre-dk); }
-    .review-send-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-
-    /* ── Retour menu ── */
-    .back-link {
-      display: block;
-      text-align: center;
-      margin-top: 40px;
-      font-size: 0.58rem;
-      letter-spacing: 0.24em;
-      text-transform: uppercase;
-      color: var(--text-soft);
-      text-decoration: none;
-      border-bottom: 1px solid var(--sep);
-      padding-bottom: 2px;
-      width: fit-content;
-      margin-left: auto;
-      margin-right: auto;
-    }
+    .confirmation { max-width: 560px; margin: 0 auto; padding: calc(56px + env(safe-area-inset-top, 0px)) var(--e-5) var(--e-6); text-align: center; }
+    .conf-logo { height: 64px; width: auto; max-width: 160px; object-fit: contain; margin: 0 auto var(--e-4); }
+    .conf-nom { font-size: var(--t-xs); letter-spacing: .22em; text-transform: uppercase; color: var(--accent); margin-bottom: var(--e-5); }
+    .conf-sceau { width: 64px; height: 64px; margin: 0 auto var(--e-5); border-radius: 50%; display: grid; place-items: center; border: 1px solid var(--filet); background: var(--surface); }
+    .conf-sceau svg { width: 26px; height: 26px; fill: none; stroke: var(--accent); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+    .conf-titre { font-family: var(--serif); font-weight: 400; font-size: var(--t-2xl); line-height: 1.08; margin-bottom: var(--e-3); }
+    .conf-statut { color: var(--encre-2); margin-bottom: var(--e-6); min-height: 1.5em; }
+    .recap { text-align: left; border: 1px solid var(--filet); border-radius: var(--r-3); background: var(--surface); padding: var(--e-5); margin-bottom: var(--e-6); }
+    .recap h2 { font-size: var(--t-xs); letter-spacing: .16em; text-transform: uppercase; color: var(--encre-3); font-weight: 600; margin-bottom: var(--e-3); }
+    .recap-ligne { display: flex; gap: var(--e-3); justify-content: space-between; padding: var(--e-2) 0; border-bottom: 1px solid var(--filet); font-size: var(--t-s); }
+    .recap-ligne:last-of-type { border-bottom: 0; }
+    .recap-ligne span:last-child { font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .recap-total { display: flex; justify-content: space-between; margin-top: var(--e-3); padding-top: var(--e-3); border-top: 1px solid var(--filet); font-weight: 600; }
+    .avis { padding-top: var(--e-5); border-top: 1px solid var(--filet); margin-bottom: var(--e-6); }
+    .avis-q { font-family: var(--serif); font-size: var(--t-l); margin-bottom: var(--e-2); }
+    .avis-aide { font-size: var(--t-xs); color: var(--encre-2); margin-bottom: var(--e-4); }
+    .etoiles { display: flex; justify-content: center; gap: var(--e-1); }
+    .etoile { width: 48px; height: 48px; border: 0; background: transparent; cursor: pointer; border-radius: var(--r-rond); display: grid; place-items: center; }
+    .etoile svg { width: 28px; height: 28px; fill: none; stroke: var(--encre-3); stroke-width: 1.4; stroke-linejoin: round; transition: fill var(--duree-1), stroke var(--duree-1); }
+    .etoile[aria-checked="true"] svg, .etoile.allumee svg { fill: var(--accent); stroke: var(--accent); }
+    .avis textarea { width: 100%; min-height: 96px; margin-top: var(--e-4); padding: var(--e-3); border-radius: var(--r-2); border: 1px solid var(--filet); background: var(--fond); color: var(--encre); font: inherit; resize: vertical; }
+    .avis .btn-plein { margin-top: var(--e-3); border: 0; cursor: pointer; font-family: var(--sans); }
+    .avis-msg { margin-top: var(--e-3); color: var(--encre-2); min-height: 1.5em; }
+    .avis-google { display: inline-flex; align-items: center; min-height: 44px; margin-top: var(--e-2); color: var(--accent); }
+    .retour { display: inline-flex; align-items: center; min-height: 48px; padding: 0 var(--e-5); border: 1px solid var(--filet); border-radius: var(--r-rond); text-decoration: none; font-size: var(--t-s); }
   </style>
 </head>
-<body>
-  <div class="page">
+<body class="page-confirmation">
+  <main class="confirmation">
+    <img class="conf-logo" id="logo" alt="" hidden />
+    <p class="conf-nom" data-mv-nom></p>
+    <div class="conf-sceau" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 12l5 5L20 6"/></svg></div>
+    <h1 class="conf-titre"><span data-i18n="succes.titre1">Merci pour</span> <span data-i18n="succes.titre2">votre visite</span></h1>
+    <p class="conf-statut" id="statut" role="status" aria-live="polite"></p>
 
-    <!-- En-tête confirmation -->
-    <header class="success-header">
-      <div class="success-ornament">
-        <span class="orn-line"></span>
-        <span class="orn-diamond"></span>
-        <span class="orn-line r"></span>
+    <section class="recap" id="recap" hidden aria-labelledby="recapTitre">
+      <h2 id="recapTitre" data-i18n="succes.commande">Votre commande</h2>
+      <div id="lignes"></div>
+      <div class="recap-total"><span data-i18n="panier.total">Total</span><span id="total"></span></div>
+    </section>
+
+    <section class="avis" id="avis" hidden aria-labelledby="avisQ">
+      <p class="avis-q" id="avisQ" data-i18n="succes.question">Qu'avez-vous pensé de votre repas ?</p>
+      <p class="avis-aide" data-i18n="succes.facultatif">Votre avis est facultatif</p>
+      <div class="etoiles" role="radiogroup" aria-labelledby="avisQ" id="etoiles"></div>
+      <div id="avisForm" hidden>
+        <textarea id="avisTexte" maxlength="500" aria-label="Commentaire" data-i18n-attr="placeholder:succes.commentaire;aria-label:succes.commentaire"></textarea>
+        <button type="button" class="btn-plein" id="avisEnvoyer" data-i18n="envoyer">Envoyer</button>
       </div>
-      <p class="success-icon">✦</p>
-      <h1 class="success-title"><span data-i18n="succes.titre1">Merci pour</span><br><span data-i18n="succes.titre2">votre visite</span></h1>
-      <p class="success-subtitle" id="success-sub" data-i18n="succes.paiement">Paiement confirmé</p>
-    </header>
+      <p class="avis-msg" id="avisMsg" role="status"></p>
+      <a class="avis-google" id="avisGoogle" target="_blank" rel="noopener" hidden data-i18n="succes.google">Laisser un avis Google</a>
+    </section>
 
-    <!-- Récapitulatif commande -->
-    <div class="recap-card" id="recap-card">
-      <div class="recap-header">
-        <span class="recap-label" data-i18n="succes.commande">Votre commande</span>
-        <span class="recap-mode" id="recap-mode"></span>
-      </div>
-      <div class="recap-items" id="recap-items"></div>
-      <div class="recap-footer" id="recap-footer" style="display:none">
-        <span class="recap-total-label" data-i18n="panier.total">Total</span>
-        <span class="recap-total-amount" id="recap-total"></span>
-      </div>
-    </div>
+    <a href="entrees.html" class="retour" data-i18n="succes.retour">Retour à la carte</a>
+  </main>
 
-    <!-- Bloc avis -->
-    <div class="review-block">
-      <div class="review-sep">
-        <span class="review-sep-line"></span>
-        <span class="review-sep-diamond"></span>
-        <span class="review-sep-line"></span>
-      </div>
-      <p class="review-q" data-i18n="succes.question">Qu'avez-vous pensé de votre repas ?</p>
-      <p class="review-hint" data-i18n="succes.facultatif">Votre avis est facultatif</p>
-
-      <div class="review-stars">
-        <button class="review-star" data-v="1">★</button>
-        <button class="review-star" data-v="2">★</button>
-        <button class="review-star" data-v="3">★</button>
-        <button class="review-star" data-v="4">★</button>
-        <button class="review-star" data-v="5">★</button>
-      </div>
-
-      <div id="review-thanks">
-        <span class="review-merci"><span data-i18n="succes.merci">Merci !</span> ✦</span>
-        <a class="review-glink" id="review-glink" style="display:none" target="_blank" rel="noopener noreferrer" data-i18n="succes.google">Laisser un avis Google</a>
-      </div>
-
-      <div id="review-form">
-        <textarea class="review-ta" placeholder="Un commentaire pour nous aider à progresser ?" data-i18n-attr="placeholder:succes.commentaire"></textarea>
-        <button class="review-send-btn" id="review-send" data-i18n="envoyer">Envoyer</button>
-      </div>
-    </div>
-
-    <a href="entrees.html" class="back-link" id="back-link" data-i18n="succes.retour">Retour à la carte</a>
-
-  </div>
+  <footer class="page-footer">
+    <p class="propulse" data-i18n="pied.propulse">Propulsé par MenuVision</p>
+  </footer>
 
   <script>
+    // Confirmation : rien n'est annoncé comme payé sans vérification auprès du serveur
+    // (Stripe : identifiant de session ; Redsys : référence de l'opération).
     (function () {
-      /* ── Récupération et vidage du panier ── */
-      let items = [];
-      try { items = JSON.parse(sessionStorage.getItem('maCart') || '[]'); } catch (_) {}
-      sessionStorage.removeItem('maCart');
+      var RAILWAY = 'https://menuvision-production.up.railway.app';
+      var I = window.MVI18n, t = I.t, $ = function (id) { return document.getElementById(id); };
+      var q = new URLSearchParams(location.search), sid = q.get('session_id'), ref = q.get('ref');
+      var api = function () { return window.menuAPI || {}; };
+      function statut(cle) { $('statut').textContent = t(cle); }
 
-      let resaCtx = null;
-      try { resaCtx = JSON.parse(sessionStorage.getItem('resaCtx') || 'null'); } catch (_) {}
-      const isReservation = !!(resaCtx && resaCtx.id);
-
-      /* ── Restaurant : celui du ?r= (adresse de retour du paiement), sinon le dernier menu ouvert ── */
-      const RAILWAY = 'https://menuvision-production.up.railway.app';
-      const DEMO_ID = '7917c5f4-3d21-4e3d-bc69-8d87df617865';   // démonstration (Maison Ardent)
-      let RESTO_ID = new URLSearchParams(location.search).get('r');
-      if (!RESTO_ID) { try { RESTO_ID = localStorage.getItem('mv_rid'); } catch (_) {} }
-      if (RESTO_ID) {
-        if (RESTO_ID !== DEMO_ID) document.getElementById('back-link').href = 'entrees.html?r=' + encodeURIComponent(RESTO_ID);
-        fetch(RAILWAY + '/restaurants/' + encodeURIComponent(RESTO_ID) + '/theme').then(r => r.json()).then(d => {
-          if (!d.ok) return;
-          MVI18n.restaurant(d.theme.langue);   // repli sur la langue de la carte du restaurant
-          const nom = RESTO_ID === DEMO_ID ? 'Maison Ardent' : (d.theme.nom || '');
-          if (nom) {
-            document.title = MVI18n.t('succes.page') + ' — ' + nom;
-            const g = document.getElementById('review-glink');
-            g.href = 'https://www.google.com/maps/search/' + encodeURIComponent(nom);
-            g.style.display = '';
-          }
-          // Le Passeport (passport.js) lit le thème pour savoir s'il peut proposer la connexion.
-          if (!window.menuAPI) {
-            window.menuAPI = { restaurantId: RESTO_ID, theme: d.theme, plats: [], promotions: [], ready: true };
-            window.dispatchEvent(new CustomEvent('menuApiReady', { detail: window.menuAPI }));
-          }
-        }).catch(() => {});
-      }
-
-      const fmtPrice = n => MVI18n.prix(n);
-
-      function escHtml(s) {
-        return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-      }
-
-      /* ── Rendu récapitulatif ── */
-      const recapItems  = document.getElementById('recap-items');
-      const recapFooter = document.getElementById('recap-footer');
-      const recapTotal  = document.getElementById('recap-total');
-      const recapMode   = document.getElementById('recap-mode');
-      const successSub  = document.getElementById('success-sub');
-
-      if (isReservation) {
-        recapMode.textContent = MVI18n.t('succes.acompte30');
-        successSub.textContent = MVI18n.t('succes.acompte');
-      }
-
-      if (!items.length) {
-        recapItems.innerHTML = '<p class="recap-empty"></p>';
-        recapItems.firstChild.textContent = MVI18n.t('succes.enregistree');
-      } else {
-        const total = items.reduce((s, i) => s + i.price * i.qty, 0);
-        recapItems.innerHTML = items.map(item => `
-          <div class="recap-item">
-            <span class="recap-item-name">${escHtml(item.label || item.name)}</span>
-            <span class="recap-item-qty">× ${item.qty}</span>
-            <span class="recap-item-price">${fmtPrice(item.price * item.qty)}</span>
-          </div>`).join('');
-
-        const displayed = isReservation
-          ? fmtPrice(Math.round(total * 0.3 * 100) / 100)
-          : fmtPrice(total);
-
-        recapTotal.textContent = displayed;
-        recapFooter.style.display = 'flex';
-      }
-
-      /* ── Système d'avis ── */
-      let avisRating = 0;
-      let avisSent   = false;
-
-      const stars  = document.querySelectorAll('.review-star');
-      stars.forEach(s => s.setAttribute('aria-label', MVI18n.t('avis.note', { n: s.dataset.v })));
-      const thanks = document.getElementById('review-thanks');
-      const form   = document.getElementById('review-form');
-      const ta     = document.querySelector('.review-ta');
-      const sendBtn = document.getElementById('review-send');
-
-      function litUpTo(n) {
-        stars.forEach((s, i) => s.classList.toggle('lit', i < n));
-      }
-
-      function postAvis(rating, comment) {
-        const rid = RESTO_ID;
-        fetch('/.netlify/functions/avis', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ rating, comment: comment || '', restaurant_id: rid, lang: MVI18n.lang })
-        }).catch(() => {});
-      }
-
-      stars.forEach((star, idx) => {
-        star.addEventListener('mouseenter', () => { if (!avisSent) litUpTo(idx + 1); });
-        star.addEventListener('mouseleave', () => { if (!avisSent) litUpTo(avisRating); });
-        star.addEventListener('click', () => {
-          if (avisSent) return;
-          avisRating = idx + 1;
-          litUpTo(avisRating);
-          if (avisRating >= 4) {
-            thanks.classList.add('show');
-            form.classList.remove('show');
-            postAvis(avisRating, '');
-            avisSent = true;
-          } else {
-            thanks.classList.remove('show');
-            form.classList.add('show');
-          }
+      function recap(lignes, total) {
+        if (!lignes || !lignes.length) return;
+        $('lignes').innerHTML = '';
+        lignes.forEach(function (l) {
+          var d = document.createElement('div'); d.className = 'recap-ligne';
+          var a = document.createElement('span'); a.textContent = I.plat(l.nom).nom + (l.quantite > 1 ? ' × ' + l.quantite : '');
+          var b = document.createElement('span'); b.textContent = I.prix((l.montant_cents || 0) / 100);
+          d.appendChild(a); d.appendChild(b); $('lignes').appendChild(d);
         });
-      });
+        $('total').textContent = I.prix((total || 0) / 100);
+        $('recap').hidden = false;
+      }
+      function paye() { try { sessionStorage.removeItem('maCart'); } catch (_) {} }
 
-      sendBtn.addEventListener('click', () => {
-        const comment = ta.value.trim();
-        if (!comment) { ta.focus(); return; }
-        postAvis(avisRating, comment);
-        sendBtn.disabled = true;
-        sendBtn.textContent = MVI18n.t('succes.envoye') + ' ✦';
-        ta.disabled = true;
-        avisSent = true;
-      });
+      function verifier() {
+        var rid = api().restaurantId;
+        if (sid && rid) {
+          statut('succes.verif');
+          fetch(RAILWAY + '/paiements/checkout/etat?session_id=' + encodeURIComponent(sid) + '&r=' + encodeURIComponent(rid))
+            .then(function (r) { return r.json(); })
+            .then(function (d) {
+              if (d.ok && d.statut === 'paye') { statut('succes.paiement'); recap(d.lignes, d.montant_cents); paye(); }
+              else if (d.ok) statut('succes.attente');
+              else statut('succes.inconnu');
+            }).catch(function () { statut('succes.inconnu'); });
+        } else if (ref) {
+          statut('succes.verif');
+          fetch(RAILWAY + '/paiements/redsys/etat?ref=' + encodeURIComponent(ref))
+            .then(function (r) { return r.json(); })
+            .then(function (d) {
+              if (d.ok && (d.statut === 'paye' || d.statut === 'rembourse')) { statut(d.type === 'acompte' ? 'succes.acompte' : 'succes.paiement'); recap([{ nom: t(d.type === 'acompte' ? 'succes.acompte' : 'succes.commande'), quantite: 1, montant_cents: d.montant_cents }], d.montant_cents); paye(); }
+              else if (d.ok && d.statut === 'en_attente') statut('succes.attente');
+              else statut('succes.refuse');
+            }).catch(function () { statut('succes.inconnu'); });
+        } else statut('succes.sans');
+      }
+
+      // Avis sur le repas : seulement si la formule du restaurant recueille les avis.
+      function avis() {
+        var th = api().theme || {};
+        if (!(th.fonctions && th.fonctions.avis)) return;
+        $('avis').hidden = false;
+        var note = 0, envoye = false, etoiles = [];
+        var ETOILE = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5l2.6 5.3 5.9.85-4.25 4.15 1 5.85L12 16.9l-5.25 2.75 1-5.85L3.5 9.65l5.9-.85z"/></svg>';
+        for (var n = 1; n <= 5; n++) {
+          var b = document.createElement('button'); b.type = 'button'; b.className = 'etoile'; b.dataset.n = n;
+          b.setAttribute('role', 'radio'); b.setAttribute('aria-checked', 'false'); b.setAttribute('aria-label', t('avis.note', { n: n }));
+          b.innerHTML = ETOILE; $('etoiles').appendChild(b); etoiles.push(b);
+        }
+        function allumer(v) { etoiles.forEach(function (e) { e.classList.toggle('allumee', +e.dataset.n <= v); e.setAttribute('aria-checked', String(+e.dataset.n === v)); }); }
+        function envoyer(commentaire) {
+          envoye = true; $('avisMsg').textContent = t('avis.envoi');
+          fetch(RAILWAY + '/avis', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ restaurant_id: api().restaurantId, portee: 'repas', note: note, commentaire: commentaire || '', lang: I.lang }) })
+            .then(function (r) { return r.json().then(function (j) { return r.ok && j.ok; }); })
+            .then(function (ok) {
+              if (!ok) throw new Error('refus');
+              $('avisMsg').textContent = t('succes.merci'); $('avisForm').hidden = true;
+              if (note >= 4 && th.lien_avis_google) { $('avisGoogle').href = th.lien_avis_google; $('avisGoogle').hidden = false; }
+            })
+            .catch(function () { envoye = false; $('avisMsg').textContent = t('avis.echec'); });
+        }
+        etoiles.forEach(function (e) {
+          e.addEventListener('click', function () {
+            if (envoye) return;
+            note = +e.dataset.n; allumer(note);
+            if (note >= 4) { $('avisForm').hidden = true; envoyer(''); }
+            else { $('avisForm').hidden = false; $('avisTexte').focus(); }
+          });
+        });
+        $('avisEnvoyer').addEventListener('click', function () { if (!envoye && note) envoyer($('avisTexte').value.trim()); });
+      }
+
+      function pret() {
+        var th = api().theme || {};
+        if (th.logo_url) { $('logo').src = th.logo_url; $('logo').alt = th.nom || ''; $('logo').hidden = false; }
+        verifier(); avis();
+      }
+      if (window.menuAPI && window.menuAPI.ready && window.menuAPI.theme && window.menuAPI.theme.nom) pret();
+      else window.addEventListener('menuApiReady', pret, { once: true });
     })();
   </script>
-  <script src="passport.js?v=2026-10-12a"></script>
+  <script src="passport.js?v=2026-10-14a"></script>
 </body>
 </html>
