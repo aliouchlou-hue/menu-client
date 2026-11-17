@@ -169,9 +169,9 @@
     var attente = ajouterMessage(t('chat.ecrit'), 'typing');
     fetch('/.netlify/functions/chat', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: texte, history: historique, context: window._menuApiContext || null, lang: I ? I.lang : 'fr' })
+      body: JSON.stringify({ message: texte.slice(0, 500), history: historique, context: window._menuApiContext || null, lang: I ? I.lang : 'fr', restaurant_id: (window.menuAPI && window.menuAPI.restaurantId) || '' })
     }).then(function (r) { return r.json(); }).then(function (d) {
-      var rep = d && d.reply ? d.reply : t('chat.indispo');
+      var rep = d && d.reply ? d.reply : t(d && (d.code === 'TROP_DE_QUESTIONS' || d.code === 'PLAFOND_RESTAURANT') ? 'chat.trop' : 'chat.indispo');
       attente.remove(); ajouterMessage(rep, 'ai');
       if (d && d.reply) { historique.push({ role: 'user', content: texte }, { role: 'assistant', content: rep }); historique = historique.slice(-12); }
     }).catch(function () { attente.remove(); ajouterMessage(t('chat.indispo'), 'ai'); })

@@ -405,19 +405,56 @@ exports.avecPlatsAEviter = avecPlatsAEviter;
 exports.platsDuContexte = platsDuContexte;
 exports.buildSystem = buildSystem;
 
+// ── Garde-fous du conseiller ─────────────────────────────────────────────────
+// Origine : seulement le menu (site Netlify). Tailles bornées. Restaurant obligatoire, et chaque question
+// autorisée par le serveur MenuVision (restaurant actif, menu ouvert, limites par IP et par restaurant),
+// avec le secret partagé CONSEILLER_CLE : sans lui, le conseiller reste en attente d'activation.
+const ORIGINES = [process.env.URL, process.env.DEPLOY_PRIME_URL, 'https://maison-ardent.netlify.app']
+  .filter(Boolean).map(u => { try { return new URL(u).origin; } catch (_) { return null; } }).filter(Boolean);
+const SERVEUR = (process.env.MENUVISION_API_URL || 'https://menuvision-production.up.railway.app').replace(/\/$/, '');
+const BORNES = { corps: 40000, message: 500, historique: 10, ligneHistorique: 2000, contexte: 30000 };
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+function enTete(event, nom) {
+  const h = event.headers || {};
+  return h[nom] || h[nom.toLowerCase()] || '';
+}
+async function autorisation(restaurantId, ip) {
+  const cle = process.env.CONSEILLER_CLE;
+  if (!cle) return { statut: 503, corps: { code: 'SERVICE_NON_CONFIGURE', error: 'Service non configuré.' } };
+  try {
+    const r = await fetch(SERVEUR + '/ia/conseiller/autorisation', {
+      method: 'POST', headers: { 'Content-Type': 'application/json', 'X-MV-Cle': cle },
+      body: JSON.stringify({ restaurant_id: restaurantId, ip }), signal: AbortSignal.timeout(8000),
+    });
+    const j = await r.json().catch(() => ({}));
+    return { statut: r.status, corps: j };
+  } catch (_) {
+    return { statut: 503, corps: { code: 'SERVICE_INDISPONIBLE', error: 'Service momentanément indisponible.' } };
+  }
+}
+
 exports.handler = async (event) => {
+  const origine = enTete(event, 'origin');
+  const permise = ORIGINES.includes(origine);
   const headers = {
     'Content-Type': 'application/json',
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': 'Content-Type'
+    'Access-Control-Allow-Headers': 'Content-Type',
+    'Vary': 'Origin',
+    ...(permise ? { 'Access-Control-Allow-Origin': origine } : {}),
   };
 
   if (event.httpMethod === 'OPTIONS') {
-    return { statusCode: 204, headers, body: '' };
+    return { statusCode: permise ? 204 : 403, headers, body: '' };
   }
 
   if (event.httpMethod !== 'POST') {
     return { statusCode: 405, headers, body: JSON.stringify({ error: 'Method Not Allowed' }) };
+  }
+  if (!permise) {
+    return { statusCode: 403, headers, body: JSON.stringify({ code: 'ORIGINE_REFUSEE', error: 'Origine non autorisée.' }) };
+  }
+  if (String(event.body || '').length > BORNES.corps) {
+    return { statusCode: 413, headers, body: JSON.stringify({ code: 'DEMANDE_TROP_LONGUE', error: 'Demande trop longue.' }) };
   }
 
   const apiKey = process.env.ANTHROPIC_API_KEY;
@@ -426,10 +463,28 @@ exports.handler = async (event) => {
   }
 
   try {
-    const { message, history = [], context = null, lang: langue } = JSON.parse(event.body || '{}');
+    const { message, history = [], context = null, lang: langue, restaurant_id } = JSON.parse(event.body || '{}');
     const lang = LANGUES[langue] ? langue : 'fr';
     if (!message || typeof message !== 'string') {
       return { statusCode: 400, headers, body: JSON.stringify({ error: 'Message requis.' }) };
+    }
+    if (message.length > BORNES.message) {
+      return { statusCode: 400, headers, body: JSON.stringify({ code: 'MESSAGE_TROP_LONG', error: 'Message trop long.' }) };
+    }
+    if (!Array.isArray(history) || history.length > BORNES.historique * 2
+      || history.some(m => !m || typeof m.content !== 'string' || m.content.length > BORNES.ligneHistorique || !['user', 'assistant'].includes(m.role))) {
+      return { statusCode: 400, headers, body: JSON.stringify({ code: 'HISTORIQUE_INVALIDE', error: 'Historique invalide.' }) };
+    }
+    if (context && JSON.stringify(context).length > BORNES.contexte) {
+      return { statusCode: 400, headers, body: JSON.stringify({ code: 'CONTEXTE_TROP_LONG', error: 'Contexte trop long.' }) };
+    }
+    if (!UUID.test(String(restaurant_id || ''))) {
+      return { statusCode: 400, headers, body: JSON.stringify({ code: 'RESTAURANT_REQUIS', error: 'Restaurant requis.' }) };
+    }
+    const ip = String(enTete(event, 'x-nf-client-connection-ip') || String(enTete(event, 'x-forwarded-for')).split(',')[0]).trim();
+    const auto = await autorisation(String(restaurant_id), ip);
+    if (auto.statut !== 200 || !auto.corps.ok) {
+      return { statusCode: auto.statut === 200 ? 403 : auto.statut, headers, body: JSON.stringify({ code: auto.corps.code || 'REFUSE', error: auto.corps.error || 'Refusé.' }) };
     }
 
     const trimmedHistory = history.slice(-10);

@@ -110,6 +110,7 @@
     'chat.saisie': ['Une question sur la carte…', 'Una pregunta sobre la carta…', 'Una pregunta sobre la carta…', 'A question about the menu…'],
     'chat.ecrit': ["En train d'écrire…", 'Escribiendo…', 'Escrivint…', 'Typing…'],
     'chat.indispo': ['Service momentanément indisponible.', 'Servicio no disponible por el momento.', 'Servei no disponible de moment.', 'Service temporarily unavailable.'],
+    'chat.trop': ['Vous avez posé beaucoup de questions. Réessayez dans quelques minutes, ou demandez au serveur.', 'Has hecho muchas preguntas. Inténtalo de nuevo en unos minutos o pregunta al camarero.', "Has fet moltes preguntes. Torna-ho a provar d'aquí a uns minuts o pregunta al cambrer.", 'You have asked a lot of questions. Please try again in a few minutes, or ask your server.'],
 
     // Menu fermé par le serveur
     'indispo.titre': ['Menu temporairement indisponible', 'Carta no disponible temporalmente', 'Carta no disponible temporalment', 'Menu temporarily unavailable'],
