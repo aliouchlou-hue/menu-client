@@ -103,6 +103,9 @@
       'font-family:var(--sans);font-size:.66rem;color:var(--encre-2);',
       'transition:all .15s;-webkit-tap-highlight-color:transparent;}',
       '.mv-chip.on{background:var(--accent);border-color:var(--accent);color:var(--fond);}',
+      '.mv-consent{display:flex;align-items:flex-start;gap:10px;margin-top:14px;min-height:44px;cursor:pointer;',
+      'font-family:var(--sans);font-size:.72rem;line-height:1.45;color:var(--encre-2);}',
+      '.mv-consent input{width:20px;height:20px;margin:1px 0 0;flex-shrink:0;accent-color:var(--accent);}',
       '.mv-pref-input{width:100%;margin-top:9px;padding:11px 14px;border:1px solid var(--filet);',
       'border-radius:10px;background:#fff;font-family:var(--sans);font-size:.78rem;',
       'color:var(--encre);outline:none;}',
@@ -396,6 +399,8 @@
             return '<button class="mv-chip' + (sel.has(a) ? ' on' : '') + '" data-a="' + escapeHtml(a) + '">' + escapeHtml(I.allergene(a)) + '</button>';
           }).join('') +
         '</div>' +
+        // Consentement : sans lui, aucun restaurant ne voit les allergies du client.
+        '<label class="mv-consent"><input type="checkbox" id="mvPartage"' + (profile && profile.partage_allergenes ? ' checked' : '') + '/> <span>' + escapeHtml(t('pass.partage')) + '</span></label>' +
         '<div class="mv-label">' + escapeHtml(t('pass.preferences')) + '</div>' +
         '<input class="mv-pref-input" id="mvPref" placeholder="' + escapeHtml(t('pass.pref.saisie')) + '" value="' + escapeHtml(prefStr) + '"/>' +
         '<button class="mv-save" id="mvSave">' + escapeHtml(t('pass.enregistrer')) + '</button>' +
@@ -413,7 +418,7 @@
       var preferences = document.getElementById('mvPref').value.split(',').map(function (s) { return s.trim(); }).filter(Boolean);
       var btn = document.getElementById('mvSave');
       btn.disabled = true; btn.textContent = t('pass.enregistrement');
-      apiUpsertProfile({ allergenes: allergenes, preferences: preferences })
+      apiUpsertProfile({ allergenes: allergenes, preferences: preferences, partage_allergenes: document.getElementById('mvPartage').checked })
         .then(function (p) {
           if (p) { profile = p; window.MVPassport.profile = p; }
           close();

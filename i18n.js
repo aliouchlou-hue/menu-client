@@ -197,6 +197,7 @@
     'pass.titre': ['Mon Passeport Gourmand', 'Mi Pasaporte Gourmet', 'El meu Passaport Gurmet', 'My Gourmet Passport'],
     'pass.intro': ['Renseignez vos allergènes et vos goûts : nous adaptons la carte et les suggestions du conseiller, ici et dans tous les restaurants MenuVision.', 'Indica tus alérgenos y tus gustos: adaptamos la carta y las sugerencias del asesor, aquí y en todos los restaurantes MenuVision.', "Indica els teus al·lèrgens i els teus gustos: adaptem la carta i els suggeriments de l'assessor, aquí i a tots els restaurants MenuVision.", "Tell us your allergens and tastes: we adapt the menu and the advisor's suggestions, here and in every MenuVision restaurant."],
     'pass.allergenes': ['Mes allergènes', 'Mis alérgenos', 'Els meus al·lèrgens', 'My allergens'],
+    'pass.partage': ['Partager mes allergies avec les restaurants où je réserve ou commande', 'Compartir mis alergias con los restaurantes donde reservo o pido', 'Compartir les meves al·lèrgies amb els restaurants on reservo o demano', 'Share my allergies with the restaurants where I book or order'],
     'pass.preferences': ['Mes préférences', 'Mis preferencias', 'Les meves preferències', 'My preferences'],
     'pass.pref.saisie': ['ex. vins rouges corsés, cuisine épicée, peu sucré…', 'p. ej. vinos tintos con cuerpo, cocina picante, poco dulce…', 'p. ex. vins negres amb cos, cuina picant, poc dolç…', 'e.g. full-bodied reds, spicy food, not too sweet…'],
     'pass.enregistrer': ['Enregistrer', 'Guardar', 'Desar', 'Save'],
