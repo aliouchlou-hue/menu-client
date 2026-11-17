@@ -9,7 +9,7 @@
   <link rel="icon" href="icone.svg" type="image/svg+xml" />
   <link rel="stylesheet" href="mv-systeme.css?v=2026-10-14c" />
   <script src="i18n.js?v=2026-11-17b"></script>
-  <script src="menu-api.js?v=2026-10-14a"></script>
+  <script src="menu-api.js?v=2026-11-18a"></script>
   <style>
     .confirmation { max-width: 560px; margin: 0 auto; padding: calc(56px + env(safe-area-inset-top, 0px)) var(--e-5) var(--e-6); text-align: center; }
     .conf-logo { height: 64px; width: auto; max-width: 160px; object-fit: contain; margin: 0 auto var(--e-4); }
@@ -133,7 +133,7 @@
         function allumer(v) { etoiles.forEach(function (e) { e.classList.toggle('allumee', +e.dataset.n <= v); e.setAttribute('aria-checked', String(+e.dataset.n === v)); }); }
         function envoyer(commentaire) {
           envoye = true; $('avisMsg').textContent = t('avis.envoi');
-          fetch(RAILWAY + '/avis', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+          fetch(RAILWAY + '/avis', { method: 'POST', headers: window.mvEntetes ? window.mvEntetes() : { 'Content-Type': 'application/json' },
             body: JSON.stringify({ restaurant_id: api().restaurantId, portee: 'repas', note: note, commentaire: commentaire || '', lang: I.lang }) })
             .then(function (r) { return r.json().then(function (j) { return r.ok && j.ok; }); })
             .then(function (ok) {

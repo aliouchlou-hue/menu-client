@@ -119,7 +119,7 @@
     var motif = (sheet.querySelector('.mv-appel-motif.on') || {}).dataset; motif = motif ? motif.motif : 'serveur';
     bouton.disabled = true; msg.textContent = '';
     fetch(RAILWAY + '/appels-serveur', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      method: 'POST', headers: window.mvEntetes ? window.mvEntetes() : { 'Content-Type': 'application/json' },   // X-MV-Appareil
       body: JSON.stringify({ restaurant_id: rid, table_numero: table, motif: motif })
     }).then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { return { ok: r.ok && j.ok, j: j, statut: r.status }; }); })
       .then(function (x) {

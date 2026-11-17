@@ -553,7 +553,7 @@
       const plats = items.map(i => ({ nom: i.name, qte: i.qty, prix: i.price }));
       const res = await fetch(RAILWAY + '/commandes', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: window.mvEntetes ? window.mvEntetes() : { 'Content-Type': 'application/json' },   // X-MV-Appareil
         body: JSON.stringify({ restaurant_id: currentRestaurantId(), table_numero: table, plats, lang: I.lang })
       });
       const data = await res.json().catch(() => ({}));

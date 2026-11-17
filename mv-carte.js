@@ -168,7 +168,7 @@
     ajouterMessage(texte, 'user');
     var attente = ajouterMessage(t('chat.ecrit'), 'typing');
     fetch('/.netlify/functions/chat', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      method: 'POST', headers: window.mvEntetes ? window.mvEntetes() : { 'Content-Type': 'application/json' },   // X-MV-Appareil
       body: JSON.stringify({ message: texte.slice(0, 500), history: historique, context: window._menuApiContext || null, lang: I ? I.lang : 'fr', restaurant_id: (window.menuAPI && window.menuAPI.restaurantId) || '' })
     }).then(function (r) { return r.json(); }).then(function (d) {
       var rep = d && d.reply ? d.reply : t(d && (d.code === 'TROP_DE_QUESTIONS' || d.code === 'PLAFOND_RESTAURANT') ? 'chat.trop' : 'chat.indispo');

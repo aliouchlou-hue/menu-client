@@ -435,7 +435,7 @@
       if (envoye || !note) return;
       btn.disabled = true; msg.textContent = t('avis.envoi');
       fetch(RAILWAY + '/avis', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        method: 'POST', headers: window.mvEntetes ? window.mvEntetes() : { 'Content-Type': 'application/json' },   // X-MV-Appareil
         body: JSON.stringify({ restaurant_id: window.menuAPI.restaurantId, plat_nom: platNom, note: note, commentaire: el.querySelector('textarea').value.trim(), auteur: el.querySelector('.mv-avis-prenom').value.trim(), lang: I.lang })
       }).then(function (r) { return r.json().then(function (j) { return r.ok && j.ok; }); })
         .then(function (ok) {

@@ -9,6 +9,32 @@
   var t = function (k, v) { return I ? I.t(k, v) : k; };
   var UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
+  // Identifiant aléatoire de cet appareil, envoyé dans l'en-tête X-MV-Appareil (commande, appel serveur,
+  // avis, conseiller) : le serveur compte par appareil, pas par IP, pour que les clients d'une même salle
+  // (même Wi-Fi) ne se bloquent pas entre eux. Tiré une fois, gardé dans le navigateur ; sans stockage
+  // possible, il vit le temps de la page. Il ne dit rien du client.
+  var appareilMemoire = null;
+  function tirerAppareil() {
+    if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
+    var o = new Uint8Array(16); crypto.getRandomValues(o);
+    o[6] = (o[6] & 15) | 64; o[8] = (o[8] & 63) | 128;
+    var h = Array.prototype.map.call(o, function (b) { return (b + 256).toString(16).slice(1); }).join('');
+    return h.slice(0, 8) + '-' + h.slice(8, 12) + '-' + h.slice(12, 16) + '-' + h.slice(16, 20) + '-' + h.slice(20);
+  }
+  window.mvAppareil = function () {
+    try {
+      var a = localStorage.getItem('mv_appareil');
+      if (!a || !UUID.test(a)) { a = tirerAppareil(); localStorage.setItem('mv_appareil', a); }
+      return a;
+    } catch (_) { return appareilMemoire || (appareilMemoire = tirerAppareil()); }
+  };
+  // En-têtes d'un envoi au serveur, avec l'identifiant d'appareil quand il est disponible.
+  window.mvEntetes = function () {
+    var h = { 'Content-Type': 'application/json' };
+    try { h['X-MV-Appareil'] = window.mvAppareil(); } catch (_) {}
+    return h;
+  };
+
   var params = new URLSearchParams(location.search);
   var rid = params.get('r');
   if (!rid) { try { rid = localStorage.getItem('mv_rid'); } catch (_) {} }

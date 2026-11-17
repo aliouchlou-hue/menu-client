@@ -418,13 +418,15 @@ function enTete(event, nom) {
   const h = event.headers || {};
   return h[nom] || h[nom.toLowerCase()] || '';
 }
-async function autorisation(restaurantId, ip) {
+// appareil : identifiant aléatoire envoyé par le menu (X-MV-Appareil), transmis tel quel s'il a la forme d'un uuid ;
+// sans lui (page ancienne, script), le serveur ne compte que par IP, avec un plafond plus large.
+async function autorisation(restaurantId, ip, appareil) {
   const cle = process.env.CONSEILLER_CLE;
   if (!cle) return { statut: 503, corps: { code: 'SERVICE_NON_CONFIGURE', error: 'Service non configuré.' } };
   try {
     const r = await fetch(SERVEUR + '/ia/conseiller/autorisation', {
       method: 'POST', headers: { 'Content-Type': 'application/json', 'X-MV-Cle': cle },
-      body: JSON.stringify({ restaurant_id: restaurantId, ip }), signal: AbortSignal.timeout(8000),
+      body: JSON.stringify({ restaurant_id: restaurantId, ip, ...(appareil ? { appareil } : {}) }), signal: AbortSignal.timeout(8000),
     });
     const j = await r.json().catch(() => ({}));
     return { statut: r.status, corps: j };
@@ -438,7 +440,7 @@ exports.handler = async (event) => {
   const permise = ORIGINES.includes(origine);
   const headers = {
     'Content-Type': 'application/json',
-    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Headers': 'Content-Type, X-MV-Appareil',
     'Vary': 'Origin',
     ...(permise ? { 'Access-Control-Allow-Origin': origine } : {}),
   };
@@ -482,7 +484,8 @@ exports.handler = async (event) => {
       return { statusCode: 400, headers, body: JSON.stringify({ code: 'RESTAURANT_REQUIS', error: 'Restaurant requis.' }) };
     }
     const ip = String(enTete(event, 'x-nf-client-connection-ip') || String(enTete(event, 'x-forwarded-for')).split(',')[0]).trim();
-    const auto = await autorisation(String(restaurant_id), ip);
+    const appareil = String(enTete(event, 'x-mv-appareil') || '').trim();
+    const auto = await autorisation(String(restaurant_id), ip, UUID.test(appareil) ? appareil.toLowerCase() : null);
     if (auto.statut !== 200 || !auto.corps.ok) {
       return { statusCode: auto.statut === 200 ? 403 : auto.statut, headers, body: JSON.stringify({ code: auto.corps.code || 'REFUSE', error: auto.corps.error || 'Refusé.' }) };
     }
